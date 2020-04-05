@@ -10,14 +10,15 @@
 %endif
 
 Name:           lxc
-Version:        3.2.1
-Release:        2%{?dist}
+Version:        4.0.0
+Release:        0.1%{?dist}
 Summary:        Linux Resource Containers
 License:        LGPLv2+ and GPLv2
-URL:            http://linuxcontainers.org/lxc
-Source0:        http://linuxcontainers.org/downloads/%{name}-%{version}.tar.gz
+URL:            https://linuxcontainers.org/lxc
+Source0:        https://linuxcontainers.org/downloads/%{name}-%{version}.tar.gz
 Patch0:         lxc-2.0.7-fix-init.patch
 Patch1:         lxc-2.0.6-fix-lxc-net.patch
+Patch2:         lxc-4.0.0-autotools-dont-install-run-coccinelle-sh.patch
 BuildRequires:  docbook2X
 BuildRequires:  doxygen
 BuildRequires:  kernel-headers
@@ -58,6 +59,10 @@ Requires(preun):   systemd
 Requires(postun):  systemd
 Requires(post):    /sbin/ldconfig
 Requires(postun):  /sbin/ldconfig
+%if 0%{?fedora}
+Recommends:        dnsmasq
+Recommends:        iptables
+%endif
 
 
 %description    libs
@@ -70,6 +75,10 @@ The %{name}-libs package contains libraries for running %{name} applications.
 %package        templates
 Summary:        Templates for %{name}
 Requires:       %{name}-libs%{?_isa} = %{version}-%{release}
+# used by download template
+Requires:       gnupg
+Requires:       wget
+Requires:       xz
 # Note: Requirements for the template scripts (busybox, dpkg,
 # debootstrap, rsync, openssh-server, dhclient, apt, pacman, zypper,
 # ubuntu-cloudimg-query etc...) are not explicitly mentioned here:
@@ -114,8 +123,7 @@ This package contains documentation for %{name}.
 
 %build
 autoreconf -vif
-%configure --with-distro=fedora \
-           --enable-doc \
+%configure --enable-doc \
            --enable-api-docs \
            --disable-silent-rules \
            --docdir=%{_pkgdocdir} \
@@ -133,16 +141,16 @@ autoreconf -vif
            --disable-werror \
 # intentionally blank line
 
-%{make_build}
+%{make_build} %{?_smp_mflags}
 
 
 %install
-%{make_install}
+%{make_install} %{?_smp_mflags}
 mkdir -p %{buildroot}%{_sharedstatedir}/%{name}
 
 # docs
 mkdir -p %{buildroot}%{_pkgdocdir}/api
-cp -a AUTHORS README %{buildroot}%{_pkgdocdir}
+cp -a AUTHORS README.md %{!?_licensedir:COPYING} %{buildroot}%{_pkgdocdir}
 cp -a doc/api/html/* %{buildroot}%{_pkgdocdir}/api/
 
 # cache dir
@@ -218,11 +226,13 @@ make check
 %{_mandir}/*/man1/%{name}-user-nic*
 %{_mandir}/man5/%{name}*
 %{_mandir}/man7/%{name}*
+%{_mandir}/man8/*
 %{_mandir}/*/man5/%{name}*
 %{_mandir}/*/man7/%{name}*
+%{_mandir}/*/man8/*
 %dir %{_pkgdocdir}
 %{_pkgdocdir}/AUTHORS
-%{_pkgdocdir}/README
+%{_pkgdocdir}/README.md
 %license COPYING
 %{_unitdir}/%{name}.service
 %{_unitdir}/%{name}@.service

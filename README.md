@@ -6,6 +6,7 @@ using tito and git-annex.
 
 | Spec File                | Copr Build Status                  |
 | ------------------------ | ---------------------------------- | 
+| [lxc.spec](lxc/lxc.spec) | [![Copr build status](https://copr.fedorainfracloud.org/coprs/ganto/lxc4/package/lxc/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/ganto/lxc4/package/lxc/) |
 
 
 ### Author and license
