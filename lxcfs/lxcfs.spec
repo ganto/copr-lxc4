@@ -74,6 +74,9 @@ mkdir -p %{buildroot}%{_sharedstatedir}/%{name}
 
 
 %changelog
+* Tue Apr 07 2020 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.0.1-0.1
+- Rebuild in COPR
+
 * Sat Mar 21 2020 Thomas Moschny <thomas.moschny@gmx.de> - 4.0.1-1
 - Update to 4.0.1.
 
