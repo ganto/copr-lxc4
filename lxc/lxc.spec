@@ -10,15 +10,14 @@
 %endif
 
 Name:           lxc
-Version:        4.0.0
+Version:        4.0.2
 Release:        0.1%{?dist}
 Summary:        Linux Resource Containers
 License:        LGPLv2+ and GPLv2
 URL:            https://linuxcontainers.org/lxc
 Source0:        https://linuxcontainers.org/downloads/%{name}-%{version}.tar.gz
 Patch0:         lxc-2.0.7-fix-init.patch
-Patch1:         lxc-2.0.6-fix-lxc-net.patch
-Patch2:         lxc-4.0.0-autotools-dont-install-run-coccinelle-sh.patch
+Patch1:         lxc-4.0.2-fix-lxc-net.patch
 BuildRequires:  docbook2X
 BuildRequires:  doxygen
 BuildRequires:  kernel-headers

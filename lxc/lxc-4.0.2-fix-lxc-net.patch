@@ -7,5 +7,5 @@ diff -up lxc-2.0.6/config/init/systemd/lxc-net.service.in.orig lxc-2.0.6/config/
  After=network-online.target
 +Wants=network-online.target
  Before=lxc.service
+ Documentation=man:lxc
  
- [Service]
