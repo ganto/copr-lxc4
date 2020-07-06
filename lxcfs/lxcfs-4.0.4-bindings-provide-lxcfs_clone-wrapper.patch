@@ -1,0 +1,56 @@
+diff --git a/src/bindings.h b/src/bindings.h
+index 28543dc..e427733 100644
+--- a/src/bindings.h
++++ b/src/bindings.h
+@@ -103,6 +103,20 @@ static inline int install_signal_handler(int signo,
+ 	return sigaction(signo, &action, NULL);
+ }
+ 
+-extern pid_t lxcfs_clone(int (*fn)(void *), void *arg, int flags);
++extern pid_t lxcfs_raw_clone(unsigned long flags, int *pidfd);
++
++static inline pid_t lxcfs_clone(int (*fn)(void *), void *arg, int flags)
++{
++	pid_t pid;
++
++	pid = lxcfs_raw_clone(flags, NULL);
++	if (pid < 0)
++		return -1;
++
++	if (pid == 0)
++		_exit(fn(arg));
++
++	return pid;
++}
+ 
+ #endif /* __LXCFS_BINDINGS_H */
+diff --git a/src/lxcfs.c b/src/lxcfs.c
+index a6b4583..94256d4 100644
+--- a/src/lxcfs.c
++++ b/src/lxcfs.c
+@@ -127,7 +127,11 @@ static void do_reload(void)
+ 	}
+ 
+ 	/* First try loading using ld.so */
++#ifdef RESOLVE_NOW
++	dlopen_handle = dlopen("liblxcfs.so", RTLD_NOW);
++#else
+ 	dlopen_handle = dlopen("liblxcfs.so", RTLD_LAZY);
++#endif
+ 	if (dlopen_handle) {
+ 		lxcfs_debug("Opened liblxcfs.so");
+ 		goto good;
+diff --git a/src/proc_fuse.c b/src/proc_fuse.c
+index c78b9e8..d7a2dd3 100644
+--- a/src/proc_fuse.c
++++ b/src/proc_fuse.c
+@@ -244,8 +244,7 @@ static inline bool startswith(const char *line, const char *pref)
+ static int proc_swaps_read(char *buf, size_t size, off_t offset,
+ 			   struct fuse_file_info *fi)
+ {
+-	__do_free char *cgroup = NULL, *memswlimit_str = NULL, *memusage_str = NULL,
+-		       *memswusage_str = NULL;
++	__do_free char *cgroup = NULL, *memusage_str = NULL, *memswusage_str = NULL;
+ 	struct fuse_context *fc = fuse_get_context();
+ 	struct lxcfs_opts *opts = (struct lxcfs_opts *)fuse_get_context()->private_data;
+ 	bool wants_swap = opts && !opts->swap_off;
