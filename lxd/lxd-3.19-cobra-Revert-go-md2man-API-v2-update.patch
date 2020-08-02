@@ -1,0 +1,37 @@
+commit b9c187491c4a00491c9099445b85e9817cae352c
+Author: Reto Gantenbein <reto.gantenbein@linuxmonk.ch>
+Date:   Thu Jan 30 19:26:53 2020 +0100
+
+    cobra: Revert go-md2man API v2 update
+    
+    This works around a packaging error where the
+    'github.com/cpuguy83/go-md2man' module vendored by lxd doesn't meet the
+    requirements of the vendored 'github.com/spf13/cobra' module [1]. Because
+    no code used explicitly depends on the v2 API, we simply revert the
+    import to the old API.
+    
+    [1]: https://github.com/spf13/cobra/pull/977/commits/2f080248fa42a4dfdc8e76114227ce0c42be0c2d
+    
+    Without this patch, the following error occurs when trying to run the
+    test suite:
+    
+    + go test -buildmode pie -compiler gc -v -tags libsqlite3 -ldflags ' -extldflags '\''-Wl,-z,relro -Wl,--as-needed  -Wl,-z,now -specs=/usr/lib/rpm/redhat/redhat-hardened-ld '\''' github.com/lxc/lxd/lxc
+    ../../BUILDROOT/lxd-3.19-0.1.fc30.x86_64/usr/share/gocode/src/github.com/lxc/lxd/vendor/github.com/spf13/cobra/doc/man_docs.go:27:2: cannot find package "github.com/cpuguy83/go-md2man/v2/md2man" in any of:
+            /builddir/build/BUILDROOT/lxd-3.19-0.1.fc30.x86_64/usr/share/gocode/src/github.com/lxc/lxd/vendor/github.com/cpuguy83/go-md2man/v2/md2man (vendor tree)
+            /usr/lib/golang/src/github.com/cpuguy83/go-md2man/v2/md2man (from $GOROOT)
+            /builddir/build/BUILDROOT/lxd-3.19-0.1.fc30.x86_64/usr/share/gocode/src/github.com/cpuguy83/go-md2man/v2/md2man (from $GOPATH)
+            /usr/share/gocode/src/github.com/cpuguy83/go-md2man/v2/md2man
+
+diff --git a/_dist/src/github.com/spf13/cobra/doc/man_docs.go b/_dist/src/github.com/spf13/cobra/doc/man_docs.go
+index 8c7fba4..4a06233 100644
+--- a/_dist/src/github.com/spf13/cobra/doc/man_docs.go
++++ b/_dist/src/github.com/spf13/cobra/doc/man_docs.go
+@@ -24,7 +24,7 @@ import (
+ 	"strings"
+ 	"time"
+ 
+-	"github.com/cpuguy83/go-md2man/v2/md2man"
++	"github.com/cpuguy83/go-md2man/md2man"
+ 	"github.com/spf13/cobra"
+ 	"github.com/spf13/pflag"
+ )

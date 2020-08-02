@@ -1,0 +1,7 @@
+#!/bin/sh
+
+if ! systemctl -q is-active lxd.service; then
+    exit 0
+fi
+
+exec /usr/bin/lxd shutdown

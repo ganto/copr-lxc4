@@ -1,0 +1,19 @@
+commit 0510f20beefb347a8e12f599c7918b8676133559
+Author: Reto Gantenbein <reto.gantenbein@linuxmonk.ch>
+Date:   Sat May 9 18:08:27 2020 +0200
+
+    Update error string printed when group doesn't exist
+
+diff --git a/lxd/endpoints/local_test.go b/lxd/endpoints/local_test.go
+index a0ce2d2f4..ed0e4e7be 100644
+--- a/lxd/endpoints/local_test.go
++++ b/lxd/endpoints/local_test.go
+@@ -70,7 +70,7 @@ func TestEndpoints_LocalUnknownUnixGroup(t *testing.T) {
+ 	err := endpoints.Up(config)
+ 
+ 	assert.EqualError(
+-		t, err, "local endpoint: cannot get group ID of 'xquibaz': unknown group xquibaz")
++		t, err, "local endpoint: cannot get group ID of 'xquibaz': failed group lookup: no such process")
+ }
+ 
+ // If another LXD endpoints is already listening on the unix socket, an error is

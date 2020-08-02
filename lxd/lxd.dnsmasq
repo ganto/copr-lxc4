@@ -1,0 +1,5 @@
+# Tell any system-wide dnsmasq instance to make sure to bind to interfaces
+# instead of listening on 0.0.0.0
+# WARNING: changes to this file will get lost if lxd is removed.
+bind-interfaces
+except-interface=lxdbr0
