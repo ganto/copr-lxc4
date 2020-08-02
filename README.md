@@ -8,6 +8,7 @@ using tito and git-annex.
 | ------------------------ | ---------------------------------- | 
 | [lxc.spec](lxc/lxc.spec) | [![Copr build status](https://copr.fedorainfracloud.org/coprs/ganto/lxc4/package/lxc/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/ganto/lxc4/package/lxc/) |
 | [lxcfs.spec](lxcfs/lxcfs.spec) | [![Copr build status](https://copr.fedorainfracloud.org/coprs/ganto/lxc4/package/lxcfs/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/ganto/lxc4/package/lxcfs/) |
+| [lxd.spec](lxd/lxd.spec) | [![Copr build status](https://copr.fedorainfracloud.org/coprs/ganto/lxc4/package/lxd/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/ganto/lxc4/package/lxd/) |
 
 
 ### Author and license

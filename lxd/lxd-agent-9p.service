@@ -2,6 +2,8 @@
 Description=LXD - agent - 9p mount
 Documentation=https://linuxcontainers.org/lxd
 ConditionPathExists=/dev/virtio-ports/org.linuxcontainers.lxd
+After=local-fs.target
+DefaultDependencies=no
 
 [Service]
 Type=oneshot
