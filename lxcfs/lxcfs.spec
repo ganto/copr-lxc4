@@ -1,11 +1,10 @@
 Name:		  lxcfs
-Version:	  4.0.4
-Release:	  0.2%{?dist}
+Version:	  4.0.5
+Release:	  0.1%{?dist}
 Summary:	  FUSE based filesystem for LXC
 License:	  ASL 2.0
 URL:		  https://linuxcontainers.org/lxcfs
 Source0:	  https://linuxcontainers.org/downloads/%{name}/%{name}-%{version}.tar.gz
-Patch0:		  lxcfs-4.0.4-bindings-provide-lxcfs_clone-wrapper.patch
 BuildRequires:	  gcc
 BuildRequires:	  gawk
 BuildRequires:	  make
