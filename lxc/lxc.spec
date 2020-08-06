@@ -260,6 +260,9 @@ make check
 
 
 %changelog
+* Thu Aug 06 2020 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.0.4-0.1
+- Update to 4.0.4.
+
 * Fri Jul 03 2020 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.0.3-0.1
 - Update to 4.0.3.
 
