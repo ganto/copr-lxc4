@@ -1,0 +1,25 @@
+From ae96852bbbf8bf4673a14085acfd6c0a74c48e37 Mon Sep 17 00:00:00 2001
+From: Anders <anders-code@users.noreply.github.com>
+Date: Sun, 9 Feb 2020 22:29:08 -0800
+Subject: [PATCH] lxc-debian: fix incorrect use of basename instead of dirname
+
+mkdir -p should create the dirname of the interpreter, not its basename.
+
+Signed-off-by: Anders Oleson <anders-code@users.noreply.github.com>
+---
+ templates/lxc-debian.in | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/templates/lxc-debian.in b/templates/lxc-debian.in
+index 4388478..fd26d5e 100644
+--- a/templates/lxc-debian.in
++++ b/templates/lxc-debian.in
+@@ -385,7 +385,7 @@ openssh-server
+             echo "Failed to download the rootfs, aborting."
+             return 1
+         fi
+-        mkdir -p "$(basename "$cache/partial-$release-$arch/$interpreter_path")"
++        mkdir -p "$(dirname "$cache/partial-$release-$arch/$interpreter_path")"
+         cp "$interpreter" "$cache/partial-$release-$arch/$interpreter_path"
+         if [ $? -ne 0 ]; then
+             echo "failed to copy $interpreter to $cache/partial-$release-$arch/$interpreter_path"

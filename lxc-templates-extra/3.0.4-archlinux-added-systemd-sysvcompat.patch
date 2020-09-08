@@ -1,0 +1,24 @@
+From 2b9c1833c18d74f7feac1810b97bf5e8dd834afb Mon Sep 17 00:00:00 2001
+From: Andreas Baumann <mail@andreasbaumann.cc>
+Date: Thu, 31 Oct 2019 14:29:30 +0100
+Subject: [PATCH] added systemd-sysvcompat (/sbin/init missing when starting
+ container)
+
+Signed-off-by: Andreas Baumann <mail@andreasbaumann.cc>
+---
+ templates/lxc-archlinux.in | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/templates/lxc-archlinux.in b/templates/lxc-archlinux.in
+index f8d4ba0..4a5c271 100644
+--- a/templates/lxc-archlinux.in
++++ b/templates/lxc-archlinux.in
+@@ -48,7 +48,7 @@ shared_config="@LXCTEMPLATECONFIG@/archlinux.common.conf"
+ 
+ # by default, install 'base' except the kernel
+ pkg_blacklist="linux"
+-base_packages=()
++base_packages=("systemd-sysvcompat")
+ for pkg in $(pacman -Sqg base); do
+    [ "${pkg_blacklist#*$pkg}" = "$pkg_blacklist" ] && base_packages+=($pkg)
+ done
