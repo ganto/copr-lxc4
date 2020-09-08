@@ -51,6 +51,9 @@ The modern approach to build container images is distrobuilder.
 %{_datadir}/lxc/templates/lxc-*      
 
 %changelog
+* Tue Sep 08 2020 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 3.0.4-0.3
+- Add some bugfix patches
+
 * Sat Sep 28 2019 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 3.0.4-0.2
 - Rebuild for EPEL-8
 
