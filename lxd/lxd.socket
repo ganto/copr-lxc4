@@ -3,10 +3,11 @@ Description=LXD - unix socket
 Documentation=man:lxd(1)
 
 [Socket]
-ListenStream=/run/lxd.socket
-SocketGroup=lxd
-SocketMode=0660
 Service=lxd.service
+FileDescriptorName=unix
+ListenStream=/run/lxd.socket
+SocketMode=0660
+SocketGroup=lxd
 
 [Install]
 WantedBy=sockets.target

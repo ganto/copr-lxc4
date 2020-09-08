@@ -13,7 +13,7 @@
 
 # https://github.com/lxc/lxd
 %global goipath github.com/lxc/lxd
-Version:        4.3
+Version:        4.5
 
 %gometa
 
@@ -105,10 +105,10 @@ BuildRequires:  gcc
 BuildRequires:  libtool
 BuildRequires:  libuv-devel
 
-Provides:       bundled(libsqlite3.so.0()) = 8b4180537d025b4ca59f4b85987785e0c0e8b84a
-Provides:       bundled(libco.so()) = 8075fa4d4919b2cdbbb125b248cfd6dfbcea812c
-Provides:       bundled(libraft.so.0()) = 745110cd2f82a4264a2e120e7204057a8a02392f
-Provides:       bundled(libdqlite.so.0()) = 0f3ec414589f932d50980edbd8ba97fabe229888
+Provides:       bundled(libsqlite3.so.0()) = 92dfb22a380e38e59a3bc7c5d73f293fe70608d9
+Provides:       bundled(libco.so()) = 8bea7605667e1df8e01033cc4c3621cbe444506f
+Provides:       bundled(libraft.so.0()) = 1e3f2fde9b3beb9277e8f35afffaee06692b0f13
+Provides:       bundled(libdqlite.so.0()) = 0196d289251c58a3bb22fcadb3e74c50a8ff39de
 # Do not auto-provide .so files in the application-specific library directory
 %global __provides_exclude_from %{_libdir}/%{name}/.*\\.so
 
