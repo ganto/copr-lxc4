@@ -436,6 +436,11 @@ getent group %{name} > /dev/null || groupadd -r %{name}
 %doc doc/*
 
 %changelog
+* Sat Sep 12 2020 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.5-0.2
+- Add RPM_LD_FLAGS to libdqlite linker flags
+- Update to latest go-/dqlite to avoid linker issues with libco on
+  Fedora >=33
+
 * Tue Sep 08 2020 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.5-0.1
 - Update to 4.5.
 
