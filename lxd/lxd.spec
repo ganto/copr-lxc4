@@ -217,7 +217,7 @@ popd
 pushd _dist/deps/dqlite
 autoreconf -i
 PKG_CONFIG_PATH="${src_dir}/sqlite/:${src_dir}/libco/:${src_dir}/raft/" %configure --libdir=%{_libdir}/%{name}
-make %{?_smp_mflags} CFLAGS="$RPM_OPT_FLAGS -I${src_dir}/sqlite/ -I${src_dir}/libco/ -I${src_dir}/raft/include/" LDFLAGS="-L${src_dir}/sqlite/.libs/ -L${src_dir}/libco/ -L${src_dir}/raft/.libs/"
+make %{?_smp_mflags} CFLAGS="$RPM_OPT_FLAGS -I${src_dir}/sqlite/ -I${src_dir}/libco/ -I${src_dir}/raft/include/" LDFLAGS="$RPM_LD_FLAGS -L${src_dir}/sqlite/.libs/ -L${src_dir}/libco/ -L${src_dir}/raft/.libs/"
 popd
 
 mkdir _output
