@@ -10,6 +10,7 @@ using tito and git-annex.
 | [lxcfs.spec](lxcfs/lxcfs.spec) | [![Copr build status](https://copr.fedorainfracloud.org/coprs/ganto/lxc4/package/lxcfs/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/ganto/lxc4/package/lxcfs/) |
 | [lxc-templates-extra.spec](lxc-templates-extra/lxc-templates-extra.spec) | [![Copr build status](https://copr.fedorainfracloud.org/coprs/ganto/lxc4/package/lxc-templates-extra/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/ganto/lxc4/package/lxc-templates-extra/) |
 | [lxd.spec](lxd/lxd.spec) | [![Copr build status](https://copr.fedorainfracloud.org/coprs/ganto/lxc4/package/lxd/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/ganto/lxc4/package/lxd/) |
+| [python3-lxc](python3-lxc/python3-lxc.spec) | [![Copr build status](https://copr.fedorainfracloud.org/coprs/ganto/lxc4/package/python3-lxc/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/ganto/lxc4/package/python3-lxc/) |
 
 
 ### Author and license
