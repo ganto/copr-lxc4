@@ -411,6 +411,9 @@ getent group %{name} > /dev/null || groupadd -r %{name}
 %doc doc/*
 
 %changelog
+* Sat Oct 03 2020 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.6-0.1
+- Update to 4.6.
+
 * Sat Sep 12 2020 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.5-0.2
 - Add RPM_LD_FLAGS to libdqlite linker flags
 - Update to latest go-/dqlite to avoid linker issues with libco on
