@@ -73,6 +73,9 @@ install -m 0644 -vp %{name}.1           %{buildroot}%{_mandir}/man1/
 %gopkgfiles
 
 %changelog
+* Sat Oct 03 2020 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 1.1-0.1
+- Update to 1.1.
+
 * Thu Oct 24 2019 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 1.0-0.1
 - Update to 1.0
 - Add man-page through help2man
