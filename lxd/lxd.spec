@@ -13,7 +13,7 @@
 
 # https://github.com/lxc/lxd
 %global goipath github.com/lxc/lxd
-Version:        4.5
+Version:        4.6
 
 %gometa
 
@@ -21,7 +21,7 @@ Version:        4.5
 %global golicenses  COPYING
 
 Name:           lxd
-Release:        0.2%{?dist}
+Release:        0.1%{?dist}
 Summary:        Container hypervisor based on LXC
 
 # Upstream license specification: Apache-2.0
@@ -38,10 +38,6 @@ Source7:        lxd.sysctl
 Source8:        lxd.profile
 Source9:        lxd-agent.service
 Source10:       lxd-agent-9p.service
-# Work-around build-issue with libco by using the latest version of dqlite/go-dqlite
-# which don't depend on libco anymore. See GH canonical/go-dqlite#121
-Source11:       https://github.com/canonical/dqlite/archive/0d0595568e9ccfdcfdcb3d1fec19850ae6e97625.tar.gz#/dqlite-20200911-0d05955.tar.gz
-Source12:       https://github.com/canonical/go-dqlite/archive/v1.8.0.tar.gz#/go-dqlite-v1.8.0.tar.gz
 Patch0:         lxd-3.19-cobra-Revert-go-md2man-API-v2-update.patch
 Patch1:         lxd-3.21-Fix-TestEndpoints_LocalUnknownUnixGroup-test.patch
 
@@ -51,6 +47,7 @@ BuildRequires:  libacl-devel
 BuildRequires:  libcap-devel
 BuildRequires:  libseccomp-devel
 BuildRequires:  pkgconfig(lxc)
+BuildRequires:  sqlite-devel
 BuildRequires:  systemd-devel
 
 Requires: acl
@@ -70,8 +67,7 @@ Requires: xz
 Requires(pre): container-selinux >= 2:2.38
 Requires(pre): shadow-utils
 # Do not require bundled libraries
-%global __requires_exclude libsqlite3.so.0
-%global __requires_exclude %{__requires_exclude}|libraft.so.0
+%global __requires_exclude libraft.so.0
 %global __requires_exclude %{__requires_exclude}|libdqlite.so.0
 
 %if %{with check}
@@ -100,15 +96,12 @@ This package contains the LXD daemon.
 %package libs
 Summary:        Container hypervisor based on LXC - Shared libraries
 
-# tclsh required by embedded sqlite3 build
-BuildRequires:  tcl
 # required by embedded dqlite build
 BuildRequires:  autoconf
 BuildRequires:  gcc
 BuildRequires:  libtool
 BuildRequires:  libuv-devel
 
-Provides:       bundled(libsqlite3.so.0()) = 92dfb22a380e38e59a3bc7c5d73f293fe70608d9
 Provides:       bundled(libraft.so.0()) = 1e3f2fde9b3beb9277e8f35afffaee06692b0f13
 Provides:       bundled(libdqlite.so.0()) = 0d0595568e9ccfdcfdcb3d1fec19850ae6e97625
 # Do not auto-provide .so files in the application-specific library directory
@@ -193,24 +186,8 @@ This package contains user documentation.
 %patch1 -p1
 %endif
 
-# Unpack vendored dqlite replacement
-/usr/bin/gzip -dc %{SOURCE11} | /usr/bin/tar -xof -
-rm -r _dist/deps/dqlite
-mv ./dqlite-* _dist/deps/dqlite
-
-# Replace vendored go-dqlite replacement
-/usr/bin/gzip -dc %{SOURCE12} | /usr/bin/tar -xof -
-rm -r _dist/src/github.com/canonical/go-dqlite
-mv ./go-dqlite-* _dist/src/github.com/canonical/go-dqlite
-
 %build
 src_dir=$(pwd)/_dist/deps
-
-# build embedded libsqlite3
-pushd _dist/deps/sqlite
-%configure --enable-replication --disable-amalgamation --disable-tcl --libdir=%{_libdir}/%{name}
-make %{?_smp_mflags}
-popd
 
 # build embedded raft
 pushd _dist/deps/raft
@@ -222,8 +199,8 @@ popd
 # build embedded dqlite
 pushd _dist/deps/dqlite
 autoreconf -i
-PKG_CONFIG_PATH="${src_dir}/sqlite/:${src_dir}/raft/" %configure --libdir=%{_libdir}/%{name}
-make %{?_smp_mflags} CFLAGS="$RPM_OPT_FLAGS -I${src_dir}/sqlite/ -I${src_dir}/raft/include/" LDFLAGS="$RPM_LD_FLAGS -L${src_dir}/sqlite/.libs/ -L${src_dir}/raft/.libs/"
+PKG_CONFIG_PATH="${src_dir}/raft/" %configure --libdir=%{_libdir}/%{name}
+make %{?_smp_mflags} CFLAGS="$RPM_OPT_FLAGS -I${src_dir}/raft/include/" LDFLAGS="$RPM_LD_FLAGS -L${src_dir}/raft/.libs/"
 popd
 
 mkdir _output
@@ -244,10 +221,10 @@ export GOPATH=$(pwd)/_output:$(pwd):%{gopath}
 # "flag provided but not defined: -Wl,-z,relro"
 unset LDFLAGS
 
-# LXD depends on a patched, bundled sqlite with replication capabilities
-export CGO_CFLAGS="-I${src_dir}/sqlite/ -I${src_dir}/raft/include/ -I${src_dir}/dqlite/include/"
-export CGO_LDFLAGS="-L${src_dir}/sqlite/.libs/ -L${src_dir}/raft/.libs/ -L${src_dir}/dqlite/.libs/ -Wl,-rpath,%{_libdir}/%{name}"
-export LD_LIBRARY_PATH="${src_dir}/sqlite/.libs/:${src_dir}/raft/.libs/:${src_dir}/dqlite/.libs/"
+# LXD depends on a bundled dqlite library
+export CGO_CFLAGS="-I${src_dir}/raft/include/ -I${src_dir}/dqlite/include/"
+export CGO_LDFLAGS="-L${src_dir}/raft/.libs/ -L${src_dir}/dqlite/.libs/ -Wl,-rpath,%{_libdir}/%{name}"
+export LD_LIBRARY_PATH="${src_dir}/raft/.libs/:${src_dir}/dqlite/.libs/"
 export CGO_LDFLAGS_ALLOW="-Wl,-wrap,pthread_create"
 
 for cmd in lxd lxc fuidshift lxd-benchmark lxc-to-lxd; do
@@ -301,13 +278,11 @@ install -p -m 0755 %{SOURCE6} %{buildroot}%{_libexecdir}/%{name}
 
 # install custom libsqlite3/dqlite
 install -dm 0755 %{buildroot}%{_libdir}/%{name}
-cp -Pp _dist/deps/sqlite/.libs/libsqlite3.so* %{buildroot}%{_libdir}/%{name}/
 cp -Pp _dist/deps/raft/.libs/libraft.so* %{buildroot}%{_libdir}/%{name}/
 cp -Pp _dist/deps/dqlite/.libs/libdqlite.so* %{buildroot}%{_libdir}/%{name}/
 
 # install devel files
 install -dm 0755 %{buildroot}%{_includedir}/%{name}
-cp -pav _dist/deps/sqlite/{sqlite3,sqlite3ext}.h %{buildroot}%{_includedir}/%{name}/
 cp -pav _dist/deps/raft/include/raft.h %{buildroot}%{_includedir}/%{name}/
 cp -pav _dist/deps/dqlite/include/dqlite.h %{buildroot}%{_includedir}/%{name}/
 echo "%%dir %%{_includedir}/%%{name}/." >> libs-devel.file-list
