@@ -67,3 +67,6 @@ rm -f %{buildroot}%{_libdir}/libraft.la
 %{_libdir}/libraft.a
 
 %changelog
+* Tue Oct 20 2020 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.9.25-0.1.20201015git9761242
+- Initial package
+
