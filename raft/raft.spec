@@ -4,12 +4,14 @@
 
 Name:           raft 
 Version:        0.9.25
-Release:        0.1.%{commitdate}git%{shortcommit}%{?dist}
+Release:        0.2.%{commitdate}git%{shortcommit}%{?dist}
 Summary:        C implementation of the Raft consensus protocol
 
 License:        LGPLv3 
 URL:            https://github.com/canonical/raft
 Source0:        https://github.com/canonical/%{name}/archive/%{commit}.tar.gz
+# Fix test when run on tmpfs for Fedora <33
+Patch0:         raft-0.9.25-Always-skip-init-oom-test.patch
 
 BuildRequires:  autoconf libtool
 BuildRequires:  gcc
@@ -36,7 +38,10 @@ Static library (.a) version of raft.
 
 
 %prep
-%autosetup -n %{name}-%{commit} -p1
+%setup -q -n %{name}-%{commit}
+%if 0%{?fedora} && 0%{?fedora} < 33
+%patch0 -p1
+%endif
 
 %build
 autoreconf -i 
