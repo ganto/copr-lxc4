@@ -1,0 +1,136 @@
+From 60e87d45c8dcf6632d604fac0b40890ee8eb52ae Mon Sep 17 00:00:00 2001
+From: Jakub Skokan <jakub.skokan@havefun.cz>
+Date: Mon, 12 Oct 2020 15:56:48 +0200
+Subject: [PATCH] Remove LXC.arch_to_personality
+
+It depended on a function from liblxc, which is no longer exported due
+to https://github.com/lxc/lxc/commit/63c2a0bf06d5ddd7cbbc908ea1e403b69f4b6a0c
+
+Signed-off-by: Jakub Skokan <jakub.skokan@havefun.cz>
+---
+ ext/lxc/lxc.c                  | 30 ------------------------------
+ 1 files changed, 30 deletions(-)
+
+diff --git a/ext/lxc/lxc.c b/ext/lxc/lxc.c
+index b0ec634..1f0b440 100644
+--- a/ext/lxc/lxc.c
++++ b/ext/lxc/lxc.c
+@@ -42,7 +42,6 @@ extern void *rb_thread_call_without_gvl(void *(*func)(void *), void *data1,
+ #endif
+ 
+ extern int lxc_wait_for_pid_status(pid_t pid);
+-extern long lxc_config_parse_arch(const char *arch);
+ 
+ static VALUE Container;
+ static VALUE Error;
+@@ -90,33 +89,6 @@ free_c_string_array(char **arr)
+  * container-specific methods are contained in the +LXC::Container+ class.
+  */
+ 
+-/*
+- * call-seq:
+- *   LXC.arch_to_personality(arch)
+- *
+- * Converts an architecture string (x86, i686, x86_64 or amd64) to a
+- * "personality", either +:linux32+ or +:linux+, for the 32-bit and 64-bit
+- * architectures, respectively.
+- */
+-static VALUE
+-lxc_arch_to_personality(VALUE self, VALUE rb_arch)
+-{
+-    int ret;
+-    char *arch;
+-
+-    arch = StringValuePtr(rb_arch);
+-    ret = lxc_config_parse_arch(arch);
+-
+-    switch (ret) {
+-    case PER_LINUX32:
+-        return SYMBOL("linux32");
+-    case PER_LINUX:
+-        return SYMBOL("linux");
+-    default:
+-        rb_raise(Error, "unknown personality");
+-    }
+-}
+-
+ /*
+  * call-seq:
+  *   LXC.run_command(command)
+@@ -2127,8 +2099,6 @@ Init_lxc(void)
+ {
+     VALUE LXC = rb_define_module("LXC");
+ 
+-    rb_define_singleton_method(LXC, "arch_to_personality",
+-                               lxc_arch_to_personality, 1);
+     rb_define_singleton_method(LXC, "run_command", lxc_run_command, 1);
+     rb_define_singleton_method(LXC, "run_shell", lxc_run_shell, 0);
+     rb_define_singleton_method(LXC, "global_config_item",
+
+
+From 2d171f980f4eef9786749367612759291fab3a15 Mon Sep 17 00:00:00 2001
+From: Jakub Skokan <jakub.skokan@havefun.cz>
+Date: Mon, 12 Oct 2020 17:04:27 +0200
+Subject: [PATCH] Reimplement lxc_wait_for_pid_status as it is no longer
+ exported by liblxc
+
+Signed-off-by: Jakub Skokan <jakub.skokan@havefun.cz>
+---
+ ext/lxc/lxc.c | 28 +++++++++++++++++++++++-----
+ 1 file changed, 23 insertions(+), 5 deletions(-)
+
+diff --git a/ext/lxc/lxc.c b/ext/lxc/lxc.c
+index 1f0b440..ce14c37 100644
+--- a/ext/lxc/lxc.c
++++ b/ext/lxc/lxc.c
+@@ -41,8 +41,6 @@ extern void *rb_thread_call_without_gvl(void *(*func)(void *), void *data1,
+ #define RELEASING_GVL2(func, arg, killfunc, killarg) func(arg)
+ #endif
+ 
+-extern int lxc_wait_for_pid_status(pid_t pid);
+-
+ static VALUE Container;
+ static VALUE Error;
+ 
+@@ -677,10 +675,30 @@ lxc_attach_parse_options(VALUE rb_opts)
+         return NULL;
+ }
+ 
++static int
++wait_for_pid_status(pid_t pid)
++{
++    int status, ret;
++
++again:
++    ret = waitpid(pid, &status, 0);
++    if (ret == -1) {
++            if (errno == EINTR)
++                    goto again;
++
++            return -1;
++    }
++
++    if (ret != pid)
++            goto again;
++
++    return status;
++}
++
+ static RETURN_WITHOUT_GVL_TYPE
+-lxc_wait_for_pid_status_without_gvl(void *pid)
++wait_for_pid_status_without_gvl(void *pid)
+ {
+-    RETURN_WITHOUT_GVL(lxc_wait_for_pid_status(*(pid_t*)pid));
++    RETURN_WITHOUT_GVL(wait_for_pid_status(*(pid_t*)pid));
+ }
+ 
+ #if defined(HAVE_RB_THREAD_CALL_WITHOUT_GVL) || defined(HAVE_RB_THREAD_BLOCKING_REGION)
+@@ -748,7 +766,7 @@ container_attach(int argc, VALUE *argv, VALUE self)
+         goto out;
+ 
+     if (wait) {
+-        ret = RELEASING_GVL2(lxc_wait_for_pid_status_without_gvl, &pid,
++        ret = RELEASING_GVL2(wait_for_pid_status_without_gvl, &pid,
+                              kill_pid_without_gvl, &pid);
+         /* handle case where attach fails */
+         if (WIFEXITED(ret) && WEXITSTATUS(ret) == 255)

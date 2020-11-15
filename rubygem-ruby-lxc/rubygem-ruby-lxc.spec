@@ -2,13 +2,14 @@
 
 Name:       rubygem-%{gem_name}
 Version:    1.2.3
-Release:    0.2%{?dist}
+Release:    0.3%{?dist}
 Summary:    Ruby bindings for liblxc
 License:    LGPLv2+
 URL:        https://github.com/lxc/ruby-lxc
 Source0:    https://rubygems.org/gems/%{gem_name}-%{version}.gem
 Source1:    README.md
 Source2:    LICENSE
+Patch0:     ruby-lxc-1.2.3-Fix-compatibility-with-liblxc-4.0.4.patch
 
 BuildRequires: ruby(release)
 BuildRequires: rubygems-devel
@@ -33,11 +34,8 @@ BuildArch:  noarch
 Documentation for %{name}
 
 %prep
-gem unpack %{SOURCE0}
-gem spec %{SOURCE0} -l --ruby > %{gem_name}-%{version}.gemspec
-
-%setup -q -D -T -n %{gem_name}-%{version}
-
+%setup -q -n %{gem_name}-%{version}
+%patch0 -p1
 
 %build
 # Create the gem as gem install only works on a gem file
@@ -47,19 +45,13 @@ gem build ../%{gem_name}-%{version}.gemspec
 # by default, so that we can move it into the buildroot in %%install
 %gem_install
 
-
 %install
 mkdir -p %{buildroot}%{gem_dir}
-cp -a .%{gem_dir}/* \
-        %{buildroot}%{gem_dir}/
+cp -a .%{gem_dir}/* %{buildroot}%{gem_dir}/
 
+# If there are C extensions, copy them to the extdir.
 mkdir -p %{buildroot}%{gem_extdir_mri}
-%if 0%{?rhel} == 7
-mkdir -p %{buildroot}%{gem_extdir_mri}/lib/lxc
-mv %{buildroot}%{gem_instdir}/lib/lxc/lxc.so %{buildroot}%{gem_extdir_mri}/lib/lxc/
-%else
 cp -a .%{gem_extdir_mri}/{gem.build_complete,lxc} %{buildroot}%{gem_extdir_mri}/
-%endif
 
 # Prevent dangling symlink in -debuginfo (rhbz#878863).
 rm -rf %{buildroot}%{gem_instdir}/ext/
@@ -67,15 +59,9 @@ rm -rf %{buildroot}%{gem_instdir}/ext/
 cp %{SOURCE1} .
 cp %{SOURCE2} .
 
-
-%check
-pushd .%{gem_instdir}
-# Run the test suite.
-popd
-
 %files
-%dir %{gem_instdir}
 %doc LICENSE
+%dir %{gem_instdir}
 %{gem_libdir}
 %{gem_extdir_mri}
 %exclude %{gem_cache}
