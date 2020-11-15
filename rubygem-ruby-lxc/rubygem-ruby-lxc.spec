@@ -73,6 +73,9 @@ cp %{SOURCE2} .
 
 
 %changelog
+* Sun Nov 15 2020 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 1.2.3-0.3
+- Fix build against lxc-4.0.4
+
 * Wed Aug 14 2019 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 1.2.3-0.2
 - Add LICENSE file
 - Fix error with module lookup on Fedora
