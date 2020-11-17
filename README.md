@@ -13,6 +13,7 @@ using tito and git-annex.
 | [python3-lxc](python3-lxc/python3-lxc.spec) | [![Copr build status](https://copr.fedorainfracloud.org/coprs/ganto/lxc4/package/python3-lxc/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/ganto/lxc4/package/python3-lxc/) |
 | [distrobuilder.spec](distrobuilder/distrobuilder.spec) | [![Copr build status](https://copr.fedorainfracloud.org/coprs/ganto/lxc4/package/distrobuilder/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/ganto/lxc4/package/distrobuilder/) |
 | [raft.spec](raft/raft.spec) | [![Copr build status](https://copr.fedorainfracloud.org/coprs/ganto/lxc4/package/raft/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/ganto/lxc4/package/raft/) |
+| [rubygem-ruby-lxc.spec](rubygem-ruby-lxc/rubygem-ruby-lxc.spec) | [![Copr build status](https://copr.fedorainfracloud.org/coprs/ganto/lxc4/package/rubygem-ruby-lxc/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/ganto/lxc4/package/rubygem-ruby-lxc/) |
 
 
 ### Author and license
