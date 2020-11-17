@@ -266,6 +266,11 @@ make check
 
 
 %changelog
+* Wed Nov 18 2020 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.0.5-0.1
+- Update to 4.0.5.
+- Enable LXC bridge per default.
+- Adjust to upstream spec file.
+
 * Thu Aug 06 2020 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.0.4-0.1
 - Update to 4.0.4.
 
