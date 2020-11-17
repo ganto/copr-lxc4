@@ -10,21 +10,22 @@
 %endif
 
 Name:           lxc
-Version:        4.0.4
+Version:        4.0.5
 Release:        0.1%{?dist}
 Summary:        Linux Resource Containers
 License:        LGPLv2+ and GPLv2
 URL:            https://linuxcontainers.org/lxc
 Source0:        https://linuxcontainers.org/downloads/%{name}-%{version}.tar.gz
+Source1:        lxc-net
 Patch0:         lxc-2.0.7-fix-init.patch
-Patch1:         lxc-4.0.2-fix-lxc-net.patch
+Patch1:         lxc-4.0.1-fix-lxc-net.patch
 BuildRequires:  docbook2X
 BuildRequires:  doxygen
 BuildRequires:  kernel-headers
 BuildRequires:  libselinux-devel
 %if 0%{?with_seccomp}
 BuildRequires:  pkgconfig(libseccomp)
-%endif # with_seccomp
+%endif
 BuildRequires:  libcap-devel
 BuildRequires:  pam-devel
 BuildRequires:  openssl-devel
@@ -34,7 +35,7 @@ BuildRequires:  pkgconfig(bash-completion)
 %if 0%{?with_static_init}
 BuildRequires:  libcap-static
 BuildRequires:  glibc-static
-%endif # with_static_init
+%endif
 # we are patching configure.ac
 BuildRequires:  autoconf automake libtool
 # lxc-extra subpackage not needed anymore, lxc-ls has been rewriten in
@@ -74,18 +75,19 @@ The %{name}-libs package contains libraries for running %{name} applications.
 %package        templates
 Summary:        Templates for %{name}
 Requires:       %{name}-libs%{?_isa} = %{version}-%{release}
-# used by download template
+# Note: Not all requirements for the template scripts (busybox, dpkg,
+# debootstrap, rsync, openssh-server, dhclient, apt, pacman, zypper,
+# ubuntu-cloudimg-query etc...) are explicitly mentioned here: their
+# presence varies wildly on supported Fedora/EPEL releases and archs,
+# and they are in most cases needed for a single template only. Also,
+# the templates normally fail graciously when such a tool is
+# missing. Moving each template to its own subpackage on the other
+# hand would be overkill.
+#
+# Add some packages used by the 'download' template (see also #1828032)
 Requires:       gnupg
 Requires:       wget
 Requires:       xz
-# Note: Requirements for the template scripts (busybox, dpkg,
-# debootstrap, rsync, openssh-server, dhclient, apt, pacman, zypper,
-# ubuntu-cloudimg-query etc...) are not explicitly mentioned here:
-# their presence varies wildly on supported Fedora/EPEL releases and
-# archs, and they are in most cases needed for a single template
-# only. Also, the templates normally fail graciously when such a tool
-# is missing. Moving each template to its own subpackage on the other
-# hand would be overkill.
 
 
 %description    templates
@@ -122,7 +124,8 @@ This package contains documentation for %{name}.
 
 %build
 autoreconf -vif
-%configure --enable-doc \
+%configure --with-distro=fedora \
+           --enable-doc \
            --enable-api-docs \
            --disable-silent-rules \
            --docdir=%{_pkgdocdir} \
@@ -140,16 +143,16 @@ autoreconf -vif
            --disable-werror \
 # intentionally blank line
 
-%{make_build} %{?_smp_mflags}
+%{make_build}
 
 
 %install
-%{make_install} %{?_smp_mflags}
+%{make_install}
 mkdir -p %{buildroot}%{_sharedstatedir}/%{name}
 
 # docs
 mkdir -p %{buildroot}%{_pkgdocdir}/api
-cp -a AUTHORS README.md %{!?_licensedir:COPYING} %{buildroot}%{_pkgdocdir}
+cp -a AUTHORS README.md %{buildroot}%{_pkgdocdir}
 cp -a doc/api/html/* %{buildroot}%{_pkgdocdir}/api/
 
 # cache dir
@@ -158,6 +161,8 @@ mkdir -p %{buildroot}%{_localstatedir}/cache/%{name}
 # remove libtool .la file
 rm -rf %{buildroot}%{_libdir}/liblxc.la
 
+# lxc-net config file
+cp -a %{SOURCE1} %{buildroot}%{_sysconfdir}/sysconfig/%{name}-net
 
 %check
 make check
@@ -213,22 +218,23 @@ make check
 %{_sbindir}/init.%{name}
 %if 0%{?with_static_init}
 %{_sbindir}/init.%{name}.static
-%endif # with_static_init
+%endif
 %{_bindir}/%{name}-autostart
 %{_sharedstatedir}/%{name}
 %dir %{_sysconfdir}/%{name}
 %config(noreplace) %{_sysconfdir}/%{name}/default.conf
 %config(noreplace) %{_sysconfdir}/sysconfig/%{name}
+%config(noreplace) %{_sysconfdir}/sysconfig/%{name}-net
 %{_mandir}/man1/%{name}-autostart*
 %{_mandir}/*/man1/%{name}-autostart*
 %{_mandir}/man1/%{name}-user-nic*
 %{_mandir}/*/man1/%{name}-user-nic*
 %{_mandir}/man5/%{name}*
 %{_mandir}/man7/%{name}*
-%{_mandir}/man8/*
 %{_mandir}/*/man5/%{name}*
 %{_mandir}/*/man7/%{name}*
-%{_mandir}/*/man8/*
+%{_mandir}/man8/pam_cgfs*
+%{_mandir}/*/man8/pam_cgfs*
 %dir %{_pkgdocdir}
 %{_pkgdocdir}/AUTHORS
 %{_pkgdocdir}/README.md

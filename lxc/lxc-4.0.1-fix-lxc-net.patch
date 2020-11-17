@@ -1,0 +1,11 @@
+diff -up lxc-4.0.1/config/init/systemd/lxc-net.service.in.orig lxc-4.0.1/config/init/systemd/lxc-net.service.in
+--- lxc-4.0.1/config/init/systemd/lxc-net.service.in.orig	2020-04-06 21:15:17.000000000 +0200
++++ lxc-4.0.1/config/init/systemd/lxc-net.service.in	2020-04-10 18:31:54.277490764 +0200
+@@ -1,6 +1,7 @@
+ [Unit]
+ Description=LXC network bridge setup
+ After=network-online.target
++Wants=network-online.target
+ Before=lxc.service
+ Documentation=man:lxc
+ 
