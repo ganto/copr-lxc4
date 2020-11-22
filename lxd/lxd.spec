@@ -411,6 +411,9 @@ getent group %{name} > /dev/null || groupadd -r %{name}
 %doc doc/*
 
 %changelog
+* Sun Nov 22 2020 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.7-0.1
+- Update to 4.7.
+
 * Sat Oct 03 2020 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.6-0.1
 - Update to 4.6.
 
