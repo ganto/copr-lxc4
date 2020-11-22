@@ -72,6 +72,9 @@ rm -f %{buildroot}%{_libdir}/libraft.la
 %{_libdir}/libraft.a
 
 %changelog
+* Sun Nov 22 2020 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.9.25-0.2.20201027gitc1539a7
+- Update to git snapshot c1539a7.
+
 * Thu Oct 22 2020 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.9.25-0.2.20201015git9761242
 - Add patch to fix test for x86_64/aarch64
 
