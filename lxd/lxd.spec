@@ -13,7 +13,7 @@
 
 # https://github.com/lxc/lxd
 %global goipath github.com/lxc/lxd
-Version:        4.6
+Version:        4.7
 
 %gometa
 
@@ -102,8 +102,8 @@ BuildRequires:  gcc
 BuildRequires:  libtool
 BuildRequires:  libuv-devel
 
-Provides:       bundled(libraft.so.0()) = 1e3f2fde9b3beb9277e8f35afffaee06692b0f13
-Provides:       bundled(libdqlite.so.0()) = 0d0595568e9ccfdcfdcb3d1fec19850ae6e97625
+Provides:       bundled(libraft.so.0()) = 976124272a741c11dfe9662d164d5e67c161eec7
+Provides:       bundled(libdqlite.so.0()) = 867d7b28e8c56eb37b4264751690ac81902af2a7
 # Do not auto-provide .so files in the application-specific library directory
 %global __provides_exclude_from %{_libdir}/%{name}/.*\\.so
 
@@ -236,7 +236,7 @@ BUILDTAGS="agent netgo" %gobuild -o %{gobuilddir}/bin/lxd-agent %{goipath}/lxd-a
 unset CGO_ENABLED
 
 # build translations
-rm -f po/zh_Hans.po    # remove invalid locale
+rm -f po/ber.po po/zh_Hans.po    # remove invalid locale
 make %{?_smp_mflags} build-mo
 
 # generate man-pages
