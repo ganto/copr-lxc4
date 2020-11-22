@@ -1,5 +1,5 @@
-%global commit 976124272a741c11dfe9662d164d5e67c161eec7
-%global commitdate 20201015
+%global commit c1539a7854ad11febd88a6c610d4237c58b36068
+%global commitdate 20201027
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:           raft 
