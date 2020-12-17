@@ -13,7 +13,7 @@
 
 # https://github.com/lxc/lxd
 %global goipath github.com/lxc/lxd
-Version:        4.7
+Version:        4.8
 
 %gometa
 
@@ -38,8 +38,9 @@ Source7:        lxd.sysctl
 Source8:        lxd.profile
 Source9:        lxd-agent.service
 Source10:       lxd-agent-9p.service
+Source11:       lxd-agent-virtiofs.service
 Patch0:         lxd-3.19-cobra-Revert-go-md2man-API-v2-update.patch
-Patch1:         lxd-3.21-Fix-TestEndpoints_LocalUnknownUnixGroup-test.patch
+Patch1:         lxd-4.8-Fix-TestEndpoints_LocalUnknownUnixGroup-test.patch
 
 BuildRequires:  gettext
 BuildRequires:  help2man
@@ -102,7 +103,7 @@ BuildRequires:  gcc
 BuildRequires:  libtool
 BuildRequires:  libuv-devel
 
-Provides:       bundled(libraft.so.0()) = 976124272a741c11dfe9662d164d5e67c161eec7
+Provides:       bundled(libraft.so.0()) = c1539a7854ad11febd88a6c610d4237c58b36068
 Provides:       bundled(libdqlite.so.0()) = 867d7b28e8c56eb37b4264751690ac81902af2a7
 # Do not auto-provide .so files in the application-specific library directory
 %global __provides_exclude_from %{_libdir}/%{name}/.*\\.so
@@ -182,9 +183,7 @@ This package contains user documentation.
 %prep
 %goprep -k
 %patch0 -p1
-%if 0%{?fedora} && 0%{?fedora} > 31
 %patch1 -p1
-%endif
 
 %build
 src_dir=$(pwd)/_dist/deps
@@ -271,6 +270,7 @@ install -p -m 0644 %{SOURCE2} %{buildroot}%{_unitdir}/
 install -p -m 0644 %{SOURCE3} %{buildroot}%{_unitdir}/
 install -p -m 0644 %{SOURCE9} %{buildroot}%{_unitdir}/
 install -p -m 0644 %{SOURCE10} %{buildroot}%{_unitdir}/
+install -p -m 0644 %{SOURCE11} %{buildroot}%{_unitdir}/
 
 # install shutdown wrapper
 install -d -m 0755 %{buildroot}%{_libexecdir}/%{name}
@@ -342,6 +342,7 @@ getent group %{name} > /dev/null || groupadd -r %{name}
 %post agent
 %systemd_post %{name}-agent.service
 %systemd_post %{name}-agent-9p.service
+%systemd_post %{name}-agent-virtiofs.service
 
 %preun
 %systemd_preun %{name}.socket
@@ -351,6 +352,7 @@ getent group %{name} > /dev/null || groupadd -r %{name}
 %preun agent
 %systemd_preun %{name}-agent.service
 %systemd_preun %{name}-agent-9p.service
+%systemd_preun %{name}-agent-virtiofs.service
 
 %files
 %license %{golicenses}
@@ -404,6 +406,7 @@ getent group %{name} > /dev/null || groupadd -r %{name}
 %{_bindir}/lxd-agent
 %{_unitdir}/%{name}-agent.service
 %{_unitdir}/%{name}-agent-9p.service
+%{_unitdir}/%{name}-agent-virtiofs.service
 %{_mandir}/man1/lxd-agent.1.*
 
 %files doc

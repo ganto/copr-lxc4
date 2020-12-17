@@ -2,15 +2,18 @@
 Description=LXD - agent
 Documentation=https://linuxcontainers.org/lxd
 ConditionPathExists=/dev/virtio-ports/org.linuxcontainers.lxd
-Requires=lxd-agent-9p.service
+Wants=lxd-agent-virtiofs.service
+After=lxd-agent-virtiofs.service
+Wants=lxd-agent-9p.service
 After=lxd-agent-9p.service
+
 Before=cloud-init.target cloud-init.service cloud-init-local.service
 DefaultDependencies=no
 
 [Service]
 Type=notify
-WorkingDirectory=/run/lxd_config/9p
-ExecStart=/run/lxd_config/9p/lxd-agent
+WorkingDirectory=/run/lxd_config/drive
+ExecStart=/run/lxd_config/drive/lxd-agent
 Restart=on-failure
 RestartSec=5s
 StartLimitInterval=60
