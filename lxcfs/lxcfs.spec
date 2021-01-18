@@ -74,6 +74,9 @@ mkdir -p %{buildroot}%{_sharedstatedir}/%{name}
 
 
 %changelog
+* Mon Jan 18 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.0.7-0.1
+- Update to 4.0.7.
+
 * Wed Oct 21 2020 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.0.6-0.1
 - Update to 4.0.6.
 
