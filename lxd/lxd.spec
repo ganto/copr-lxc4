@@ -13,7 +13,7 @@
 
 # https://github.com/lxc/lxd
 %global goipath github.com/lxc/lxd
-Version:        4.9
+Version:        4.10
 
 %gometa
 
@@ -41,6 +41,7 @@ Source10:       lxd-agent-9p.service
 Source11:       lxd-agent-virtiofs.service
 Patch0:         lxd-3.19-cobra-Revert-go-md2man-API-v2-update.patch
 Patch1:         lxd-4.8-Fix-TestEndpoints_LocalUnknownUnixGroup-test.patch
+Patch2:         lxd-4.10-Device-Allow-bridged-NIC-removal.patch
 
 BuildRequires:  gettext
 BuildRequires:  help2man
@@ -104,7 +105,7 @@ BuildRequires:  libtool
 BuildRequires:  libuv-devel
 
 Provides:       bundled(libraft.so.0()) = f205aaf5f742fa2fad7447b5fce1bc99dfeac597
-Provides:       bundled(libdqlite.so.0()) = dd786663f28b84d345ecbdcfb1ba7f3801f827ea
+Provides:       bundled(libdqlite.so.0()) = a89301a62e902df22e45649722a31bf1fbd6857a
 # Do not auto-provide .so files in the application-specific library directory
 %global __provides_exclude_from %{_libdir}/%{name}/.*\\.so
 
