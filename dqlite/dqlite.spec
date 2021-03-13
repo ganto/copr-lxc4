@@ -1,5 +1,5 @@
-%global commit 867d7b28e8c56eb37b4264751690ac81902af2a7
-%global commitdate 20200926
+%global commit a89301a62e902df22e45649722a31bf1fbd6857a
+%global commitdate 20201229
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:           dqlite
