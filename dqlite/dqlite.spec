@@ -67,6 +67,9 @@ rm -f %{buildroot}%{_libdir}/libdqlite.la
 %{_libdir}/libdqlite.a
 
 %changelog
+* Sat Mar 13 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 1.6.0-0.1.20201229gita89301a
+- Update to git snapshot a89301a
+
 * Wed Nov 25 2020 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 1.6.0-0.1.20200926git867d7b2
 - Initial package.
 
