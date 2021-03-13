@@ -72,6 +72,9 @@ rm -f %{buildroot}%{_libdir}/libraft.la
 %{_libdir}/libraft.a
 
 %changelog
+* Sat Mar 13 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.9.25-0.2.20210203git329e3d8
+- Update to git snapshot 329e3d8
+
 * Mon Jan 18 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.9.25-0.2.20201206gitf205aaf
 - Update to git snapshot f205aaf5
 
