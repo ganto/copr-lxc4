@@ -13,7 +13,7 @@
 
 # https://github.com/lxc/lxd
 %global goipath github.com/lxc/lxd
-Version:        4.10
+Version:        4.11
 
 %gometa
 
@@ -41,14 +41,15 @@ Source10:       lxd-agent-9p.service
 Source11:       lxd-agent-virtiofs.service
 Patch0:         lxd-3.19-cobra-Revert-go-md2man-API-v2-update.patch
 Patch1:         lxd-4.8-Fix-TestEndpoints_LocalUnknownUnixGroup-test.patch
-Patch2:         lxd-4.10-Device-Allow-bridged-NIC-removal.patch
 
+BuildRequires:  dqlite-devel
 BuildRequires:  gettext
 BuildRequires:  help2man
 BuildRequires:  libacl-devel
 BuildRequires:  libcap-devel
 BuildRequires:  libseccomp-devel
 BuildRequires:  pkgconfig(lxc)
+BuildRequires:  raft-devel
 BuildRequires:  sqlite-devel
 BuildRequires:  systemd-devel
 
@@ -57,7 +58,6 @@ Requires: dnsmasq
 Requires: ebtables
 Requires: iptables
 Requires: lxd-client = %{version}-%{release}
-Requires: lxd-libs = %{version}-%{release}
 Requires: lxcfs
 Requires: rsync
 Requires: shadow-utils >= 4.1.5
@@ -68,15 +68,14 @@ Requires: xz
 %{?systemd_requires}
 Requires(pre): container-selinux >= 2:2.38
 Requires(pre): shadow-utils
-# Do not require bundled libraries
-%global __requires_exclude libraft.so.0
-%global __requires_exclude %{__requires_exclude}|libdqlite.so.0
 
 %if %{with check}
 BuildRequires:  btrfs-progs
 BuildRequires:  dnsmasq
 BuildRequires:  iptables
 %endif
+
+Obsoletes: lxd-libs < %{version}-%{release}
 
 Suggests: logrotate
 
@@ -94,35 +93,6 @@ using an image based work-flow and with support for live migration.
 This package contains the LXD daemon.
 
 %godevelpkg
-
-%package libs
-Summary:        Container hypervisor based on LXC - Shared libraries
-
-# required by embedded dqlite build
-BuildRequires:  autoconf
-BuildRequires:  gcc
-BuildRequires:  libtool
-BuildRequires:  libuv-devel
-
-Provides:       bundled(libraft.so.0()) = f205aaf5f742fa2fad7447b5fce1bc99dfeac597
-Provides:       bundled(libdqlite.so.0()) = a89301a62e902df22e45649722a31bf1fbd6857a
-# Do not auto-provide .so files in the application-specific library directory
-%global __provides_exclude_from %{_libdir}/%{name}/.*\\.so
-
-%description libs
-LXD offers a REST API to remotely manage containers over the network,
-using an image based work-flow and with support for live migration.
-
-This package contains the shared libraries.
-
-%package libs-devel
-Summary:        Container hypervisor based on LXC - Development headers for shared libraries
-
-%description libs-devel
-LXD offers a REST API to remotely manage containers over the network,
-using an image based work-flow and with support for live migration.
-
-This package contains the development headers for the shared libraries.
 
 %package client
 Summary:        Container hypervisor based on LXC - Client
@@ -187,22 +157,6 @@ This package contains user documentation.
 %patch1 -p1
 
 %build
-src_dir=$(pwd)/_dist/deps
-
-# build embedded raft
-pushd _dist/deps/raft
-autoreconf -i
-%configure --libdir=%{_libdir}/%{name}
-make %{?_smp_mflags}
-popd
-
-# build embedded dqlite
-pushd _dist/deps/dqlite
-autoreconf -i
-PKG_CONFIG_PATH="${src_dir}/raft/" %configure --libdir=%{_libdir}/%{name}
-make %{?_smp_mflags} CFLAGS="$RPM_OPT_FLAGS -I${src_dir}/raft/include/" LDFLAGS="$RPM_LD_FLAGS -L${src_dir}/raft/.libs/"
-popd
-
 mkdir _output
 pushd _output
 mkdir -p src/%{provider}.%{provider_tld}/%{project}
@@ -221,10 +175,6 @@ export GOPATH=$(pwd)/_output:$(pwd):%{gopath}
 # "flag provided but not defined: -Wl,-z,relro"
 unset LDFLAGS
 
-# LXD depends on a bundled dqlite library
-export CGO_CFLAGS="-I${src_dir}/raft/include/ -I${src_dir}/dqlite/include/"
-export CGO_LDFLAGS="-L${src_dir}/raft/.libs/ -L${src_dir}/dqlite/.libs/ -Wl,-rpath,%{_libdir}/%{name}"
-export LD_LIBRARY_PATH="${src_dir}/raft/.libs/:${src_dir}/dqlite/.libs/"
 export CGO_LDFLAGS_ALLOW="-Wl,-wrap,pthread_create"
 
 for cmd in lxd lxc fuidshift lxd-benchmark lxc-to-lxd; do
@@ -277,18 +227,6 @@ install -p -m 0644 %{SOURCE11} %{buildroot}%{_unitdir}/
 install -d -m 0755 %{buildroot}%{_libexecdir}/%{name}
 install -p -m 0755 %{SOURCE6} %{buildroot}%{_libexecdir}/%{name}
 
-# install custom libsqlite3/dqlite
-install -dm 0755 %{buildroot}%{_libdir}/%{name}
-cp -Pp _dist/deps/raft/.libs/libraft.so* %{buildroot}%{_libdir}/%{name}/
-cp -Pp _dist/deps/dqlite/.libs/libdqlite.so* %{buildroot}%{_libdir}/%{name}/
-
-# install devel files
-install -dm 0755 %{buildroot}%{_includedir}/%{name}
-cp -pav _dist/deps/raft/include/raft.h %{buildroot}%{_includedir}/%{name}/
-cp -pav _dist/deps/dqlite/include/dqlite.h %{buildroot}%{_includedir}/%{name}/
-echo "%%dir %%{_includedir}/%%{name}/." >> libs-devel.file-list
-echo "%%{_includedir}/%%{name}/*.h" >> libs-devel.file-list
-
 # install manpages
 install -d %{buildroot}%{_mandir}/man1
 cp -p lxd.1 %{buildroot}%{_mandir}/man1/
@@ -320,10 +258,6 @@ export GOPATH=%{buildroot}/%{gopath}:%{gopath}
 # Tests must ignore potential LXD_SOCKET from environment
 unset LXD_SOCKET
 
-# Test against the libraries which just built
-export CGO_CPPFLAGS="-I%{buildroot}%{_includedir}/%{name}/"
-export CGO_LDFLAGS="-L%{buildroot}%{_libdir}/%{name}/"
-export LD_LIBRARY_PATH="%{buildroot}%{_libdir}/%{name}/"
 export CGO_LDFLAGS_ALLOW="-Wl,-wrap,pthread_create"
 
 %gocheck -v \
@@ -373,14 +307,6 @@ getent group %{name} > /dev/null || groupadd -r %{name}
 %dir %{_localstatedir}/lib/%{name}
 
 %gopkgfiles
-
-%files libs
-%license %{golicenses}
-%dir %{_libdir}/%{name}
-%{_libdir}/%{name}/*
-
-%files libs-devel -f libs-devel.file-list
-%license %{golicenses}
 
 %files client -f lxd.lang
 %license %{golicenses}
