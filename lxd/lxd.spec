@@ -341,6 +341,10 @@ getent group %{name} > /dev/null || groupadd -r %{name}
 %doc doc/*
 
 %changelog
+* Sun Mar 14 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.11-0.1
+- Update to 4.11.
+- Remove bundled raft and dqlite
+
 * Sun Feb 07 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.10-0.1
 - Update to 4.10.
 
