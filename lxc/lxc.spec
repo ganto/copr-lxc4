@@ -266,6 +266,9 @@ make check
 
 
 %changelog
+* Mon Mar 15 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.0.6-2.1
+- Add upstream patch to fix networking regression
+
 * Mon Jan 18 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.0.6-0.1
 - Update to 4.0.6.
 
