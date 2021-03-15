@@ -1,0 +1,117 @@
+commit c1c7d42cf757c46068ef3a0eeea5a8f6c88d7f5e
+Author: Motiejus Jakštys <motiejus@jakstys.lt>
+Date:   Tue Jan 26 20:35:29 2021 +0200
+
+    mkdir -p /proc /sys on container startup
+    
+    some containers don't have it, and strange things happen.
+    
+    Signed-off-by: Motiejus Jakštys <motiejus@jakstys.lt>
+
+diff --git a/src/lxc/conf.c b/src/lxc/conf.c
+index e0f2dfc47..ae2db4be5 100644
+--- a/src/lxc/conf.c
++++ b/src/lxc/conf.c
+@@ -3277,6 +3277,24 @@ int lxc_setup(struct lxc_handler *handler)
+ 	if (ret < 0)
+ 		return log_error(-1, "Failed to setup rootfs");
+ 
++	/* Create mountpoints for /proc and /sys. */
++	char path[PATH_MAX];
++	char *rootfs_path = lxc_conf->rootfs.path ? lxc_conf->rootfs.mount : "";
++
++	ret = snprintf(path, sizeof(path), "%s/proc", rootfs_path);
++	if (ret < 0 || (size_t)ret >= sizeof(path))
++		return log_error(-1, "Path to /proc too long");
++	ret = mkdir(path, 0755);
++	if (ret < 0 && errno != EEXIST)
++		return log_error_errno(-1, errno, "Failed to create \"/proc\" directory");
++
++	ret = snprintf(path, sizeof(path), "%s/sys", rootfs_path);
++	if (ret < 0 || (size_t)ret >= sizeof(path))
++		return log_error(-1, "Path to /sys too long");
++	ret = mkdir(path, 0755);
++	if (ret < 0 && errno != EEXIST)
++		return log_error_errno(-1, errno, "Failed to create \"/sys\" directory");
++
+ 	if (handler->nsfd[LXC_NS_UTS] == -EBADF) {
+ 		ret = setup_utsname(lxc_conf->utsname);
+ 		if (ret < 0)
+@@ -3343,7 +3361,6 @@ int lxc_setup(struct lxc_handler *handler)
+ 	if (lxc_conf->is_execute) {
+ 		if (execveat_supported()) {
+ 			int fd;
+-			char path[PATH_MAX];
+ 
+ 			ret = snprintf(path, PATH_MAX, SBINDIR "/init.lxc.static");
+ 			if (ret < 0 || ret >= PATH_MAX)
+diff --git a/src/tests/Makefile.am b/src/tests/Makefile.am
+index dc7e4820e..0e90ce50f 100644
+--- a/src/tests/Makefile.am
++++ b/src/tests/Makefile.am
+@@ -620,6 +620,7 @@ bin_SCRIPTS += lxc-test-automount \
+ 	       lxc-test-exit-code \
+ 	       lxc-test-no-new-privs \
+ 	       lxc-test-rootfs \
++	       lxc-test-procsys \
+ 	       lxc-test-usernsexec
+ 
+ if DISTRO_UBUNTU
+@@ -658,6 +659,7 @@ EXTRA_DIST = basic.c \
+ 	     lxc-test-lxc-attach \
+ 	     lxc-test-automount \
+ 	     lxc-test-rootfs \
++	     lxc-test-procsys \
+ 	     lxc-test-autostart \
+ 	     lxc-test-apparmor-mount \
+ 	     lxc-test-apparmor-generated \
+diff --git a/src/tests/lxc-test-procsys b/src/tests/lxc-test-procsys
+new file mode 100755
+index 000000000..5e48bbeda
+--- /dev/null
++++ b/src/tests/lxc-test-procsys
+@@ -0,0 +1,44 @@
++#!/bin/bash
++
++# lxc: linux Container library
++
++# Authors:
++# Motiejus Jakštys <motiejus@jakstys.lt>
++#
++# Ensure that when /proc and/or /sys do not exist in the container,
++# it is started successfully anyway.
++
++# This library is free software; you can redistribute it and/or
++# modify it under the terms of the GNU Lesser General Public
++# License as published by the Free Software Foundation; either
++# version 2.1 of the License, or (at your option) any later version.
++
++# This library is distributed in the hope that it will be useful,
++# but WITHOUT ANY WARRANTY; without even the implied warranty of
++# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++# Lesser General Public License for more details.
++
++# You should have received a copy of the GNU Lesser General Public
++# License along with this library; if not, write to the Free Software
++# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
++
++set -ex
++FAIL() {
++	echo -n "Failed " >&2
++	echo "$*" >&2
++	lxc-destroy -n lxc-test-procsys -f
++	exit 1
++}
++
++lxc-destroy -n lxc-test-procsys -f || :
++lxc-create -t busybox -n lxc-test-procsys
++rmdir /var/lib/lxc/lxc-test-procsys/rootfs/{proc,sys}
++
++lxc-start -n lxc-test-procsys
++lxc-wait -n lxc-test-procsys -s RUNNING || FAIL "waiting for busybox container to run"
++
++lxc-attach -n lxc-test-procsys -- sh -c 'test -f /proc/version' || FAIL "/proc/version not found"
++lxc-attach -n lxc-test-procsys -- sh -c 'test -d /sys/fs' || FAIL "/sys/fs not found"
++
++lxc-destroy -n lxc-test-procsys -f
++exit 0

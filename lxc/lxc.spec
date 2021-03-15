@@ -11,7 +11,7 @@
 
 Name:           lxc
 Version:        4.0.6
-Release:        0.1%{?dist}
+Release:        2.1%{?dist}
 Summary:        Linux Resource Containers
 License:        LGPLv2+ and GPLv2
 URL:            https://linuxcontainers.org/lxc
@@ -19,6 +19,9 @@ Source0:        https://linuxcontainers.org/downloads/%{name}-%{version}.tar.gz
 Source1:        lxc-net
 Patch0:         lxc-2.0.7-fix-init.patch
 Patch1:         lxc-4.0.1-fix-lxc-net.patch
+Patch2:         lxc-4.0.6-conf-fix-containers-retaining-CAP_NET_ADMIN.patch
+Patch3:         lxc-4.0.6-mkdir-p-proc-sys-on-container-startup.patch
+BuildRequires:  make
 BuildRequires:  docbook2X
 BuildRequires:  doxygen
 BuildRequires:  kernel-headers
@@ -172,20 +175,17 @@ make check
 %{?ldconfig}
 %systemd_post %{name}-net.service
 %systemd_post %{name}.service
-%systemd_post %{name}@.service
 
 
 %preun libs
 %systemd_preun %{name}-net.service
 %systemd_preun %{name}.service
-%systemd_preun %{name}@.service
 
 
 %postun libs
 %{?ldconfig}
 %systemd_postun %{name}-net.service
 %systemd_postun %{name}.service
-%systemd_postun %{name}@.service
 
 
 %files
