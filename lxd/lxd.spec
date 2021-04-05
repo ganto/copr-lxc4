@@ -13,7 +13,7 @@
 
 # https://github.com/lxc/lxd
 %global goipath github.com/lxc/lxd
-Version:        4.11
+Version:        4.12
 
 %gometa
 
@@ -37,10 +37,13 @@ Source6:        shutdown
 Source7:        lxd.sysctl
 Source8:        lxd.profile
 Source9:        lxd-agent.service
-Source10:       lxd-agent-9p.service
-Source11:       lxd-agent-virtiofs.service
+Source10:       lxd-agent-setup
+# Fix build and test issues
 Patch0:         lxd-3.19-cobra-Revert-go-md2man-API-v2-update.patch
 Patch1:         lxd-4.8-Fix-TestEndpoints_LocalUnknownUnixGroup-test.patch
+Patch2:         lxd-4.12-juju-version-Revert-Convert-to-juju-mgo-v2.patch
+# Upstream bug fixes merged to master for next release
+Patch3:         lxd-4.12-Device-Fallback-to-using-disk-mount-device-path.patch
 
 BuildRequires:  dqlite-devel
 BuildRequires:  gettext
@@ -55,8 +58,7 @@ BuildRequires:  systemd-devel
 
 Requires: acl
 Requires: dnsmasq
-Requires: ebtables
-Requires: iptables
+Requires: (nftables or (ebtables and iptables))
 Requires: lxd-client = %{version}-%{release}
 Requires: lxcfs
 Requires: rsync
@@ -72,6 +74,7 @@ Requires(pre): shadow-utils
 %if %{with check}
 BuildRequires:  btrfs-progs
 BuildRequires:  dnsmasq
+BuildRequires:  ebtables
 BuildRequires:  iptables
 %endif
 
@@ -155,38 +158,31 @@ This package contains user documentation.
 %goprep -k
 %patch0 -p1
 %patch1 -p1
+%patch2 -p1
+%patch3 -p1
 
 %build
-mkdir _output
-pushd _output
-mkdir -p src/%{provider}.%{provider_tld}/%{project}
-ln -s $(dirs +1 -l) src/%{import_path}
-popd
+# LXD doesn't support Go modules (https://github.com/lxc/lxd/issues/5992)
+export GO111MODULE=off
 
-# Move bundled libraries to vendor directory for proper devel packaging
+# Move bundled modules to vendor directory for proper devel packaging
 test -d vendor || mkdir vendor
 cp -rp _dist/src/. vendor
 rm -rf _dist/src
-
 ln -s vendor src
-export GOPATH=$(pwd)/_output:$(pwd):%{gopath}
-
-# don't use LDFLAGS='-Wl,-z relro ' from redhat-rpm-config to avoid error:
-# "flag provided but not defined: -Wl,-z,relro"
-unset LDFLAGS
 
 export CGO_LDFLAGS_ALLOW="-Wl,-wrap,pthread_create"
-
 for cmd in lxd lxc fuidshift lxd-benchmark lxc-to-lxd; do
     BUILDTAGS="libsqlite3" %gobuild -o %{gobuilddir}/bin/$cmd %{goipath}/$cmd
 done
+
 export CGO_ENABLED=0
 BUILDTAGS="netgo" %gobuild -o %{gobuilddir}/bin/lxd-p2c %{goipath}/lxd-p2c
 BUILDTAGS="agent netgo" %gobuild -o %{gobuilddir}/bin/lxd-agent %{goipath}/lxd-agent
 unset CGO_ENABLED
 
 # build translations
-rm -f po/ber.po po/zh_Hans.po    # remove invalid locale
+rm -f po/ber.po po/zh_Hans.po po/zh_Hant.po    # remove invalid locales
 make %{?_smp_mflags} build-mo
 
 # generate man-pages
@@ -220,8 +216,8 @@ install -p -m 0644 %{SOURCE1} %{buildroot}%{_unitdir}/
 install -p -m 0644 %{SOURCE2} %{buildroot}%{_unitdir}/
 install -p -m 0644 %{SOURCE3} %{buildroot}%{_unitdir}/
 install -p -m 0644 %{SOURCE9} %{buildroot}%{_unitdir}/
-install -p -m 0644 %{SOURCE10} %{buildroot}%{_unitdir}/
-install -p -m 0644 %{SOURCE11} %{buildroot}%{_unitdir}/
+install -d -m 0755 %{buildroot}/lib/systemd
+install -p -m 0755 %{SOURCE10} %{buildroot}/lib/systemd/
 
 # install shutdown wrapper
 install -d -m 0755 %{buildroot}%{_libexecdir}/%{name}
@@ -276,8 +272,6 @@ getent group %{name} > /dev/null || groupadd -r %{name}
 
 %post agent
 %systemd_post %{name}-agent.service
-%systemd_post %{name}-agent-9p.service
-%systemd_post %{name}-agent-virtiofs.service
 
 %preun
 %systemd_preun %{name}.socket
@@ -286,8 +280,6 @@ getent group %{name} > /dev/null || groupadd -r %{name}
 
 %preun agent
 %systemd_preun %{name}-agent.service
-%systemd_preun %{name}-agent-9p.service
-%systemd_preun %{name}-agent-virtiofs.service
 
 %files
 %license %{golicenses}
@@ -332,8 +324,7 @@ getent group %{name} > /dev/null || groupadd -r %{name}
 %license %{golicenses}
 %{_bindir}/lxd-agent
 %{_unitdir}/%{name}-agent.service
-%{_unitdir}/%{name}-agent-9p.service
-%{_unitdir}/%{name}-agent-virtiofs.service
+/lib/systemd/%{name}-agent-setup
 %{_mandir}/man1/lxd-agent.1.*
 
 %files doc
