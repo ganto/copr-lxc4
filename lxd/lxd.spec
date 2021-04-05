@@ -332,6 +332,11 @@ getent group %{name} > /dev/null || groupadd -r %{name}
 %doc doc/*
 
 %changelog
+* Mon Apr 05 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.12-0.1
+- Update to 4.12.
+- Cleanup build steps
+- Update lxd-agent systemd service
+
 * Sun Mar 14 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.11-0.1
 - Update to 4.11.
 - Remove bundled raft and dqlite
