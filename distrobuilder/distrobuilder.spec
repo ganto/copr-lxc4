@@ -1,7 +1,6 @@
 # https://github.com/lxc/distrobuilder
 %global goipath github.com/lxc/distrobuilder
-Version:        1.1
-
+Version:        1.2
 %gometa
 
 %global godocs      AUTHORS CONTRIBUTING.md
@@ -14,8 +13,7 @@ Summary:        System container image builder for LXC and LXD
 License:        ASL 2.0
 URL:            %{gourl}
 Source0:        https://linuxcontainers.org/downloads/distrobuilder/%{name}-%{version}.tar.gz
-Patch0:         %{name}-%{version}-Disable-online-tests.patch
-Patch1:         %{name}-%{version}-sources-Fix-Plamo-7.x.patch
+Patch0:         %{name}-1.1-Disable-online-tests.patch
 
 BuildRequires:  gnupg
 BuildRequires:  help2man
@@ -37,7 +35,6 @@ Suggests:       debootstrap
 %prep
 %goprep -k
 %patch0 -p1
-%patch1 -p1
 
 %generate_buildrequires
 
