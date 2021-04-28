@@ -71,6 +71,9 @@ rm -f %{buildroot}%{_libdir}/libdqlite.la
 %{_libdir}/libdqlite.a
 
 %changelog
+* Wed Apr 28 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 1.6.0-0.2.20210317gitc0699eb
+- Update to git snapshot c0699eb
+
 * Sun Mar 14 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 1.6.0-0.2.20201229gita89301a
 - Skip failing test on Fedora 32
 
