@@ -336,6 +336,9 @@ getent group %{name} > /dev/null || groupadd -r %{name}
 %doc doc/*
 
 %changelog
+* Thu Apr 29 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.13-0.1
+- Update to 4.13.
+
 * Mon Apr 05 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.12-0.1
 - Update to 4.12.
 - Cleanup build steps
