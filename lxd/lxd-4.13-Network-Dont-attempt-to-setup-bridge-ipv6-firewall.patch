@@ -1,0 +1,40 @@
+From 96d1ea11194a5121c29edc6b23826d9df2780f1b Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Thu, 22 Apr 2021 15:05:29 +0100
+Subject: [PATCH] lxd/network/driver/bridge: Don't attempt to setup ipv6
+ firewall when no ipv6.address
+
+ipv6.address = ["", "none"] implicitly disables ipv6.firewall.
+
+Fixes #8705
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/network/driver_bridge.go | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/lxd/network/driver_bridge.go b/lxd/network/driver_bridge.go
+index 6069fd5aea..d50dc4dcb5 100644
+--- a/lxd/network/driver_bridge.go
++++ b/lxd/network/driver_bridge.go
+@@ -1992,7 +1992,9 @@ func (n *bridge) updateForkdnsServersFile(addresses []string) error {
+ 
+ // hasIPv4Firewall indicates whether the network has IPv4 firewall enabled.
+ func (n *bridge) hasIPv4Firewall() bool {
+-	if n.config["ipv4.firewall"] == "" || shared.IsTrue(n.config["ipv4.firewall"]) {
++	// IPv4 firewall is only enabled if there is a bridge ipv4.address or fan mode, and ipv4.firewall enabled.
++	// When using fan bridge.mode, there can be an empty ipv4.address, so we assume it is active.
++	if (n.config["bridge.mode"] == "fan" || !shared.StringInSlice(n.config["ipv4.address"], []string{"", "none"})) && (n.config["ipv4.firewall"] == "" || shared.IsTrue(n.config["ipv4.firewall"])) {
+ 		return true
+ 	}
+ 
+@@ -2001,7 +2003,8 @@ func (n *bridge) hasIPv4Firewall() bool {
+ 
+ // hasIPv6Firewall indicates whether the network has IPv6 firewall enabled.
+ func (n *bridge) hasIPv6Firewall() bool {
+-	if n.config["ipv6.firewall"] == "" || shared.IsTrue(n.config["ipv6.firewall"]) {
++	// IPv6 firewall is only enabled if there is a bridge ipv6.address and ipv6.firewall enabled.
++	if !shared.StringInSlice(n.config["ipv6.address"], []string{"", "none"}) && (n.config["ipv6.firewall"] == "" || shared.IsTrue(n.config["ipv6.firewall"])) {
+ 		return true
+ 	}
+ 

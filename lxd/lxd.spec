@@ -13,7 +13,7 @@
 
 # https://github.com/lxc/lxd
 %global goipath github.com/lxc/lxd
-Version:        4.12
+Version:        4.13
 
 %gometa
 
@@ -41,9 +41,11 @@ Source10:       lxd-agent-setup
 # Fix build and test issues
 Patch0:         lxd-3.19-cobra-Revert-go-md2man-API-v2-update.patch
 Patch1:         lxd-4.8-Fix-TestEndpoints_LocalUnknownUnixGroup-test.patch
-Patch2:         lxd-4.12-juju-version-Revert-Convert-to-juju-mgo-v2.patch
+Patch2:         lxd-4.13-juju-version-Revert-Convert-to-juju-mgo-v2.patch
 # Upstream bug fixes merged to master for next release
-Patch3:         lxd-4.12-Device-Fallback-to-using-disk-mount-device-path.patch
+Patch3:         lxd-4.13-lxd-instance-drivers-Dont-overwrite-template-triggers.patch
+Patch4:         lxd-4.13-lxd-storage-Reintroduce-cluster-distribution-of-volume-snapshots.patch
+Patch5:         lxd-4.13-Network-Dont-attempt-to-setup-bridge-ipv6-firewall.patch
 
 BuildRequires:  dqlite-devel
 BuildRequires:  gettext
@@ -160,6 +162,8 @@ This package contains user documentation.
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
+%patch4 -p1
+%patch5 -p1
 
 %build
 # LXD doesn't support Go modules (https://github.com/lxc/lxd/issues/5992)

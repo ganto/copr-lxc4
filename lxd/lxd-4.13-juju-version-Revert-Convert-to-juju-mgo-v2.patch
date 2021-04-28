@@ -1,0 +1,37 @@
+commit 750eb8dd51f9ffa2fd9365270bd8f9b89f1e0702
+Author: Reto Gantenbein <reto.gantenbein@linuxmonk.ch>
+Date:   Sun Apr 4 14:03:34 2021 +0200
+
+    juju/version: Revert "Convert to go mod and use juju/mgo/v2"
+    
+    This works around a packaging error where the
+    'github.com/juju/version' module vendored by lxd depends on
+    'github.com/juju/mgo/v2' [1] which is not vendored under this
+    name but still the old 'gopkg.in/v2/mgo'.
+    
+    [1]: https://github.com/juju/version/pull/8
+    
+    Without this patch, the following error occurs when trying to
+    build LXD:
+    
+    + go build -buildmode pie -compiler gc '-tags=rpm_crashtraceback libsqlite3' -ldflags '-X github.com/lxc/lxd/version=4.12 -B 0x0e5c3d659cc89652c4a442e36194cd8f00b04a24 -extldflags '\''-Wl,-z,relro -Wl,--as-needed  -Wl,-z,now -specs=/usr/lib/rpm/redhat/redhat-hardened-ld '\''' -a -v -x -o /builddir/build/BUILD/lxd-4.12/_build/bin/lxd github.com/lxc/lxd/lxd
+    WORK=/tmp/go-build737519145
+    _build/src/github.com/lxc/lxd/vendor/github.com/juju/version/version.go:14:2: cannot find package "github.com/juju/mgo/v2/bson" in any of:
+            /builddir/build/BUILD/lxd-4.12/_build/src/github.com/lxc/lxd/vendor/github.com/juju/mgo/v2/bson (vendor tree)
+            /usr/lib/golang/src/github.com/juju/mgo/v2/bson (from $GOROOT)
+            /builddir/build/BUILD/lxd-4.12/_build/src/github.com/juju/mgo/v2/bson (from $GOPATH)
+            /usr/share/gocode/src/github.com/juju/mgo/v2/bson
+
+diff --git a/_dist/src/github.com/juju/version/version.go b/_dist/src/github.com/juju/version/version.go
+index 5ab5e33..b1d4305 100644
+--- a/_dist/src/github.com/juju/version/version.go
++++ b/_dist/src/github.com/juju/version/version.go
+@@ -11,7 +11,7 @@ import (
+ 	"strconv"
+ 	"strings"
+ 
+-	"github.com/juju/mgo/v2/bson"
++	"gopkg.in/mgo.v2/bson"
+ )
+ 
+ // Number represents a version number.

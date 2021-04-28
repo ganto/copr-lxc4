@@ -1,0 +1,40 @@
+From 116bd2bd2038b5cac3f1b428dd86554c2815c6b1 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?St=C3=A9phane=20Graber?= <stgraber@ubuntu.com>
+Date: Fri, 16 Apr 2021 22:35:48 -0400
+Subject: [PATCH] lxd/storage: Re-introduce cluster distributino of volume
+ snapshots
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Closes #8680
+
+Signed-off-by: Stéphane Graber <stgraber@ubuntu.com>
+---
+ lxd/storage_volumes_snapshot.go | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/lxd/storage_volumes_snapshot.go b/lxd/storage_volumes_snapshot.go
+index 4eea954f4c..1accb8d867 100644
+--- a/lxd/storage_volumes_snapshot.go
++++ b/lxd/storage_volumes_snapshot.go
+@@ -724,6 +724,19 @@ func autoCreateCustomVolumeSnapshotsTask(d *Daemon) (task.Func, task.Schedule) {
+ 				continue
+ 			}
+ 
++			// If there is more than one node (clustering), a stable random node is chosen to perform the snapshot.
++			if len(nodes) > 1 {
++				selectedNodeID, err := util.GetStableRandomInt64FromList(int64(v.ID), availableNodeIDs)
++				if err != nil {
++					continue
++				}
++
++				// Don't snapshot, if we're not the chosen one.
++				if d.cluster.GetNodeID() != selectedNodeID {
++					continue
++				}
++			}
++
+ 			volumes = append(volumes, v)
+ 		}
+ 
