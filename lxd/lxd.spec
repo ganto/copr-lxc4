@@ -21,7 +21,7 @@ Version:        4.13
 %global golicenses  COPYING
 
 Name:           lxd
-Release:        0.1%{?dist}
+Release:        0.2%{?dist}
 Summary:        Container hypervisor based on LXC
 
 # Upstream license specification: Apache-2.0
@@ -46,6 +46,7 @@ Patch2:         lxd-4.13-juju-version-Revert-Convert-to-juju-mgo-v2.patch
 Patch3:         lxd-4.13-lxd-instance-drivers-Dont-overwrite-template-triggers.patch
 Patch4:         lxd-4.13-lxd-storage-Reintroduce-cluster-distribution-of-volume-snapshots.patch
 Patch5:         lxd-4.13-Network-Dont-attempt-to-setup-bridge-ipv6-firewall.patch
+Patch6:         lxd-4.12-vm-qemu-configure-spice-using-spice-parameter.patch
 
 BuildRequires:  dqlite-devel
 BuildRequires:  gettext
@@ -89,6 +90,12 @@ Suggests: edk2-ovmf
 Suggests: genisoimage
 Suggests: qemu-img
 Suggests: qemu-system-x86-core
+Suggests: qemu-ui-spice-core
+Suggests: qemu-audio-spice
+Suggests: qemu-char-spice
+Suggests: qemu-device-usb-redirect
+Suggests: qemu-device-display-virtio-vga
+Suggests: qemu-device-display-virtio-gpu
 
 %description
 Container hypervisor based on LXC
@@ -164,6 +171,7 @@ This package contains user documentation.
 %patch3 -p1
 %patch4 -p1
 %patch5 -p1
+%patch6 -p1
 
 %build
 # LXD doesn't support Go modules (https://github.com/lxc/lxd/issues/5992)
