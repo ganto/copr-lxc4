@@ -46,7 +46,8 @@ Patch2:         lxd-4.13-juju-version-Revert-Convert-to-juju-mgo-v2.patch
 Patch3:         lxd-4.13-lxd-instance-drivers-Dont-overwrite-template-triggers.patch
 Patch4:         lxd-4.13-lxd-storage-Reintroduce-cluster-distribution-of-volume-snapshots.patch
 Patch5:         lxd-4.13-Network-Dont-attempt-to-setup-bridge-ipv6-firewall.patch
-Patch6:         lxd-4.12-vm-qemu-configure-spice-using-spice-parameter.patch
+Patch6:         lxd-4.13-vm-qemu-configure-spice-using-spice-parameter.patch
+Patch7:         lxd-4.13-Firewall-Required-kernel-version-5.2-for-nftables-driver.patch
 
 BuildRequires:  dqlite-devel
 BuildRequires:  gettext
@@ -172,6 +173,7 @@ This package contains user documentation.
 %patch4 -p1
 %patch5 -p1
 %patch6 -p1
+%patch7 -p1
 
 %build
 # LXD doesn't support Go modules (https://github.com/lxc/lxd/issues/5992)
