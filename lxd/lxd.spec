@@ -91,12 +91,14 @@ Suggests: edk2-ovmf
 Suggests: genisoimage
 Suggests: qemu-img
 Suggests: qemu-system-x86-core
-Suggests: qemu-ui-spice-core
-Suggests: qemu-audio-spice
-Suggests: qemu-char-spice
+%if 0%{?fedora} && 0%{?fedora} >= 33
 Suggests: qemu-device-usb-redirect
+%endif
+%if 0%{?fedora} && 0%{?fedora} >= 34
+Suggests: qemu-char-spice
 Suggests: qemu-device-display-virtio-vga
 Suggests: qemu-device-display-virtio-gpu
+%endif
 
 %description
 Container hypervisor based on LXC
