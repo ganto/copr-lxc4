@@ -264,6 +264,9 @@ make check
 
 
 %changelog
+* Thu May 06 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.0.9-0.1
+- Update to 4.0.9.
+
 * Sat May 01 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.0.8-0.1
 - Update to 4.0.8.
 
