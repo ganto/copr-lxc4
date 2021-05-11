@@ -1,15 +1,11 @@
-%global commit e318fd8f3333586643073652359497d09047dcfc
-%global commitdate 20210409
-%global shortcommit %(c=%{commit}; echo ${c:0:7})
-
 Name:           raft 
-Version:        0.10.0
-Release:        0.1.%{commitdate}git%{shortcommit}%{?dist}
+Version:        0.10.1
+Release:        0.1%{?dist}
 Summary:        C implementation of the Raft consensus protocol
 
 License:        LGPLv3 
 URL:            https://github.com/canonical/raft
-Source0:        https://github.com/canonical/%{name}/archive/%{commit}.tar.gz
+Source0:        https://github.com/canonical/%{name}/archive/v%{version}.tar.gz
 # Fix test when run on tmpfs for Fedora <33
 Patch0:         raft-0.9.25-Always-skip-init-oom-test.patch
 
@@ -38,7 +34,7 @@ Static library (.a) version of raft.
 
 
 %prep
-%setup -q -n %{name}-%{commit}
+%setup -q -n %{name}-%{version}
 %if 0%{?fedora} && 0%{?fedora} < 33
 %patch0 -p1
 %endif
