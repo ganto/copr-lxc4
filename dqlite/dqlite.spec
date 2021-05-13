@@ -1,15 +1,11 @@
-%global commit c0699ebf3d0caa3a02e0cbd55c66ca29fd97605a
-%global commitdate 20210317
-%global shortcommit %(c=%{commit}; echo ${c:0:7})
-
 Name:           dqlite
-Version:        1.6.0
-Release:        0.2.%{commitdate}git%{shortcommit}%{?dist}
+Version:        1.7.0
+Release:        0.1%{?dist}
 Summary:        Embeddable, replicated and fault tolerant SQL engine
 
 License:        LGPLv3
 URL:            https://github.com/canonical/dqlite
-Source0:        https://github.com/canonical/%{name}/archive/%{commit}.tar.gz
+Source0:        https://github.com/canonical/%{name}/archive/v%{version}.tar.gz
 Patch0:         dqlite-1.6.0-Skip-client-query-test.patch
 
 BuildRequires:  autoconf libtool
@@ -38,7 +34,7 @@ Static library (.a) version of dqlite.
 
 
 %prep
-%setup -q -n %{name}-%{commit}
+%setup -q -n %{name}-%{version}
 %if 0%{?fedora} && 0%{?fedora} < 33
 %patch0 -p1
 %endif
