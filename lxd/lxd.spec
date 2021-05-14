@@ -340,6 +340,9 @@ getent group %{name} > /dev/null || groupadd -r %{name}
 %doc doc/*
 
 %changelog
+* Fri May 14 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.14-0.1
+- Update to 4.14.
+
 * Sat May 01 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.13-0.2
 - Apply bugfix patch for nftables firewall
 - Apply patch to fix spice compatibility on Fedora 34 (link@sub-pop.net)
