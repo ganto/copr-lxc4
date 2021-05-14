@@ -21,7 +21,7 @@ Version:        4.14
 %global golicenses  COPYING
 
 Name:           lxd
-Release:        0.1%{?dist}
+Release:        0.2%{?dist}
 Summary:        Container hypervisor based on LXC
 
 # Upstream license specification: Apache-2.0
@@ -165,7 +165,10 @@ This package contains user documentation.
 %prep
 %goprep -k
 %patch0 -p1
+%if 0%{?fedora} && 0%{?fedora} < 34
+# Fedora < 34 depend on running sssd for local user lookup
 %patch1 -p1
+%endif
 %patch2 -p1
 %patch3 -p1
 
