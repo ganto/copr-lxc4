@@ -343,6 +343,9 @@ getent group %{name} > /dev/null || groupadd -r %{name}
 %doc doc/*
 
 %changelog
+* Sat May 15 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.14-0.2
+- Fix user lookup test for Fedora >= 34
+
 * Fri May 14 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.14-0.1
 - Update to 4.14.
 
