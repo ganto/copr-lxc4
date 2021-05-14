@@ -13,7 +13,7 @@
 
 # https://github.com/lxc/lxd
 %global goipath github.com/lxc/lxd
-Version:        4.13
+Version:        4.14
 
 %gometa
 
@@ -21,7 +21,7 @@ Version:        4.13
 %global golicenses  COPYING
 
 Name:           lxd
-Release:        0.2%{?dist}
+Release:        0.1%{?dist}
 Summary:        Container hypervisor based on LXC
 
 # Upstream license specification: Apache-2.0
@@ -43,11 +43,7 @@ Patch0:         lxd-3.19-cobra-Revert-go-md2man-API-v2-update.patch
 Patch1:         lxd-4.8-Fix-TestEndpoints_LocalUnknownUnixGroup-test.patch
 Patch2:         lxd-4.13-juju-version-Revert-Convert-to-juju-mgo-v2.patch
 # Upstream bug fixes merged to master for next release
-Patch3:         lxd-4.13-lxd-instance-drivers-Dont-overwrite-template-triggers.patch
-Patch4:         lxd-4.13-lxd-storage-Reintroduce-cluster-distribution-of-volume-snapshots.patch
-Patch5:         lxd-4.13-Network-Dont-attempt-to-setup-bridge-ipv6-firewall.patch
-Patch6:         lxd-4.13-vm-qemu-configure-spice-using-spice-parameter.patch
-Patch7:         lxd-4.13-Firewall-Required-kernel-version-5.2-for-nftables-driver.patch
+Patch3:         lxd-4.14-Network-Ensure-VXLAN-tunnel-interface.patch
 
 BuildRequires:  dqlite-devel
 BuildRequires:  gettext
@@ -172,10 +168,6 @@ This package contains user documentation.
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
-%patch4 -p1
-%patch5 -p1
-%patch6 -p1
-%patch7 -p1
 
 %build
 # LXD doesn't support Go modules (https://github.com/lxc/lxd/issues/5992)
