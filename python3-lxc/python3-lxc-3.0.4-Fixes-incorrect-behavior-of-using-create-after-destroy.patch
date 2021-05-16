@@ -1,0 +1,46 @@
+From 1cacd966256f06ea512fc405cde7dbc2d7354336 Mon Sep 17 00:00:00 2001
+From: anirudh-goyal <anirudhgoyal@utexas.edu>
+Date: Wed, 2 Dec 2020 23:58:15 +0530
+Subject: [PATCH] Fixes incorrect behavior of using create() after destroy().
+
+Signed-off-by: Anirudh Goyal <anirudhgoyal@utexas.edu>
+---
+ lxc/__init__.py | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+
+diff --git a/lxc/__init__.py b/lxc/__init__.py
+index ccc4d18..5f67df8 100644
+--- a/lxc/__init__.py
++++ b/lxc/__init__.py
+@@ -217,6 +217,7 @@ def create(self, template=None, flags=0, args=(), bdevtype=None):
+             "args" (optional) is a tuple of arguments to pass to the
+             template. It can also be provided as a dict.
+         """
++
+         if isinstance(args, dict):
+             tmp_args = []
+             for item in args.items():
+@@ -230,8 +231,23 @@ def create(self, template=None, flags=0, args=(), bdevtype=None):
+         template_args['args'] = tuple(args)
+         if bdevtype:
+             template_args['bdevtype'] = bdevtype
++        if not self.defined:
++           self.save_config()
+         return _lxc.Container.create(self, **template_args)
+ 
++    def destroy(self):
++        """
++            Deletes the container and clears its config
++        """
++
++        if not _lxc.Container.destroy(self):
++            return False
++        
++        # Clear the configuration to match destroyed container state.
++        self.clear_config()
++
++        return True
++
+     def clone(self, newname, config_path=None, flags=0, bdevtype=None,
+               bdevdata=None, newsize=0, hookargs=()):
+         """

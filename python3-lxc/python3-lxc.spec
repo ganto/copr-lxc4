@@ -2,12 +2,16 @@
 
 Name:           %{srcname}
 Version:        3.0.4
-Release:        0.3%{?dist}
+Release:        0.4%{?dist}
 Summary:        Python 3 bindings for LXC
 
 License:        LGPLv2+
 URL:            https://linuxcontainers.org/lxc
 Source0:        https://linuxcontainers.org/downloads/lxc/%{srcname}-%{version}.tar.gz
+# Upstream patches merged to master for next release
+Patch0:         python3-lxc-3.0.4-Change-ContainerNetworkList-len-function-to-not-throw-KeyError.patch
+Patch1:         python3-lxc-3.0.4-Fixes-incorrect-behavior-of-using-create-after-destroy.patch
+Patch2:         python3-lxc-3.0.4-Added-logic-to-add-new-network-device-when-needed.patch
 BuildRequires:  gcc
 BuildRequires:  lxc-devel >= 3
 BuildRequires:  pkgconfig(python3) >= 3.2
@@ -16,7 +20,7 @@ BuildRequires:  pkgconfig(python3) >= 3.2
 %{summary}
 
 %prep
-%autosetup -n %{srcname}-%{version}
+%autosetup -n %{srcname}-%{version} -p1
 
 # fix python shebang in examples
 sed -i 's|/usr/bin/env python3|/usr/bin/python3|g' examples/*
