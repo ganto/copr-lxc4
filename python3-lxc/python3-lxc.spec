@@ -42,6 +42,9 @@ chmod -x examples/*
 
 
 %changelog
+* Sun May 16 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 3.0.4-0.4
+- Add some upstream patches
+
 * Sun Sep 13 2020 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 3.0.4-0.3
 - Cleanup EPEL 7 compatibility from spec file
 
