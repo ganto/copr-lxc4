@@ -13,7 +13,7 @@
 
 # https://github.com/lxc/lxd
 %global goipath github.com/lxc/lxd
-Version:        4.14
+Version:        4.15
 
 %gometa
 
@@ -21,7 +21,7 @@ Version:        4.14
 %global golicenses  COPYING
 
 Name:           lxd
-Release:        0.2%{?dist}
+Release:        0.1%{?dist}
 Summary:        Container hypervisor based on LXC
 
 # Upstream license specification: Apache-2.0
@@ -40,10 +40,11 @@ Source9:        lxd-agent.service
 Source10:       lxd-agent-setup
 # Fix build and test issues
 Patch0:         lxd-3.19-cobra-Revert-go-md2man-API-v2-update.patch
-Patch1:         lxd-4.8-Fix-TestEndpoints_LocalUnknownUnixGroup-test.patch
-Patch2:         lxd-4.13-juju-version-Revert-Convert-to-juju-mgo-v2.patch
+Patch1:         lxd-4.13-juju-version-Revert-Convert-to-juju-mgo-v2.patch
 # Upstream bug fixes merged to master for next release
-Patch3:         lxd-4.14-Network-Ensure-VXLAN-tunnel-interface.patch
+Patch2:         lxd-4.15-client-Only-retry-target-addresses-if-initial-connection-fails.patch
+Patch3:         lxd-4.15-lxd-patches-Fix-duplicate-warnings.patch
+Patch4:         lxd-4.15-Network-Surface-bridge-dnsmasq-specific-start-up-errors.patch
 
 BuildRequires:  dqlite-devel
 BuildRequires:  gettext
@@ -85,16 +86,14 @@ Suggests: logrotate
 # Virtual machine support requires additional packages
 Suggests: edk2-ovmf
 Suggests: genisoimage
-Suggests: qemu-img
-Suggests: qemu-system-x86-core
-%if 0%{?fedora} && 0%{?fedora} >= 33
-Suggests: qemu-device-usb-redirect
-%endif
 %if 0%{?fedora} && 0%{?fedora} >= 34
 Suggests: qemu-char-spice
 Suggests: qemu-device-display-virtio-vga
 Suggests: qemu-device-display-virtio-gpu
 %endif
+Suggests: qemu-device-usb-redirect
+Suggests: qemu-img
+Suggests: qemu-system-x86-core
 
 %description
 Container hypervisor based on LXC
@@ -165,12 +164,10 @@ This package contains user documentation.
 %prep
 %goprep -k
 %patch0 -p1
-%if 0%{?fedora} && 0%{?fedora} < 34
-# Fedora < 34 depend on running sssd for local user lookup
 %patch1 -p1
-%endif
 %patch2 -p1
 %patch3 -p1
+%patch4 -p1
 
 %build
 # LXD doesn't support Go modules (https://github.com/lxc/lxd/issues/5992)

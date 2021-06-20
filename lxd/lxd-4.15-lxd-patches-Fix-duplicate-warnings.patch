@@ -1,0 +1,57 @@
+From d55b049256ea84ef721779f227b01857f89c78cd Mon Sep 17 00:00:00 2001
+From: Thomas Hipp <thomas.hipp@canonical.com>
+Date: Thu, 17 Jun 2021 12:05:55 +0200
+Subject: [PATCH] lxd/patches: Fix duplicate warnings
+
+Due to a code change, duplicate warnings we created. One with an empty
+node string and one with "none". This removes the empty node entry.
+
+Signed-off-by: Thomas Hipp <thomas.hipp@canonical.com>
+---
+ lxd/patches.go | 26 ++++++++++++++++++++++++++
+ 1 file changed, 26 insertions(+)
+
+diff --git a/lxd/patches.go b/lxd/patches.go
+index 8b2dd655a18..d3080503cae 100644
+--- a/lxd/patches.go
++++ b/lxd/patches.go
+@@ -122,6 +122,7 @@ var patches = []patch{
+ 	{name: "db_nodes_autoinc", stage: patchPreDaemonStorage, run: patchDBNodesAutoInc},
+ 	{name: "network_acl_remove_defaults", stage: patchPostDaemonStorage, run: patchNetworkACLRemoveDefaults},
+ 	{name: "clustering_server_cert_trust", stage: patchPreDaemonStorage, run: patchClusteringServerCertTrust},
++	{name: "warnings_remove_empty_node", stage: patchPostDaemonStorage, run: patchRemoveWarningsWithEmptyNode},
+ }
+ 
+ type patch struct {
+@@ -186,6 +187,31 @@ func patchesApply(d *Daemon, stage patchStage) error {
+ 
+ // Patches begin here
+ 
++func patchRemoveWarningsWithEmptyNode(name string, d *Daemon) error {
++	err := d.cluster.Transaction(func(tx *db.ClusterTx) error {
++		warnings, err := tx.GetWarnings()
++		if err != nil {
++			return err
++		}
++
++		for _, w := range warnings {
++			if w.Node == "" {
++				err = tx.DeleteWarning(w.UUID)
++				if err != nil {
++					return err
++				}
++			}
++		}
++
++		return nil
++	})
++	if err != nil {
++		return err
++	}
++
++	return nil
++}
++
+ func patchClusteringServerCertTrust(name string, d *Daemon) error {
+ 	clustered, err := cluster.Enabled(d.db)
+ 	if err != nil {
