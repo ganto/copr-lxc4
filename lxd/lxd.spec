@@ -340,6 +340,10 @@ getent group %{name} > /dev/null || groupadd -r %{name}
 %doc doc/*
 
 %changelog
+* Sun Jun 20 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.15-0.1
+- Update to 4.15.
+- Cleanup Fedora 32 compatibility.
+
 * Sat May 15 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.14-0.2
 - Fix user lookup test for Fedora >= 34
 
