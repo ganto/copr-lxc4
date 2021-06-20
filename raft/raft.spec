@@ -1,5 +1,5 @@
 Name:           raft 
-Version:        0.10.1
+Version:        0.11.1
 Release:        0.1%{?dist}
 Summary:        C implementation of the Raft consensus protocol
 
@@ -11,6 +11,7 @@ Patch0:         raft-0.9.25-Always-skip-init-oom-test.patch
 
 BuildRequires:  autoconf libtool
 BuildRequires:  gcc
+BuildRequires:  lz4-devel
 BuildRequires:  libuv-devel
 
 %description
