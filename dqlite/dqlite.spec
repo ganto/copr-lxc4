@@ -63,6 +63,9 @@ rm -f %{buildroot}%{_libdir}/libdqlite.la
 %{_libdir}/libdqlite.a
 
 %changelog
+* Mon Jun 28 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 1.8.0-0.1
+- Update to 1.8.0.
+
 * Thu May 13 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 1.7.0-0.1
 - Update to 1.7.0
 
