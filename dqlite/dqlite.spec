@@ -1,12 +1,11 @@
 Name:           dqlite
-Version:        1.7.0
+Version:        1.8.0
 Release:        0.1%{?dist}
 Summary:        Embeddable, replicated and fault tolerant SQL engine
 
 License:        LGPLv3
 URL:            https://github.com/canonical/dqlite
 Source0:        https://github.com/canonical/%{name}/archive/v%{version}.tar.gz
-Patch0:         dqlite-1.6.0-Skip-client-query-test.patch
 
 BuildRequires:  autoconf libtool
 BuildRequires:  gcc
@@ -35,9 +34,6 @@ Static library (.a) version of dqlite.
 
 %prep
 %setup -q -n %{name}-%{version}
-%if 0%{?fedora} && 0%{?fedora} < 33
-%patch0 -p1
-%endif
 
 %build
 autoreconf -i
