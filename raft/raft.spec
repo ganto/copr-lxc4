@@ -1,13 +1,11 @@
 Name:           raft 
-Version:        0.11.1
+Version:        0.11.2
 Release:        0.1%{?dist}
 Summary:        C implementation of the Raft consensus protocol
 
 License:        LGPLv3 
 URL:            https://github.com/canonical/raft
 Source0:        https://github.com/canonical/%{name}/archive/v%{version}.tar.gz
-# Fix test when run on tmpfs for Fedora <33
-Patch0:         raft-0.9.25-Always-skip-init-oom-test.patch
 
 BuildRequires:  autoconf libtool
 BuildRequires:  gcc
@@ -36,9 +34,6 @@ Static library (.a) version of raft.
 
 %prep
 %setup -q -n %{name}-%{version}
-%if 0%{?fedora} && 0%{?fedora} < 33
-%patch0 -p1
-%endif
 
 %build
 autoreconf -i 
