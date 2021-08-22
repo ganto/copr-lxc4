@@ -64,6 +64,9 @@ rm -f %{buildroot}%{_libdir}/libraft.la
 %{_libdir}/libraft.a
 
 %changelog
+* Mon Aug 23 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.11.2-0.1
+- Update to 0.11.2.
+
 * Sun Jun 20 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.11.1-0.1
 - Update to 0.11.1.
 
