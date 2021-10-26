@@ -1,5 +1,5 @@
 Name:		  lxcfs
-Version:	  4.0.9
+Version:	  4.0.11
 Release:	  0.1%{?dist}
 Summary:	  FUSE based filesystem for LXC
 License:	  ASL 2.0
@@ -8,7 +8,7 @@ Source0:	  https://linuxcontainers.org/downloads/%{name}/%{name}-%{version}.tar.
 BuildRequires:	  gcc
 BuildRequires:	  gawk
 BuildRequires:	  make
-BuildRequires:	  fuse-devel
+BuildRequires:	  fuse3-devel
 BuildRequires:	  help2man
 BuildRequires:	  systemd
 Requires(post):	  systemd
