@@ -1,21 +1,28 @@
-Name:           raft 
+Name:           raft
 Version:        0.11.2
-Release:        0.1%{?dist}
+Release:        0.2%{?dist}
 Summary:        C implementation of the Raft consensus protocol
 
-License:        LGPLv3 
+License:        LGPLv3 with exceptions
 URL:            https://github.com/canonical/raft
-Source0:        https://github.com/canonical/%{name}/archive/v%{version}.tar.gz
+Source0:        %{URL}/archive/v%{version}.tar.gz
 
 BuildRequires:  autoconf libtool
 BuildRequires:  gcc
-BuildRequires:  lz4-devel
-BuildRequires:  libuv-devel
+BuildRequires:  pkgconfig(liblz4)
+BuildRequires:  pkgconfig(libuv)
 
 %description
 Fully asynchronous C implementation of the Raft consensus protocol. It consists
 of a core part that implements the core Raft algorithm logic and a pluggable
-interface defining the I/O implementation for networking and disk persistence. 
+interface defining the I/O implementation for networking and disk persistence.
+
+%package benchmark
+Summary:        Benchmark operating system disk write performance
+BuildRequires:  pkgconfig(liburing)
+
+%description benchmark
+Benchmark operating system disk write performance.
 
 %package devel
 Summary:        Development libraries for raft
@@ -24,21 +31,28 @@ Requires:       %{name}%{?_isa} = %{version}-%{release}
 %description devel
 Development headers and library for raft.
 
-%package static
-Summary:        Static library for raft
-Requires:       %{name}%{?_isa} = %{version}-%{release}
+%package doc
+Summary:        C-Raft documentation
+BuildArch:      noarch
+BuildRequires:  python-sphinx
 
-%description static
-Static library (.a) version of raft.
-
+%description doc
+This package contains the C-Raft documentation in HTML format and some code
+examples.
 
 %prep
 %setup -q -n %{name}-%{version}
+%if 0%{?fedora} && 0%{?fedora} < 35
+# Strict c11 mode results in build failure caused by included liburing headers
+# See https://github.com/axboe/liburing/issues/181
+sed -i '/std=c11/d' configure.ac
+%endif
 
 %build
-autoreconf -i 
-%configure
+autoreconf -i
+%configure --disable-static --enable-benchmark
 %make_build
+sphinx-build -b html -d docs/_build/doctrees docs docs/_build/html
 
 %install
 %make_install
@@ -54,14 +68,20 @@ rm -f %{buildroot}%{_libdir}/libraft.la
 %license LICENSE
 %{_libdir}/libraft.so.*
 
+%files benchmark
+%license LICENSE
+%{_bindir}/os-disk-write
+
 %files devel
 %{_libdir}/libraft.so
 %{_libdir}/pkgconfig/%{name}.pc
 %{_includedir}/raft.h
 %{_includedir}/raft/
 
-%files static
-%{_libdir}/libraft.a
+%files doc
+%license LICENSE
+%doc docs/_build/html/
+%doc example/
 
 %changelog
 * Mon Aug 23 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.11.2-0.1
