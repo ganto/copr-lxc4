@@ -10,7 +10,7 @@
 %endif
 
 Name:           lxc
-Version:        4.0.10
+Version:        4.0.11
 Release:        0.1%{?dist}
 Summary:        Linux Resource Containers
 License:        LGPLv2+ and GPLv2
@@ -199,7 +199,7 @@ make check
 %{_datadir}/%{name}/%{name}.functions
 %dir %{_datadir}/bash-completion
 %dir %{_datadir}/bash-completion/completions
-%{_datadir}/bash-completion/completions/%{name}
+%{_datadir}/bash-completion/completions/%{name}*
 
 
 %files libs
