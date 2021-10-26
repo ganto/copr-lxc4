@@ -74,6 +74,10 @@ mkdir -p %{buildroot}%{_sharedstatedir}/%{name}
 
 
 %changelog
+* Tue Oct 26 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.0.11-0.1
+- Update to 4.0.11.
+- Switch to fuse3.
+
 * Wed Jul 21 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.0.9-0.1
 - Update to 4.0.9.
 
