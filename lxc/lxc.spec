@@ -1,6 +1,7 @@
 %if 0%{?fedora}
 %global with_seccomp 1
 %global with_static_init 1
+%global with_uring 1
 %endif
 
 %if 0%{?rhel} >= 7
@@ -30,6 +31,9 @@ BuildRequires:  pkgconfig(libseccomp)
 BuildRequires:  libcap-devel
 BuildRequires:  pam-devel
 BuildRequires:  openssl-devel
+%if 0%{?with_uring}
+BuildRequires:  liburing-devel
+%endif
 BuildRequires:  libtool
 BuildRequires:  systemd
 BuildRequires:  pkgconfig(bash-completion)
