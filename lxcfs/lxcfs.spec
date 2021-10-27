@@ -76,6 +76,9 @@ mkdir -p %{buildroot}%{_sharedstatedir}/%{name}
 
 
 %changelog
+* Wed Oct 27 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.0.11-0.2
+- Fix build failure on armhfp
+
 * Tue Oct 26 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.0.11-0.1
 - Update to 4.0.11.
 - Switch to fuse3.
