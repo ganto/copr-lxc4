@@ -1,0 +1,23 @@
+From 6383bcc9fd29fbb16036aeffa20a2d317db89268 Mon Sep 17 00:00:00 2001
+From: Christian Brauner <christian.brauner@ubuntu.com>
+Date: Wed, 27 Oct 2021 10:20:59 +0200
+Subject: [PATCH] build: make sue _FILE_OFFSET_BITS is defined to 64bit
+
+Fixes: #498
+Signed-off-by: Christian Brauner <christian.brauner@ubuntu.com>
+---
+ configure.ac | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/configure.ac b/configure.ac
+index ccea4ecb..046848d2 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -15,6 +15,7 @@ AM_INIT_AUTOMAKE([-Wall -Werror -Wno-portability subdir-objects])
+ AC_CANONICAL_HOST
+ AM_PROG_CC_C_O
+ AC_USE_SYSTEM_EXTENSIONS
++AC_SYS_LARGEFILE
+ AC_GNU_SOURCE
+ 
+ # Test if we have a new enough compiler.
