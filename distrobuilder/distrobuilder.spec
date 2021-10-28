@@ -67,6 +67,9 @@ install -m 0644 -vp %{name}.1           %{buildroot}%{_mandir}/man1/
 %gopkgfiles
 
 %changelog
+* Thu Oct 28 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 2.0-0.1
+- Update to 2.0.
+
 * Sun Aug 22 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 1.3-0.1
 - Update to 1.3.
 
