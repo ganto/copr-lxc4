@@ -13,7 +13,7 @@
 
 # https://github.com/lxc/lxd
 %global goipath github.com/lxc/lxd
-Version:        4.15
+Version:        4.19
 
 %gometa
 
@@ -38,24 +38,20 @@ Source7:        lxd.sysctl
 Source8:        lxd.profile
 Source9:        lxd-agent.service
 Source10:       lxd-agent-setup
-# Fix build and test issues
-Patch0:         lxd-3.19-cobra-Revert-go-md2man-API-v2-update.patch
-Patch1:         lxd-4.13-juju-version-Revert-Convert-to-juju-mgo-v2.patch
 # Upstream bug fixes merged to master for next release
-Patch2:         lxd-4.15-client-Only-retry-target-addresses-if-initial-connection-fails.patch
-Patch3:         lxd-4.15-lxd-patches-Fix-duplicate-warnings.patch
-Patch4:         lxd-4.15-Network-Surface-bridge-dnsmasq-specific-start-up-errors.patch
+Patch0:         lxd-4.19-Instance-Fix-image-download-race-condition-in-instanceCreateFromImage.patch
+Patch1:         lxd-4.19-DB-Adds-10s-timeout-to-Transaction.patch
 
-BuildRequires:  dqlite-devel
 BuildRequires:  gettext
 BuildRequires:  help2man
-BuildRequires:  libacl-devel
-BuildRequires:  libcap-devel
-BuildRequires:  libseccomp-devel
+BuildRequires:  pkgconfig(dqlite)
+BuildRequires:  pkgconfig(libacl)
+BuildRequires:  pkgconfig(libcap)
+BuildRequires:  pkgconfig(libseccomp)
+BuildRequires:  pkgconfig(libudev)
 BuildRequires:  pkgconfig(lxc)
-BuildRequires:  raft-devel
-BuildRequires:  sqlite-devel
-BuildRequires:  systemd-devel
+BuildRequires:  pkgconfig(raft)
+BuildRequires:  pkgconfig(sqlite3)
 
 Requires: acl
 Requires: dnsmasq
@@ -165,21 +161,9 @@ This package contains user documentation.
 %goprep -k
 %patch0 -p1
 %patch1 -p1
-%patch2 -p1
-%patch3 -p1
-%patch4 -p1
 
 %build
-# LXD doesn't support Go modules (https://github.com/lxc/lxd/issues/5992)
-export GO111MODULE=off
-
-# Move bundled modules to vendor directory for proper devel packaging
-test -d vendor || mkdir vendor
-cp -rp _dist/src/. vendor
-rm -rf _dist/src
-ln -s vendor src
-
-export CGO_LDFLAGS_ALLOW="-Wl,-wrap,pthread_create"
+export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
 for cmd in lxd lxc fuidshift lxd-benchmark lxc-to-lxd; do
     BUILDTAGS="libsqlite3" %gobuild -o %{gobuilddir}/bin/$cmd %{goipath}/$cmd
 done
@@ -262,7 +246,7 @@ export GOPATH=%{buildroot}/%{gopath}:%{gopath}
 # Tests must ignore potential LXD_SOCKET from environment
 unset LXD_SOCKET
 
-export CGO_LDFLAGS_ALLOW="-Wl,-wrap,pthread_create"
+export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
 
 %gocheck -v \
     -d %{goipath}/lxc-to-lxd  # lxc-to-lxd test fails, see ganto/copr-lxc3#10

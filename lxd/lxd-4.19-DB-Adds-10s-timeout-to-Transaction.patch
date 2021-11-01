@@ -1,0 +1,39 @@
+From 5abe9e971641fbf687c1fb22e3a271e25a5f93e2 Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Wed, 20 Oct 2021 15:01:25 +0100
+Subject: [PATCH] lxd/db/query/transaction: Adds 10s timeout to Transaction
+
+This ensures that queries don't block forever when using a stale connection to a remote dqlite DB.
+
+Fixes #9400
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/db/query/transaction.go | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/lxd/db/query/transaction.go b/lxd/db/query/transaction.go
+index 901177b0e89..aea0d86a094 100644
+--- a/lxd/db/query/transaction.go
++++ b/lxd/db/query/transaction.go
+@@ -3,14 +3,19 @@ package query
+ import (
+ 	"database/sql"
+ 	"strings"
++	"time"
+ 
+ 	"github.com/lxc/lxd/shared/logger"
+ 	"github.com/pkg/errors"
++	"golang.org/x/net/context"
+ )
+ 
+ // Transaction executes the given function within a database transaction.
+ func Transaction(db *sql.DB, f func(*sql.Tx) error) error {
+-	tx, err := db.Begin()
++	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
++	defer cancel()
++
++	tx, err := db.BeginTx(ctx, nil)
+ 	if err != nil {
+ 		// If there is a leftover transaction let's try to rollback,
+ 		// we'll then retry again.
