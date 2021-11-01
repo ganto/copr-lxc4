@@ -324,6 +324,9 @@ getent group %{name} > /dev/null || groupadd -r %{name}
 %doc doc/*
 
 %changelog
+* Tue Nov 02 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.19-0.1
+- Update to 4.19.
+
 * Sun Jun 20 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.15-0.1
 - Update to 4.15.
 - Cleanup Fedora 32 compatibility.
