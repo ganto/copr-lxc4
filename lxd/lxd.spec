@@ -13,7 +13,7 @@
 
 # https://github.com/lxc/lxd
 %global goipath github.com/lxc/lxd
-Version:        4.19
+Version:        4.20
 
 %gometa
 
@@ -39,8 +39,7 @@ Source8:        lxd.profile
 Source9:        lxd-agent.service
 Source10:       lxd-agent-setup
 # Upstream bug fixes merged to master for next release
-Patch0:         lxd-4.19-Instance-Fix-image-download-race-condition-in-instanceCreateFromImage.patch
-Patch1:         lxd-4.19-DB-Adds-10s-timeout-to-Transaction.patch
+Patch0:         lxd-4.20-lxd-instance-Use-correct-project-in-live-migration.patch
 
 BuildRequires:  gettext
 BuildRequires:  help2man
@@ -160,7 +159,6 @@ This package contains user documentation.
 %prep
 %goprep -k
 %patch0 -p1
-%patch1 -p1
 
 %build
 export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
