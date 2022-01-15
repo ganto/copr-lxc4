@@ -1,0 +1,57 @@
+From 9d3d43b08031bd9f9014f3accd480e905b0cbe9a Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Sat, 11 Dec 2021 22:36:03 +0000
+Subject: [PATCH] test: Restores old routed NIC IPv4 forwarding behaviour
+
+With explicit comment as to why.
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ test/suites/container_devices_nic_routed.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/test/suites/container_devices_nic_routed.sh b/test/suites/container_devices_nic_routed.sh
+index af6ff121254..eb1c40509ca 100644
+--- a/test/suites/container_devices_nic_routed.sh
++++ b/test/suites/container_devices_nic_routed.sh
+@@ -11,7 +11,7 @@ test_container_devices_nic_routed() {
+   ipRand=$(shuf -i 0-9 -n 1)
+ 
+   # These special values are needed to be enabled in kernel.
+-  sysctl net.ipv4.conf.all.forwarding=1
++  # No need to enable IPv4 forwarding, as LXD will do this on the veth host_name interface automatically.
+   sysctl net.ipv6.conf.all.forwarding=1
+   sysctl net.ipv6.conf.all.proxy_ndp=1
+ 
+From 9ff7f8ba681b85c133fc48420e2395d9e21afd45 Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Sat, 11 Dec 2021 22:35:03 +0000
+Subject: [PATCH] lxd/device/nic/routed: Enable IP forwarding on veth host_name
+ interface
+
+For IPv4 traffic this means we don't need to require net.ipv4.conf.all.forwarding=1.
+
+Fixes #9678
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/device/nic_routed.go | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/lxd/device/nic_routed.go b/lxd/device/nic_routed.go
+index 1c7d8a34cee..aa39b34d962 100644
+--- a/lxd/device/nic_routed.go
++++ b/lxd/device/nic_routed.go
+@@ -317,6 +317,12 @@ func (d *nicRouted) Start() (*deviceConfig.RunConfig, error) {
+ 			if err != nil {
+ 				return nil, fmt.Errorf("Failed adding host gateway IP %q: %w", addr.Address, err)
+ 			}
++
++			// Enable IP forwarding on host_name.
++			err = util.SysctlSet(fmt.Sprintf("net/%s/conf/%s/forwarding", keyPrefix, saveData["host_name"]), "1")
++			if err != nil {
++				return nil, err
++			}
+ 		}
+ 
+ 		// Perform per-address host-side configuration (static routes and neighbour proxy entries).

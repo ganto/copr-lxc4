@@ -1,0 +1,35 @@
+From 14c8db24fadd70cfc1bf3e34a9f1bab23d3661b5 Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Wed, 15 Dec 2021 11:19:36 +0000
+Subject: [PATCH] lxd/device/nic/routed: Don't setup auto gateway if IP family
+ not in use
+
+Fixes #9696
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/device/nic_routed.go | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/lxd/device/nic_routed.go b/lxd/device/nic_routed.go
+index aa39b34d962..0dc949da00f 100644
+--- a/lxd/device/nic_routed.go
++++ b/lxd/device/nic_routed.go
+@@ -413,12 +413,14 @@ func (d *nicRouted) Start() (*deviceConfig.RunConfig, error) {
+ 		}...)
+ 
+ 		for _, keyPrefix := range []string{"ipv4", "ipv6"} {
+-			if nicHasAutoGateway(d.config[fmt.Sprintf("%s.gateway", keyPrefix)]) {
+-				// Use a fixed address as the next-hop default gateway.
++			ipAddresses := util.SplitNTrimSpace(d.config[fmt.Sprintf("%s.address", keyPrefix)], ",", -1, true)
++
++			// Use a fixed address as the auto next-hop default gateway if using this IP family.
++			if len(ipAddresses) > 0 && nicHasAutoGateway(d.config[fmt.Sprintf("%s.gateway", keyPrefix)]) {
+ 				nic = append(nic, deviceConfig.RunConfigItem{Key: fmt.Sprintf("%s.gateway", keyPrefix), Value: d.ipHostAddress(keyPrefix)})
+ 			}
+ 
+-			for _, addrStr := range util.SplitNTrimSpace(d.config[fmt.Sprintf("%s.address", keyPrefix)], ",", -1, true) {
++			for _, addrStr := range ipAddresses {
+ 				// Add addresses to instance NIC.
+ 				if keyPrefix == "ipv6" {
+ 					nic = append(nic, deviceConfig.RunConfigItem{Key: "ipv6.address", Value: fmt.Sprintf("%s/128", addrStr)})

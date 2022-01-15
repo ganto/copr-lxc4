@@ -1,0 +1,51 @@
+From 328a4e015935a66701b2627489cc23b3d2a7ec3b Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Wed, 15 Dec 2021 14:31:04 +0000
+Subject: [PATCH] lxd/device/disk: Open source with O_PATH to support
+ directories and unix sockets
+
+Fixes #9699
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/device/disk.go | 13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
+
+diff --git a/lxd/device/disk.go b/lxd/device/disk.go
+index fc0b5f010ec..ffedd62c7a8 100644
+--- a/lxd/device/disk.go
++++ b/lxd/device/disk.go
+@@ -1296,9 +1296,9 @@ func (d *disk) localSourceOpen(srcPath string) (*os.File, error) {
+ 			return nil, fmt.Errorf("Failed resolving source path %q relative to restricted parent source path %q: %w", srcPath, d.restrictedParentSourcePath, err)
+ 		}
+ 
+-		// Open file handle to parent for use with openat2 later. Has to be os.O_RDONLY for
+-		// directory open support, but this won't prevent a writable mount.
+-		allowedParent, err := os.OpenFile(d.restrictedParentSourcePath, os.O_RDONLY, 0)
++		// Open file handle to parent for use with openat2 later.
++		// Has to use unix.O_PATH to support directories and sockets.
++		allowedParent, err := os.OpenFile(d.restrictedParentSourcePath, unix.O_PATH, 0)
+ 		if err != nil {
+ 			return nil, fmt.Errorf("Failed opening allowed parent source path %q: %w", d.restrictedParentSourcePath, err)
+ 		}
+@@ -1307,7 +1307,7 @@ func (d *disk) localSourceOpen(srcPath string) (*os.File, error) {
+ 		// For restricted source paths we use openat2 to prevent resolving to a mount path above the
+ 		// allowed parent source path. Requires Linux kernel >= 5.6.
+ 		fd, err := unix.Openat2(int(allowedParent.Fd()), relSrcPath, &unix.OpenHow{
+-			Flags:   unix.O_RDONLY,
++			Flags:   unix.O_PATH,
+ 			Resolve: unix.RESOLVE_BENEATH | unix.RESOLVE_NO_MAGICLINKS,
+ 		})
+ 		if err != nil {
+@@ -1320,9 +1320,8 @@ func (d *disk) localSourceOpen(srcPath string) (*os.File, error) {
+ 
+ 		f = os.NewFile(uintptr(fd), srcPath)
+ 	} else {
+-		// Open file handle to local source. Has to be os.O_RDONLY for directory open
+-		// support, but this won't prevent a writable mount.
+-		f, err = os.OpenFile(srcPath, os.O_RDONLY, 0)
++		// Open file handle to local source. Has to use unix.O_PATH to support directories and sockets.
++		f, err = os.OpenFile(srcPath, unix.O_PATH, 0)
+ 		if err != nil {
+ 			return f, fmt.Errorf("Failed opening source path %q: %w", srcPath, err)
+ 		}

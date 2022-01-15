@@ -1,0 +1,231 @@
+From 7de86d96b61b9e6ad1a7149c69b139b06ae5a803 Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Tue, 4 Jan 2022 11:47:40 +0000
+Subject: [PATCH] lxd/db/backups: Fixes GetStoragePoolVolumeBackups to handle
+ null StoragePoolVolumeBackup.ExpiryDate
+
+Also simplifies DB query logic.
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/db/backups.go | 82 ++++++++++++++++++-----------------------------
+ 1 file changed, 32 insertions(+), 50 deletions(-)
+
+diff --git a/lxd/db/backups.go b/lxd/db/backups.go
+index d9e235ebbaf..213293ed596 100644
+--- a/lxd/db/backups.go
++++ b/lxd/db/backups.go
+@@ -8,8 +8,6 @@ import (
+ 	"fmt"
+ 	"time"
+ 
+-	"github.com/pkg/errors"
+-
+ 	log "github.com/lxc/lxd/shared/log15"
+ 	"github.com/lxc/lxd/shared/logger"
+ )
+@@ -281,62 +279,46 @@ func (c *Cluster) GetExpiredInstanceBackups() ([]InstanceBackup, error) {
+ 
+ // GetStoragePoolVolumeBackups returns a list of volume backups.
+ func (c *Cluster) GetStoragePoolVolumeBackups(projectName string, volumeName string, poolID int64) ([]StoragePoolVolumeBackup, error) {
+-	var backupID int
+-	var volumeID int64
+-	var volName string
+-	var creationDate string
+-	var expiryDate string
+-	var volumeOnly bool
+-	var optimizedStorage bool
+-	var result []StoragePoolVolumeBackup
+-
+ 	q := `
+-SELECT
+-	backups.id,
+-	backups.storage_volume_id,
+-	backups.name,
+-	backups.creation_date,
+-	backups.expiry_date,
+-	backups.volume_only,
+-	backups.optimized_storage
+-FROM storage_volumes_backups AS backups
+-JOIN storage_volumes ON storage_volumes.id=backups.storage_volume_id
+-JOIN projects ON projects.id=storage_volumes.project_id
+-WHERE projects.name=? AND storage_volumes.name=? AND storage_volumes.storage_pool_id=?
+-ORDER BY backups.id
+-`
++	SELECT
++		backups.id,
++		backups.storage_volume_id,
++		backups.name,
++		backups.creation_date,
++		backups.expiry_date,
++		backups.volume_only,
++		backups.optimized_storage
++	FROM storage_volumes_backups AS backups
++	JOIN storage_volumes ON storage_volumes.id=backups.storage_volume_id
++	JOIN projects ON projects.id=storage_volumes.project_id
++	WHERE projects.name=? AND storage_volumes.name=? AND storage_volumes.storage_pool_id=?
++	ORDER BY backups.id
++	`
++
++	var backups []StoragePoolVolumeBackup
+ 
+-	inargs := []interface{}{projectName, volumeName, poolID}
+-	outfmt := []interface{}{backupID, volumeID, volName, creationDate, expiryDate, volumeOnly, optimizedStorage}
++	err := c.Transaction(func(tx *ClusterTx) error {
++		return tx.QueryScan(q, func(scan func(dest ...interface{}) error) error {
++			var b StoragePoolVolumeBackup
++			var expiryTime sql.NullTime
+ 
+-	dbResults, err := queryScan(c, q, inargs, outfmt)
+-	if err != nil {
+-		return nil, errors.Wrapf(err, "Failed loading backups")
+-	}
++			err := scan(&b.ID, &b.VolumeID, &b.Name, &b.CreationDate, &expiryTime, &b.VolumeOnly, &b.OptimizedStorage)
++			if err != nil {
++				return err
++			}
+ 
+-	for _, r := range dbResults {
+-		backup := StoragePoolVolumeBackup{
+-			ID:               r[0].(int),
+-			VolumeID:         r[1].(int64),
+-			Name:             r[2].(string),
+-			VolumeOnly:       r[5].(bool),
+-			OptimizedStorage: r[6].(bool),
+-		}
++			b.ExpiryDate = expiryTime.Time // Convert nulls to zero.
+ 
+-		err = backup.CreationDate.UnmarshalText([]byte(r[3].(string)))
+-		if err != nil {
+-			return nil, err
+-		}
++			backups = append(backups, b)
+ 
+-		err = backup.ExpiryDate.UnmarshalText([]byte(r[4].(string)))
+-		if err != nil {
+-			return nil, err
+-		}
+-
+-		result = append(result, backup)
++			return nil
++		}, projectName, volumeName, poolID)
++	})
++	if err != nil {
++		return nil, err
+ 	}
+ 
+-	return result, nil
++	return backups, nil
+ }
+ 
+ // GetStoragePoolVolumeBackupsNames returns the names of all backups of the storage volume with the given name.
+From 47580962f6a998966b285cc586d3306390712f7d Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Tue, 4 Jan 2022 11:31:35 +0000
+Subject: [PATCH] lxd/db/storage/volumes/snapshots: Update
+ GetExpiredStorageVolumeSnapshots to support sql.NullTime ExpiryDate field
+
+Simplifies DB retrieval logic too.
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/db/storage_volume_snapshots.go | 79 ++++++++++++++----------------
+ 1 file changed, 37 insertions(+), 42 deletions(-)
+
+diff --git a/lxd/db/storage_volume_snapshots.go b/lxd/db/storage_volume_snapshots.go
+index 2398e3bc0fc..a1b66c06431 100644
+--- a/lxd/db/storage_volume_snapshots.go
++++ b/lxd/db/storage_volume_snapshots.go
+@@ -181,55 +181,50 @@ func (c *Cluster) GetStorageVolumeSnapshotExpiry(volumeID int64) (time.Time, err
+ 
+ // GetExpiredStorageVolumeSnapshots returns a list of expired volume snapshots.
+ func (c *Cluster) GetExpiredStorageVolumeSnapshots() ([]StorageVolumeArgs, error) {
+-	var result []StorageVolumeArgs
+-	var volumeName string
+-	var snapshotName string
+-	var expiryDate string
+-	var poolName string
+-	var projectName string
+-
+ 	q := `
+-SELECT storage_volumes.name, storage_volumes_snapshots.name, storage_volumes_snapshots.expiry_date, storage_pools.name, projects.name
+-FROM storage_volumes_snapshots
+-JOIN storage_volumes ON storage_volumes_snapshots.storage_volume_id = storage_volumes.id
+-JOIN storage_pools ON storage_volumes.storage_pool_id = storage_pools.id
+-JOIN projects ON storage_volumes.project_id = projects.id
+-WHERE storage_volumes.type = ?`
+-	infmt := []interface{}{StoragePoolVolumeTypeCustom}
+-	outfmt := []interface{}{volumeName, snapshotName, expiryDate, poolName, projectName}
+-	dbResults, err := queryScan(c, q, infmt, outfmt)
+-	if err != nil {
+-		return nil, err
+-	}
++	SELECT storage_volumes.name, storage_volumes_snapshots.name, storage_volumes_snapshots.expiry_date, storage_pools.name, projects.name
++	FROM storage_volumes_snapshots
++	JOIN storage_volumes ON storage_volumes_snapshots.storage_volume_id = storage_volumes.id
++	JOIN storage_pools ON storage_volumes.storage_pool_id = storage_pools.id
++	JOIN projects ON storage_volumes.project_id = projects.id
++	WHERE storage_volumes.type = ?`
+ 
+-	for _, r := range dbResults {
+-		timestamp := r[2]
++	var snapshots []StorageVolumeArgs
+ 
+-		var snapshotExpiry time.Time
+-		err = snapshotExpiry.UnmarshalText([]byte(timestamp.(string)))
+-		if err != nil {
+-			return []StorageVolumeArgs{}, err
+-		}
++	err := c.Transaction(func(tx *ClusterTx) error {
++		return tx.QueryScan(q, func(scan func(dest ...interface{}) error) error {
++			var snap StorageVolumeArgs
++			var snapName string
++			var volName string
++			var expiryTime sql.NullTime
+ 
+-		// Since zero time causes some issues due to timezones, we check the
+-		// unix timestamp instead of IsZero().
+-		if snapshotExpiry.Unix() <= 0 {
+-			// Backup doesn't expire
+-			continue
+-		}
++			err := scan(&volName, &snapName, &expiryTime, &snap.PoolName, &snap.ProjectName)
++			if err != nil {
++				return err
++			}
+ 
+-		// Snapshot has expired
+-		if time.Now().Unix()-snapshotExpiry.Unix() >= 0 {
+-			result = append(result, StorageVolumeArgs{
+-				ProjectName: r[4].(string),
+-				Name:        r[0].(string) + shared.SnapshotDelimiter + r[1].(string),
+-				PoolName:    r[3].(string),
+-				ExpiryDate:  snapshotExpiry,
+-			})
+-		}
++			snap.Name = volName + shared.SnapshotDelimiter + snapName
++			snap.ExpiryDate = expiryTime.Time // Convert nulls to zero.
++
++			// Since zero time causes some issues due to timezones, we check the
++			// unix timestamp instead of IsZero().
++			if snap.ExpiryDate.Unix() <= 0 {
++				return nil // Backup doesn't expire.
++			}
++
++			// Check if snapshot has expired.
++			if time.Now().Unix()-snap.ExpiryDate.Unix() >= 0 {
++				snapshots = append(snapshots, snap)
++			}
++
++			return nil
++		}, StoragePoolVolumeTypeCustom)
++	})
++	if err != nil {
++		return nil, err
+ 	}
+ 
+-	return result, nil
++	return snapshots, nil
+ }
+ 
+ // Updates the expiry date of a storage volume snapshot.
