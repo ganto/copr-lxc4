@@ -84,6 +84,9 @@ rm -f %{buildroot}%{_libdir}/libraft.la
 %doc example/
 
 %changelog
+* Sat Jan 22 2022 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.11.3-0.1
+- Update to 0.11.3.
+
 * Wed Oct 27 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.11.2-0.2
 - Add -doc and -benchmark subpackages
 - Remove -static subpackage
