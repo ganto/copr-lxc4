@@ -75,6 +75,9 @@ mkdir -p %{buildroot}%{_sharedstatedir}/%{name}
 
 
 %changelog
+* Sat Feb 05 2022 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.0.12-0.1
+- Update to 4.0.12.
+
 * Wed Oct 27 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.0.11-0.2
 - Fix build failure on armhfp
 
