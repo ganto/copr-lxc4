@@ -1,11 +1,10 @@
 Name:		  lxcfs
-Version:	  4.0.11
-Release:	  0.2%{?dist}
+Version:	  4.0.12
+Release:	  0.1%{?dist}
 Summary:	  FUSE based filesystem for LXC
 License:	  ASL 2.0
 URL:		  https://linuxcontainers.org/lxcfs
 Source0:	  https://linuxcontainers.org/downloads/%{name}/%{name}-%{version}.tar.gz
-Patch0:       4.0.11-build-Ensure-FILE_OFFSET_BITS-for-64bit.patch
 BuildRequires:    automake
 BuildRequires:	  gcc
 BuildRequires:	  gawk
