@@ -1,12 +1,13 @@
 Name:           raft
 Version:        0.11.3
-Release:        0.2%{?dist}
+Release:        0.3%{?dist}
 Summary:        C implementation of the Raft consensus protocol
 
 License:        LGPLv3 with exceptions
 URL:            https://github.com/canonical/raft
 Source0:        %{URL}/archive/v%{version}.tar.gz
-Patch0:         raft-0.9.25-Always-skip-init-oom-test.patch
+# https://github.com/canonical/raft/pull/261
+Patch0:         raft-0.11.3-skip-init-oom-test-on-tmpfs.patch
 
 BuildRequires:  autoconf libtool
 BuildRequires:  gcc
