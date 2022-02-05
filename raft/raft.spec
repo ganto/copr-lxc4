@@ -86,6 +86,9 @@ rm -f %{buildroot}%{_libdir}/libraft.la
 %doc example/
 
 %changelog
+* Sat Feb 05 2022 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.11.3-0.2
+- Re-add patch to fix build failures on COPR
+
 * Sat Jan 22 2022 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.11.3-0.1
 - Update to 0.11.3.
 
