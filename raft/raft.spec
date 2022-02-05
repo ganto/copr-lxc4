@@ -1,11 +1,12 @@
 Name:           raft
 Version:        0.11.3
-Release:        0.1%{?dist}
+Release:        0.2%{?dist}
 Summary:        C implementation of the Raft consensus protocol
 
 License:        LGPLv3 with exceptions
 URL:            https://github.com/canonical/raft
 Source0:        %{URL}/archive/v%{version}.tar.gz
+Patch0:         raft-0.9.25-Always-skip-init-oom-test.patch
 
 BuildRequires:  autoconf libtool
 BuildRequires:  gcc
@@ -42,6 +43,7 @@ examples.
 
 %prep
 %setup -q -n %{name}-%{version}
+%patch0 -p1
 %if 0%{?fedora} && 0%{?fedora} < 35
 # Strict c11 mode results in build failure caused by included liburing headers
 # See https://github.com/axboe/liburing/issues/181
