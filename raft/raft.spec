@@ -93,6 +93,9 @@ rm -f %{buildroot}%{_libdir}/libraft.la
 %doc example/
 
 %changelog
+* Sun Feb 13 2022 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.11.3-0.5
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_36_Mass_Rebuild
+
 * Sun Feb 13 2022 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.11.3-0.4
 - Fix tests on armv7hl architecture.
 
