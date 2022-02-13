@@ -75,6 +75,9 @@ mkdir -p %{buildroot}%{_sharedstatedir}/%{name}
 
 
 %changelog
+* Sun Feb 13 2022 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.0.12-0.2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_36_Mass_Rebuild
+
 * Sat Feb 05 2022 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.0.12-0.1
 - Update to 4.0.12.
 
