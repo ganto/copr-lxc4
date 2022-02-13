@@ -1,6 +1,6 @@
 Name:           raft
 Version:        0.11.3
-Release:        0.4%{?dist}
+Release:        0.5%{?dist}
 Summary:        C implementation of the Raft consensus protocol
 
 License:        LGPLv3 with exceptions
