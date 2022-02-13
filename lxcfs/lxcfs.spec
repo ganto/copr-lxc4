@@ -1,6 +1,6 @@
 Name:		  lxcfs
 Version:	  4.0.12
-Release:	  0.1%{?dist}
+Release:	  0.2%{?dist}
 Summary:	  FUSE based filesystem for LXC
 License:	  ASL 2.0
 URL:		  https://linuxcontainers.org/lxcfs
