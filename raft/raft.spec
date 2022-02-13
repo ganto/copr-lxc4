@@ -93,6 +93,9 @@ rm -f %{buildroot}%{_libdir}/libraft.la
 %doc example/
 
 %changelog
+* Sun Feb 13 2022 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.11.3-0.4
+- Fix tests on armv7hl architecture.
+
 * Sat Feb 05 2022 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.11.3-0.3
 - Replace tmpfs patch with upstream fix
 
