@@ -268,6 +268,9 @@ make check
 
 
 %changelog
+* Sun Feb 13 2022 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.0.12-0.1
+- Update to 4.0.12.
+
 * Tue Oct 26 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.0.11-0.1
 - Update to 4.0.11.
 - Build with liburing support.
