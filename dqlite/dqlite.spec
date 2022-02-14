@@ -1,6 +1,6 @@
 Name:           dqlite
 Version:        1.9.1
-Release:        0.1%{?dist}
+Release:        0.2%{?dist}
 Summary:        Embeddable, replicated and fault tolerant SQL engine
 
 License:        LGPLv3 with exception
