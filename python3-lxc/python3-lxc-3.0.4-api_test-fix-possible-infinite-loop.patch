@@ -1,0 +1,40 @@
+From 37ac09d7a4b58d96e1a89a2304abcc8972712da7 Mon Sep 17 00:00:00 2001
+From: Po-Hsu Lin <po-hsu.lin@canonical.com>
+Date: Thu, 25 Nov 2021 15:55:30 +0800
+Subject: [PATCH] api_test: fix possible infinite loop when trying to get the
+ ip address
+
+If the the ips can not be correctly obtained with container.get_ips()
+this while loop will never ends.
+
+Fix this by using:
+  while not ips and count != 30
+
+So that even if the ips is empty, the loop will get terminated after
+30 attempts (30 seconds later). This retry limit was bumped from 10
+to 30 to give it a chance to get the ip address.
+
+If the ip address cannot be obtained, this test will failed with:
+  Traceback (most recent call last):
+    File "/usr/share/doc/python3-lxc/examples/api_test.py", line 131, in <module>
+      assert(len(ips) > 0)
+  AssertionError
+
+Signed-off-by: Po-Hsu Lin <po-hsu.lin@canonical.com>
+---
+ examples/api_test.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/examples/api_test.py b/examples/api_test.py
+index 4aeff01..db3467c 100755
+--- a/examples/api_test.py
++++ b/examples/api_test.py
+@@ -118,7 +118,7 @@
+ 
+ count = 0
+ ips = []
+-while not ips or count == 10:
++while not ips and count != 30:
+     ips = container.get_ips()
+     time.sleep(1)
+     count += 1

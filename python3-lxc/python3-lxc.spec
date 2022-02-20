@@ -2,9 +2,8 @@
 
 Name:           %{srcname}
 Version:        3.0.4
-Release:        0.4%{?dist}
+Release:        0.5%{?dist}
 Summary:        Python 3 bindings for LXC
-
 License:        LGPLv2+
 URL:            https://linuxcontainers.org/lxc
 Source0:        https://linuxcontainers.org/downloads/lxc/%{srcname}-%{version}.tar.gz
@@ -12,9 +11,14 @@ Source0:        https://linuxcontainers.org/downloads/lxc/%{srcname}-%{version}.
 Patch0:         python3-lxc-3.0.4-Change-ContainerNetworkList-len-function-to-not-throw-KeyError.patch
 Patch1:         python3-lxc-3.0.4-Fixes-incorrect-behavior-of-using-create-after-destroy.patch
 Patch2:         python3-lxc-3.0.4-Added-logic-to-add-new-network-device-when-needed.patch
+Patch3:         python3-lxc-3.0.4-Add-optional-fssize-argument-to-create.patch
+Patch4:         python3-lxc-3.0.4-Unlock-GIL-while-cloning-container.patch
+Patch5:         python3-lxc-3.0.4-api_test-fix-possible-infinite-loop.patch
+
 BuildRequires:  gcc
 BuildRequires:  lxc-devel >= 3
-BuildRequires:  pkgconfig(python3) >= 3.2
+BuildRequires:  python3-devel
+BuildRequires:  python3-setuptools
 
 %description
 %{summary}

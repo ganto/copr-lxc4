@@ -1,0 +1,54 @@
+From 6b8f5079882bd43ce74283b0a741a42ab3356be2 Mon Sep 17 00:00:00 2001
+From: Consolatis <35009135+Consolatis@users.noreply.github.com>
+Date: Tue, 5 Oct 2021 01:56:42 +0200
+Subject: [PATCH] Unlock GIL while cloning container
+
+Signed-off-by: Consolatis <35009135+Consolatis@users.noreply.github.com>
+---
+ lxc.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/lxc.c b/lxc.c
+index 70176cd..213fc21 100644
+--- a/lxc.c
++++ b/lxc.c
+@@ -849,9 +849,11 @@ Container_clone(Container *self, PyObject *args, PyObject *kwds)
+         assert(config_path != NULL);
+     }
+ 
++    Py_BEGIN_ALLOW_THREADS
+     new_container = self->container->clone(self->container, newname,
+                                            config_path, flags, bdevtype,
+                                            bdevdata, newsize, hookargs);
++    Py_END_ALLOW_THREADS
+ 
+     Py_XDECREF(py_config_path);
+ 
+From a86985477787f86c2fd209c2b9058204313a5693 Mon Sep 17 00:00:00 2001
+From: Consolatis <35009135+Consolatis@users.noreply.github.com>
+Date: Tue, 5 Oct 2021 02:19:44 +0200
+Subject: [PATCH] Unlock GIL while creating container
+
+Signed-off-by: Consolatis <35009135+Consolatis@users.noreply.github.com>
+---
+ lxc.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/lxc.c b/lxc.c
+index ec5fe52..b515acd 100644
+--- a/lxc.c
++++ b/lxc.c
+@@ -939,11 +939,13 @@ Container_create(Container *self, PyObject *args, PyObject *kwds)
+         }
+     }
+ 
++    Py_BEGIN_ALLOW_THREADS
+     if (self->container->create(self->container, template_name, bdevtype, &fs_specs,
+                                 flags, create_args))
+         retval = Py_True;
+     else
+         retval = Py_False;
++    Py_END_ALLOW_THREADS
+ 
+     if (vargs) {
+         /* We cannot have gotten here unless vargs was given and create_args
