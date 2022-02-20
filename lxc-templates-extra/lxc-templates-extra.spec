@@ -1,14 +1,16 @@
+%global commit          8974b96a78f93f124d958b5a9e27bc3c097d23e5
+%global commitdate      20210821
+%global shortcommit     %(c=%{commit}; echo ${c:0:7})
+
 Name:           lxc-templates-extra
 Version:        3.0.4
-Release:        0.3%{?dist}
+Release:        0.4.%{commitdate}git%{shortcommit}%{?dist}
 Summary:        Old style template scripts for LXC
 
 License:        LGPLv2+
 URL:            https://linuxcontainers.org
-Source0:        https://linuxcontainers.org/downloads/lxc/lxc-templates-%{version}.tar.gz
-Patch0:         3.0.4-archlinux-added-systemd-sysvcompat.patch
-Patch1:         3.0.4-debian-fix-incorrect-use-of-basename.patch
-Patch2:         3.0.4-palmo-fix-for-current-palmo-7.patch
+Source0:        https://github.com/lxc/lxc-templates/archive/%{commit}.tar.gz
+
 BuildArch:      noarch
 BuildRequires:  autoconf
 BuildRequires:  automake
@@ -33,7 +35,7 @@ Requires:       lxc-templates >= 3.0.3-0.2
 The modern approach to build container images is distrobuilder.
 
 %prep
-%autosetup -n lxc-templates-%{version} -p1
+%autosetup -n lxc-templates-%{commit} -p1
 ./autogen.sh
 %configure
 
