@@ -7,7 +7,7 @@ Version:        2.0
 %global golicenses  COPYING
 
 Name:           distrobuilder
-Release:        0.1%{?dist}
+Release:        0.2%{?dist}
 Summary:        System container image builder for LXC and LXD
 
 License:        ASL 2.0
