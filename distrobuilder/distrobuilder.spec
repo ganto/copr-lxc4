@@ -67,6 +67,9 @@ install -m 0644 -vp %{name}.1           %{buildroot}%{_mandir}/man1/
 %gopkgfiles
 
 %changelog
+* Sun Feb 27 2022 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 2.0-0.2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_36_Mass_Rebuild
+
 * Thu Oct 28 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 2.0-0.1
 - Update to 2.0.
 
