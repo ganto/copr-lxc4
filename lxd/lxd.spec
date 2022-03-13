@@ -57,6 +57,7 @@ BuildRequires:  pkgconfig(raft)
 BuildRequires:  pkgconfig(sqlite3)
 
 Requires: acl
+Requires: attr
 Requires: dnsmasq
 Requires: (nftables or (ebtables and iptables))
 Requires: lxd-client = %{version}-%{release}
