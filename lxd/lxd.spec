@@ -325,6 +325,10 @@ getent group %{name} > /dev/null || groupadd -r %{name}
 %doc doc/*
 
 %changelog
+* Sun Mar 13 2022 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.22-0.1
+- Update to 4.22.
+- Add missing dependency to setfattr
+
 * Sat Jan 15 2022 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.21-0.1
 - Update to 4.21
 
