@@ -13,7 +13,7 @@
 
 # https://github.com/lxc/lxd
 %global goipath github.com/lxc/lxd
-Version:        4.21
+Version:        4.22
 
 %gometa
 
@@ -39,11 +39,8 @@ Source8:        lxd.profile
 Source9:        lxd-agent.service
 Source10:       lxd-agent-setup
 # Upstream bug fixes merged to master for next release
-Patch0:         lxd-4.21-NIC-Enable-IP-forwarding-on-routed-NIC.patch
-Patch1:         lxd-4.21-NIC-Dont-add-auto-gateway-when-IP-family-not-in-use.patch
-Patch2:         lxd-4.21-Disk-Fix-support-to-bind-mounting-unix-sockets.patch
-Patch3:         lxd-4.21-DB-Handle-null-ExpiryDate-for-custom-volume-snapshots.patch
-Patch4:         lxd-4.21-lxd-db-cluster-Fixes-v19-migration-for-sqlite-3.37.patch
+Patch0:         lxd-4.22-Exec-Add-channel-closed-check.patch
+Patch1:         lxd-4.22-Generator-Add-order-tag-to-generator.patch
 
 BuildRequires:  gettext
 BuildRequires:  help2man
@@ -165,9 +162,6 @@ This package contains user documentation.
 %goprep -k
 %patch0 -p1
 %patch1 -p1
-%patch2 -p1
-%patch3 -p1
-%patch4 -p1
 
 %build
 export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
