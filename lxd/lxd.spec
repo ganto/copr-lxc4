@@ -327,6 +327,10 @@ getent group %{name} > /dev/null || groupadd -r %{name}
 %doc doc/*
 
 %changelog
+* Sun Mar 27 2022 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.23-0.1
+- Update to 4.23.
+- Replace lxd-p2c with lxd-migrate following upstream change.
+
 * Sun Mar 13 2022 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.22-0.1
 - Update to 4.22.
 - Add missing dependency to setfattr
