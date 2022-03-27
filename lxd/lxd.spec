@@ -13,7 +13,7 @@
 
 # https://github.com/lxc/lxd
 %global goipath github.com/lxc/lxd
-Version:        4.22
+Version:        4.23
 
 %gometa
 
@@ -39,8 +39,8 @@ Source8:        lxd.profile
 Source9:        lxd-agent.service
 Source10:       lxd-agent-setup
 # Upstream bug fixes merged to master for next release
-Patch0:         lxd-4.22-Exec-Add-channel-closed-check.patch
-Patch1:         lxd-4.22-Generator-Add-order-tag-to-generator.patch
+Patch0:         lxd-4.23-lxd-fsmonitor-drivers-Ignore-stale-file-handle-errors.patch
+Patch1:         lxd-4.23-NIC-Dont-attempt-to-clear-bridged-filter-rules.patch
 
 BuildRequires:  gettext
 BuildRequires:  help2man
@@ -124,12 +124,14 @@ This package contains extra tools provided with LXD.
  - lxc-to-lxd - A tool to migrate LXC containers to LXD
  - lxd-benchmark - A LXD benchmark utility
 
-%package p2c
+%package migrate
 Summary:        A physical to container migration tool
 #Requires:       netcat
 Requires:       rsync
+Obsoletes:      %{name}-p2c < %{version}
+Conflicts:      %{name}-p2c < %{version}
 
-%description p2c
+%description migrate
 Physical to container migration tool
 
 This tool lets you turn any Linux filesystem (including your current one)
@@ -170,7 +172,7 @@ for cmd in lxd lxc fuidshift lxd-benchmark lxc-to-lxd; do
 done
 
 export CGO_ENABLED=0
-BUILDTAGS="netgo" %gobuild -o %{gobuilddir}/bin/lxd-p2c %{goipath}/lxd-p2c
+BUILDTAGS="netgo" %gobuild -o %{gobuilddir}/bin/lxd-migrate %{goipath}/lxd-migrate
 BUILDTAGS="agent netgo" %gobuild -o %{gobuilddir}/bin/lxd-agent %{goipath}/lxd-agent
 unset CGO_ENABLED
 
@@ -183,7 +185,7 @@ make %{?_smp_mflags} build-mo
 %{gobuilddir}/bin/lxc manpage .
 help2man %{gobuilddir}/bin/fuidshift -n "uid/gid shifter" --no-info --no-discard-stderr > fuidshift.1
 help2man %{gobuilddir}/bin/lxd-benchmark -n "The container lightervisor - benchmark" --no-info --no-discard-stderr > lxd-benchmark.1
-help2man %{gobuilddir}/bin/lxd-p2c -n "Physical to container migration tool" --no-info --no-discard-stderr > lxd-p2c.1
+help2man %{gobuilddir}/bin/lxd-migrate -n "Physical to container migration tool" --no-info --no-discard-stderr > lxd-migrate.1
 help2man %{gobuilddir}/bin/lxc-to-lxd -n "Convert LXC containers to LXD" --no-info --no-discard-stderr > lxc-to-lxd.1
 help2man %{gobuilddir}/bin/lxd-agent -n "LXD virtual machine guest agent" --no-info --no-discard-stderr > lxd-agent.1
 
@@ -222,7 +224,7 @@ cp -p lxd.1 %{buildroot}%{_mandir}/man1/
 cp -p lxc*.1 %{buildroot}%{_mandir}/man1/
 cp -p fuidshift.1 %{buildroot}%{_mandir}/man1/
 cp -p lxd-benchmark.1 %{buildroot}%{_mandir}/man1/
-cp -p lxd-p2c.1 %{buildroot}%{_mandir}/man1/
+cp -p lxd-migrate.1 %{buildroot}%{_mandir}/man1/
 cp -p lxc-to-lxd.1 %{buildroot}%{_mandir}/man1/
 cp -p lxd-agent.1 %{buildroot}%{_mandir}/man1/
 
@@ -308,10 +310,10 @@ getent group %{name} > /dev/null || groupadd -r %{name}
 %{_mandir}/man1/lxd-benchmark.1.*
 %{_mandir}/man1/lxc-to-lxd.1.*
 
-%files p2c
+%files migrate
 %license %{golicenses}
-%{_bindir}/lxd-p2c
-%{_mandir}/man1/lxd-p2c.1.*
+%{_bindir}/lxd-migrate
+%{_mandir}/man1/lxd-migrate.1.*
 
 %files agent
 %license %{golicenses}
