@@ -1,0 +1,88 @@
+From 83d9dee735625f8d2db4e1cef483cbf5a8d8ee80 Mon Sep 17 00:00:00 2001
+From: Morten Linderud <morten@linderud.pw>
+Date: Sat, 12 Mar 2022 15:53:51 +0100
+Subject: [PATCH] meson: Include documentation
+
+Documentation was removed from the build system with the migration to
+meson. This implements the help2man generation which existed in the
+autoconf setup.
+
+Signed-off-by: Morten Linderud <morten@linderud.pw>
+---
+ meson.build       | 24 ++++++++++++++++++++++--
+ meson_options.txt |  3 +++
+ 2 files changed, 25 insertions(+), 2 deletions(-)
+
+diff --git a/meson.build b/meson.build
+index 517dbf6c..72c5a730 100644
+--- a/meson.build
++++ b/meson.build
+@@ -52,6 +52,7 @@ datadir = join_paths(prefixdir, get_option('datadir'))
+ 
+ lxcfssharedir = join_paths(datadir, 'lxcfs')
+ lxcconfdir = join_paths(datadir, 'lxc/config/common.conf.d')
++lxcmandir = join_paths(datadir, 'man')
+ 
+ conf.set_quoted('BINDIR', bindir)
+ conf.set_quoted('LIBDIR', libdir)
+@@ -68,6 +69,7 @@ conf.set_quoted('LXCFSTARGETDIR', join_paths(localstatedir, 'lib/lxcfs'))
+ # Custom configuration.
+ init_script = get_option('init-script')
+ want_tests = get_option('tests')
++want_docs= get_option('docs')
+ 
+ 
+ # Build flags.
+@@ -167,8 +169,7 @@ add_project_arguments('-include', 'config.h', language: 'c')
+ 
+ # Binary.
+ lxcfs_sources = files('src/lxcfs.c')
+-public_programs = []
+-public_programs += executable(
++lxcfs = executable(
+     'lxcfs',
+     lxcfs_sources,
+     dependencies: [
+@@ -251,6 +252,24 @@ lxcfs_spec = custom_target(
+         '@OUTPUT@',
+     ])
+ 
++# Man pages
++if want_docs == true
++    help2man = find_program('help2man')
++    help2man_opts = [
++       '--name="System virtualization filesystem for containers"',
++       '--no-discard-stderr',
++       '--section=1',
++       '--opt-include=docs/lxcfs.man.add',
++       '--no-info',
++    ]
++    custom_target('lxcfs.1',
++        output: 'lxcfs.1',
++        command: [help2man, help2man_opts, '--output=@OUTPUT@', lxcfs],
++        install: true,
++        install_dir: join_paths(lxcmandir, 'man1'))
++endif
++
++
+ # Include sub-directories.
+ subdir('config/init')
+ subdir('share')
+@@ -275,5 +294,6 @@ status = [
+     'lxcfs source root directory:	@0@'.format(project_source_root),
+     'init system:			@0@'.format(init_script),
+     'tests:				@0@'.format(want_tests),
++    'documentation:			@0@'.format(want_docs),
+ ]
+ message('\n         '.join(status))
+diff --git a/meson_options.txt b/meson_options.txt
+index 8529aef2..6718c45f 100644
+--- a/meson_options.txt
++++ b/meson_options.txt
+@@ -12,3 +12,6 @@ option('with-init-script', type : 'string', value : 'systemd',
+ option('init-script', type : 'combo',
+        choices : ['systemd', 'sysvinit', 'openrc', 'upstart'], value : 'systemd',
+        description : 'init script')
++
++option('docs', type : 'boolean', value: 'true',
++       description : 'build documentation')

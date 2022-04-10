@@ -1,18 +1,20 @@
 Name:		  lxcfs
-Version:	  4.0.12
-Release:	  0.2%{?dist}
+Version:	  5.0.0
+Release:	  0.1%{?dist}
 Summary:	  FUSE based filesystem for LXC
 License:	  ASL 2.0
 URL:		  https://linuxcontainers.org/lxcfs
 Source0:	  https://linuxcontainers.org/downloads/%{name}/%{name}-%{version}.tar.gz
-BuildRequires:    automake
-BuildRequires:	  gcc
-BuildRequires:	  gawk
-BuildRequires:	  make
-BuildRequires:	  fuse3-devel
-BuildRequires:	  help2man
-BuildRequires:	  systemd
-Requires(post):	  systemd
+Patch0:       5.0.0-meson-Include-documentation.patch
+Patch1:       5.0.0-Query-systemd-system-unit-dir.patch
+BuildRequires:    gcc
+BuildRequires:    gawk
+BuildRequires:    meson
+BuildRequires:    fuse3-devel
+BuildRequires:    help2man
+BuildRequires:    python-jinja2
+BuildRequires:    systemd
+Requires(post):   systemd
 Requires(preun):  systemd
 Requires(postun): systemd
 # for /usr/share/lxc/config/common.conf.d:
@@ -35,13 +37,15 @@ how long the host is running.
 
 
 %build
-%configure --with-init-script=systemd
-make %{?_smp_mflags}
-
+%meson -Dinit-script=systemd -Dtests=true
+%meson_build
 
 %install
-%make_install SYSTEMD_UNIT_DIR=%{_unitdir}
+%meson_install
 mkdir -p %{buildroot}%{_sharedstatedir}/%{name}
+
+%check
+%meson_test
 
 
 %post
@@ -64,7 +68,6 @@ mkdir -p %{buildroot}%{_sharedstatedir}/%{name}
 %{_bindir}/lxcfs
 %dir %{_libdir}/%{name}
 %{_libdir}/%{name}/lib%{name}.so
-%exclude %{_libdir}/%{name}/lib%{name}.la
 %dir %{_datadir}/%{name}
 %{_datadir}/%{name}/lxc.mount.hook
 %{_datadir}/%{name}/lxc.reboot.hook

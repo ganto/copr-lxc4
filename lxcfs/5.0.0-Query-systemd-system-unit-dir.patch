@@ -1,0 +1,30 @@
+commit 6d4417ae798cb2603b3bad73d4a12cd8e91ed991
+Author: Thomas Moschny <thomas.moschny@gmx.de>
+Date:   Sun Mar 13 13:00:56 2022 +0100
+
+    Query systemd system unit dir.
+    
+    Signed-off-by: Thomas Moschny <thomas.moschny@gmx.de>
+
+diff --git a/config/init/meson.build b/config/init/meson.build
+index 5061973..e39c2ab 100644
+--- a/config/init/meson.build
++++ b/config/init/meson.build
+@@ -1,6 +1,8 @@
+ # SPDX-License-Identifier: LGPL-2.1-or-later
+ 
+ if init_script == 'systemd'
++    systemd = dependency('systemd')
++    systemd_system_unit_dir = systemd.get_pkgconfig_variable('systemdsystemunitdir')
+     systemd_service = custom_target(
+         'lxcfs.service',
+         input: 'systemd/lxcfs.service.in',
+@@ -12,7 +14,7 @@ if init_script == 'systemd'
+             '@OUTPUT@',
+         ],
+         install: true,
+-        install_dir: '/lib/systemd/system')
++        install_dir: systemd_system_unit_dir)
+ 
+ elif init_script == 'upstart'
+         install_data('upstart/lxcfs.conf', install_dir: join_paths(sysconfdir, 'init'))
