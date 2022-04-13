@@ -329,6 +329,9 @@ getent group %{name} > /dev/null || groupadd -r %{name}
 %doc doc/*
 
 %changelog
+* Thu Apr 14 2022 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.24-0.1
+- Update to 4.24.
+
 * Sun Mar 27 2022 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.23-0.1
 - Update to 4.23.
 - Replace lxd-p2c with lxd-migrate following upstream change.
