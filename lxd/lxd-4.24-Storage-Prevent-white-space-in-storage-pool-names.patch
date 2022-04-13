@@ -1,0 +1,37 @@
+From 0cf99ea1e9c1614fbe304b15e23b31eb755d5a79 Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Wed, 16 Mar 2022 14:56:59 +0000
+Subject: [PATCH] lxd/storage/utils: Prevent white space in storage pool names
+
+Fixes #10063
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/storage/utils.go | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/lxd/storage/utils.go b/lxd/storage/utils.go
+index 93cbc2f313f..115c89fcc1d 100644
+--- a/lxd/storage/utils.go
++++ b/lxd/storage/utils.go
+@@ -8,6 +8,7 @@ import (
+ 	"path/filepath"
+ 	"strings"
+ 	"time"
++	"unicode"
+ 
+ 	log "gopkg.in/inconshreveable/log15.v2"
+ 
+@@ -39,6 +40,12 @@ func ValidName(value string) error {
+ 		return fmt.Errorf(`Storage name cannot contain "/"`)
+ 	}
+ 
++	for _, r := range value {
++		if unicode.IsSpace(r) {
++			return fmt.Errorf(`Storage name cannot contain white space`)
++		}
++	}
++
+ 	return nil
+ }
+ 

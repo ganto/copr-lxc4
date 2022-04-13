@@ -1,0 +1,202 @@
+From 783de56c5c4d6be78e625b246ed8d89b6c97458f Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Thu, 17 Mar 2022 13:58:11 +0000
+Subject: [PATCH] lxc/file: Ensure sshfs closes on exit request
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxc/file.go | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/lxc/file.go b/lxc/file.go
+index 491d7f6ddb4..4c7047f8b41 100644
+--- a/lxc/file.go
++++ b/lxc/file.go
+@@ -1038,6 +1038,7 @@ func (c *cmdFileMount) sshfsMount(ctx context.Context, resource remoteResource,
+ 
+ 		cancel()                              // Prevents error output when the io.Copy functions finish.
+ 		sshfsCmd.Process.Signal(os.Interrupt) // This will cause sshfs to unmount.
++		stdin.Close()
+ 	}()
+ 
+ 	go func() {
+From 7e772a34c80d9b4a7b2cca46e9b7e453121b77cf Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Thu, 17 Mar 2022 13:58:30 +0000
+Subject: [PATCH] lxd/response/upgrade: Adds Upgrade function to upgrade an
+ HTTP connection
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/response/upgrade.go | 31 +++++++++++++++++++++++++++++++
+ 1 file changed, 31 insertions(+)
+ create mode 100644 lxd/response/upgrade.go
+
+diff --git a/lxd/response/upgrade.go b/lxd/response/upgrade.go
+new file mode 100644
+index 00000000000..cdd08fb87c7
+--- /dev/null
++++ b/lxd/response/upgrade.go
+@@ -0,0 +1,31 @@
++package response
++
++import (
++	"fmt"
++	"net"
++	"strings"
++	"time"
++)
++
++// Upgrade takes a hijacked HTTP connection and sends the HTTP 101 Switching Protocols headers for protocolName.
++func Upgrade(hijackedConn net.Conn, protocolName string) error {
++	// Write the status line and upgrade header by hand since w.WriteHeader() would fail after Hijack().
++	sb := strings.Builder{}
++	sb.WriteString("HTTP/1.1 101 Switching Protocols\r\n")
++	sb.WriteString(fmt.Sprintf("Upgrade: %s\r\n", protocolName))
++	sb.WriteString("Connection: Upgrade\r\n\r\n")
++
++	hijackedConn.SetWriteDeadline(time.Now().Add(time.Second * 5))
++	n, err := hijackedConn.Write([]byte(sb.String()))
++	hijackedConn.SetWriteDeadline(time.Time{}) // Cancel deadline.
++
++	if err != nil {
++		return fmt.Errorf("Failed writing upgrade headers: %w", err)
++	}
++
++	if n != sb.Len() {
++		return fmt.Errorf("Failed writing upgrade headers")
++	}
++
++	return nil
++}
+From fe7cd5477829e289ef5113e0eb198ef5919359b3 Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Thu, 17 Mar 2022 13:59:02 +0000
+Subject: [PATCH] lxd-agent/sftp: response.Upgrade usage
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd-agent/sftp.go | 11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
+
+diff --git a/lxd-agent/sftp.go b/lxd-agent/sftp.go
+index 249fe6c0561..8d7812c6c28 100644
+--- a/lxd-agent/sftp.go
++++ b/lxd-agent/sftp.go
+@@ -39,19 +39,22 @@ func (r *sftpServe) Render(w http.ResponseWriter) error {
+ 	hijacker, ok := w.(http.Hijacker)
+ 	if !ok {
+ 		http.Error(w, "Webserver doesn't support hijacking", http.StatusInternalServerError)
++
+ 		return nil
+ 	}
+ 
+ 	conn, _, err := hijacker.Hijack()
+ 	if err != nil {
+-		http.Error(w, fmt.Sprintf("Failed to hijack connection: %v", err), http.StatusInternalServerError)
++		http.Error(w, fmt.Errorf("Failed to hijack connection: %w", err).Error(), http.StatusInternalServerError)
++
+ 		return nil
+ 	}
+ 	defer conn.Close()
+ 
+-	data := []byte("HTTP/1.1 101 Switching Protocols\r\nUpgrade: sftp\r\n\r\n")
+-	n, err := conn.Write(data)
+-	if err != nil || n != len(data) {
++	err = response.Upgrade(conn, "sftp")
++	if err != nil {
++		http.Error(w, err.Error(), http.StatusInternalServerError)
++
+ 		return nil
+ 	}
+ 
+From 18a66eaa8f1a6b2424636309288b03e874889592 Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Thu, 17 Mar 2022 13:59:12 +0000
+Subject: [PATCH] lxd/cluster/gateway: response.Upgrade usage
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/cluster/gateway.go | 14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
+
+diff --git a/lxd/cluster/gateway.go b/lxd/cluster/gateway.go
+index 26db96d5932..fc8dd5b0dc5 100644
+--- a/lxd/cluster/gateway.go
++++ b/lxd/cluster/gateway.go
+@@ -23,6 +23,7 @@ import (
+ 	log "gopkg.in/inconshreveable/log15.v2"
+ 
+ 	"github.com/lxc/lxd/lxd/db"
++	"github.com/lxc/lxd/lxd/response"
+ 	"github.com/lxc/lxd/lxd/revert"
+ 	"github.com/lxc/lxd/lxd/util"
+ 	"github.com/lxc/lxd/shared"
+@@ -287,21 +288,22 @@ func (g *Gateway) HandlerFuncs(heartbeatHandler HeartbeatHandler, trustedCerts f
+ 		hijacker, ok := w.(http.Hijacker)
+ 		if !ok {
+ 			http.Error(w, "Webserver doesn't support hijacking", http.StatusInternalServerError)
++
+ 			return
+ 		}
+ 
+ 		conn, _, err := hijacker.Hijack()
+ 		if err != nil {
+-			message := fmt.Errorf("Failed to hijack connection: %w", err).Error()
+-			http.Error(w, message, http.StatusInternalServerError)
++			http.Error(w, fmt.Errorf("Failed to hijack connection: %w", err).Error(), http.StatusInternalServerError)
++
+ 			return
+ 		}
+ 
+-		// Write the status line and upgrade header by hand since w.WriteHeader()
+-		// would fail after Hijack()
+-		data := []byte("HTTP/1.1 101 Switching Protocols\r\nUpgrade: dqlite\r\n\r\n")
+-		if n, err := conn.Write(data); err != nil || n != len(data) {
++		err = response.Upgrade(conn, "dqlite")
++		if err != nil {
++			http.Error(w, err.Error(), http.StatusInternalServerError)
+ 			conn.Close()
++
+ 			return
+ 		}
+ 
+From 4c862810c44e04767f9be1cd2023fa7b67b116a3 Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Thu, 17 Mar 2022 14:00:09 +0000
+Subject: [PATCH] lxd/instance/sftp: response.Upgrade usage
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/instance_sftp.go | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
+
+diff --git a/lxd/instance_sftp.go b/lxd/instance_sftp.go
+index 2f496fe8732..f31cfa621e1 100644
+--- a/lxd/instance_sftp.go
++++ b/lxd/instance_sftp.go
+@@ -113,8 +113,8 @@ func (r *sftpServeResponse) Render(w http.ResponseWriter) error {
+ 	}
+ 	defer remoteConn.Close()
+ 
+-	remoteTCP, err := tcp.ExtractConn(remoteConn)
+-	if err == nil {
++	remoteTCP, _ := tcp.ExtractConn(remoteConn)
++	if remoteTCP != nil {
+ 		// Apply TCP timeouts if remote connection is TCP (rather than Unix).
+ 		err = tcp.SetTimeouts(remoteTCP)
+ 		if err != nil {
+@@ -122,10 +122,9 @@ func (r *sftpServeResponse) Render(w http.ResponseWriter) error {
+ 		}
+ 	}
+ 
+-	data := []byte("HTTP/1.1 101 Switching Protocols\r\nUpgrade: sftp\r\n\r\n")
+-	n, err := remoteConn.Write(data)
+-	if err != nil || n != len(data) {
+-		return nil
++	err = response.Upgrade(remoteConn, "sftp")
++	if err != nil {
++		return api.StatusErrorf(http.StatusInternalServerError, err.Error())
+ 	}
+ 
+ 	ctx, cancel := context.WithCancel(r.req.Context())

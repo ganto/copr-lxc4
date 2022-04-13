@@ -1,0 +1,147 @@
+From 9af02960e1f34d06299dc76369eb2ec12a65f55d Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Wed, 16 Mar 2022 14:21:28 +0000
+Subject: [PATCH] lxd/daemon: Adds kernelVersion to daemon struct
+
+Avoids needing to parse it in multiple places.
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/daemon.go | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/lxd/daemon.go b/lxd/daemon.go
+index b33237ed14e..bac5586dd05 100644
+--- a/lxd/daemon.go
++++ b/lxd/daemon.go
+@@ -129,6 +129,9 @@ type Daemon struct {
+ 
+ 	// Keep track of skews.
+ 	timeSkew bool
++
++	// Kernel version.
++	kernelVersion version.DottedVersion
+ }
+ 
+ type externalAuth struct {
+@@ -452,6 +455,7 @@ func (d *Daemon) State() *state.State {
+ 		UpdateCertificateCache: func() { updateCertificateCache(d) },
+ 		InstanceTypes:          supportedInstanceTypes,
+ 		DevMonitor:             d.devmonitor,
++		KernelVersion:          d.kernelVersion,
+ 	}
+ }
+ 
+@@ -833,6 +837,15 @@ func (d *Daemon) init() error {
+ 
+ 	// Look for kernel features
+ 	logger.Infof("Kernel features:")
++
++	uname, _ := shared.Uname()
++	if uname != nil {
++		kernelVersion, err := version.Parse(strings.Split(uname.Release, "-")[0])
++		if err == nil {
++			d.kernelVersion = *kernelVersion
++		}
++	}
++
+ 	d.os.CloseRange = canUseCloseRange()
+ 	if d.os.CloseRange {
+ 		logger.Info(" - closing multiple file descriptors efficiently: yes")
+From 0eb84cdc44c76995c9a78041ec846342e5b0a4b3 Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Wed, 16 Mar 2022 14:21:53 +0000
+Subject: [PATCH] lxd/state/state: Adds KernelVersion field to State structure
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/state/state.go | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/lxd/state/state.go b/lxd/state/state.go
+index 45107c32e5b..4aa66ea2a6b 100644
+--- a/lxd/state/state.go
++++ b/lxd/state/state.go
+@@ -19,6 +19,7 @@ import (
+ 	"github.com/lxc/lxd/lxd/maas"
+ 	"github.com/lxc/lxd/lxd/sys"
+ 	"github.com/lxc/lxd/shared"
++	"github.com/lxc/lxd/shared/version"
+ )
+ 
+ // State is a gateway to the two main stateful components of LXD, the database
+@@ -64,4 +65,7 @@ type State struct {
+ 
+ 	// Filesystem monitor
+ 	DevMonitor fsmonitor.FSMonitor
++
++	// Kernel Version
++	KernelVersion version.DottedVersion
+ }
+From 0bcb7150cf9e815ace9698d21d8b65f8c06be125 Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Wed, 16 Mar 2022 14:22:15 +0000
+Subject: [PATCH] lxd/instance/drivers/driver/qemu: Use d.state.KernelVersion
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/instance/drivers/driver_qemu.go | 13 +------------
+ 1 file changed, 1 insertion(+), 12 deletions(-)
+
+diff --git a/lxd/instance/drivers/driver_qemu.go b/lxd/instance/drivers/driver_qemu.go
+index 09d8f68ba54..beb9c928bd5 100644
+--- a/lxd/instance/drivers/driver_qemu.go
++++ b/lxd/instance/drivers/driver_qemu.go
+@@ -1250,20 +1250,9 @@ func (d *qemu) Start(stateful bool) error {
+ 	cpuExtensions := []string{}
+ 
+ 	if d.architecture == osarch.ARCH_64BIT_INTEL_X86 {
+-		// Get the kernel version.
+-		uname, err := shared.Uname()
+-		if err != nil {
+-			return err
+-		}
+-
+ 		// If using Linux 5.10 or later, use HyperV optimizations.
+-		currentVer, err := version.Parse(strings.Split(uname.Release, "-")[0])
+-		if err != nil {
+-			return err
+-		}
+-
+ 		minVer, _ := version.NewDottedVersion("5.10.0")
+-		if currentVer.Compare(minVer) >= 0 && shared.IsFalseOrEmpty(d.expandedConfig["migration.stateful"]) {
++		if d.state.KernelVersion.Compare(minVer) >= 0 && shared.IsFalseOrEmpty(d.expandedConfig["migration.stateful"]) {
+ 			// x86_64 can use hv_time to improve Windows guest performance.
+ 			cpuExtensions = append(cpuExtensions, "hv_passthrough")
+ 		}
+From 9645fa004fe336d3f5cd2f740154badb9ce46a6c Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Wed, 16 Mar 2022 14:22:28 +0000
+Subject: [PATCH] lxd/instance/drivers/driver/qemu: Only enable io_uring
+ support in kernels <= 5.13.0
+
+Fixes #10061
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/instance/drivers/driver_qemu.go | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/lxd/instance/drivers/driver_qemu.go b/lxd/instance/drivers/driver_qemu.go
+index beb9c928bd5..1aacaf669cc 100644
+--- a/lxd/instance/drivers/driver_qemu.go
++++ b/lxd/instance/drivers/driver_qemu.go
+@@ -2953,9 +2953,10 @@ func (d *qemu) addDriveConfig(sb *strings.Builder, fdFiles *[]*os.File, bootInde
+ 	drivers, _ := SupportedInstanceTypes()
+ 	info := drivers[d.Type()]
+ 
+-	// If supported by QEMU and disk not backed by loop device, use io_uring over native for added performance.
+-	// We've seen issues starting VMs when running with io_ring AIO mode on loop backed disks.
+-	if shared.StringInSlice("io_uring", info.Features) && !shared.StringInSlice(device.DiskLoopBacked, driveConf.Opts) {
++	// Use io_uring over native for added performance (if supported by QEMU and kernel is recent enough).
++	// We've seen issues starting VMs when running with io_ring AIO mode on kernels before 5.13.
++	minVer, _ := version.NewDottedVersion("5.13.0")
++	if shared.StringInSlice("io_uring", info.Features) && d.state.KernelVersion.Compare(minVer) >= 0 {
+ 		aioMode = "io_uring"
+ 	}
+ 

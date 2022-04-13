@@ -13,7 +13,7 @@
 
 # https://github.com/lxc/lxd
 %global goipath github.com/lxc/lxd
-Version:        4.23
+Version:        4.24
 
 %gometa
 
@@ -39,8 +39,9 @@ Source8:        lxd.profile
 Source9:        lxd-agent.service
 Source10:       lxd-agent-setup
 # Upstream bug fixes merged to master for next release
-Patch0:         lxd-4.23-lxd-fsmonitor-drivers-Ignore-stale-file-handle-errors.patch
-Patch1:         lxd-4.23-NIC-Dont-attempt-to-clear-bridged-filter-rules.patch
+Patch0:         lxd-4.24-Storage-Prevent-white-space-in-storage-pool-names.patch
+Patch1:         lxd-4.24-VM-Only-enable-io_uring-support-on-kernels-gt-5.13.0.patch
+Patch2:         lxd-4.24-HTTP-Ensure-Connection-Upgrade-header-is-returned.patch
 
 BuildRequires:  gettext
 BuildRequires:  help2man
@@ -164,6 +165,7 @@ This package contains user documentation.
 %goprep -k
 %patch0 -p1
 %patch1 -p1
+%patch2 -p1
 
 %build
 export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
