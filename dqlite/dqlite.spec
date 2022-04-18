@@ -52,6 +52,9 @@ rm -f %{buildroot}%{_libdir}/libdqlite.la
 %{_includedir}/%{name}.h
 
 %changelog
+* Mon Apr 18 2022 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 1.10.0-0.1
+- Update to 1.10.0.
+
 * Mon Feb 14 2022 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 1.9.1-0.2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_36_Mass_Rebuild
 
