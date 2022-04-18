@@ -329,6 +329,9 @@ getent group %{name} > /dev/null || groupadd -r %{name}
 %doc doc/*
 
 %changelog
+* Mon Apr 18 2022 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.24-0.2
+- Rebuild because of raft so-library version update
+
 * Thu Apr 14 2022 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.24-0.1
 - Update to 4.24.
 
