@@ -1,6 +1,6 @@
 Name:           dqlite
-Version:        1.9.1
-Release:        0.2%{?dist}
+Version:        1.10.0
+Release:        0.1%{?dist}
 Summary:        Embeddable, replicated and fault tolerant SQL engine
 
 License:        LGPLv3 with exception
@@ -10,7 +10,7 @@ Source0:        %{URL}/archive/v%{version}.tar.gz
 BuildRequires:  autoconf libtool
 BuildRequires:  gcc
 BuildRequires:  pkgconfig(libuv)
-BuildRequires:  pkgconfig(raft)
+BuildRequires:  pkgconfig(raft) >= 0.13.0
 BuildRequires:  pkgconfig(sqlite3)
 
 %description
