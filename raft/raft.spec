@@ -1,22 +1,20 @@
 Name:           raft
-Version:        0.11.3
-Release:        0.5%{?dist}
+Version:        0.13.0
+Release:        0.1%{?dist}
 Summary:        C implementation of the Raft consensus protocol
 
 License:        LGPLv3 with exceptions
 URL:            https://github.com/canonical/raft
 Source0:        %{URL}/archive/v%{version}.tar.gz
-# https://github.com/canonical/raft/pull/259/
-Patch0:         0.11.3-test_compress-Respect-32bit-architectures.patch
-# https://github.com/canonical/raft/pull/261
-Patch1:         0.11.3-test-integration-uv-skip-init-oom-test-on-tmpfs.patch
 # https://github.com/canonical/raft/issues/263
-Patch2:         0.11.3-Revert-test-runner-Define-order-of-constructors.patch
+Patch0:         0.11.3-Revert-test-runner-Define-order-of-constructors.patch
 
 BuildRequires:  autoconf libtool
 BuildRequires:  gcc
 BuildRequires:  pkgconfig(liblz4)
 BuildRequires:  pkgconfig(libuv)
+# Breaking so-library change
+Conflicts:      dqlite < 1.10.0
 
 %description
 Fully asynchronous C implementation of the Raft consensus protocol. It consists
@@ -43,14 +41,11 @@ BuildArch:      noarch
 BuildRequires:  python-sphinx
 
 %description doc
-This package contains the C-Raft documentation in HTML format and some code
-examples.
+This package contains the C-Raft documentation in HTML format.
 
 %prep
 %setup -q -n %{name}-%{version}
 %patch0 -p1
-%patch1 -p1
-%patch2 -p1
 %if 0%{?fedora} && 0%{?fedora} < 35
 # Strict c11 mode results in build failure caused by included liburing headers
 # See https://github.com/axboe/liburing/issues/181
@@ -90,7 +85,6 @@ rm -f %{buildroot}%{_libdir}/libraft.la
 %files doc
 %license LICENSE
 %doc docs/_build/html/
-%doc example/
 
 %changelog
 * Sun Feb 13 2022 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.11.3-0.5
