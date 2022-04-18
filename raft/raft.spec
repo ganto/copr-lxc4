@@ -87,6 +87,9 @@ rm -f %{buildroot}%{_libdir}/libraft.la
 %doc docs/_build/html/
 
 %changelog
+* Mon Apr 18 2022 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.13.0-0.1
+- Update to 0.13.0.
+
 * Sun Feb 13 2022 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.11.3-0.5
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_36_Mass_Rebuild
 
