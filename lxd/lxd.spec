@@ -21,7 +21,7 @@ Version:        4.24
 %global golicenses  COPYING
 
 Name:           lxd
-Release:        0.1%{?dist}
+Release:        0.2%{?dist}
 Summary:        Container hypervisor based on LXC
 
 # Upstream license specification: Apache-2.0
