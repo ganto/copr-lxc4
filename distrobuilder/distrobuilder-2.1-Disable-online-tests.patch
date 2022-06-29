@@ -1,0 +1,273 @@
+commit f15856807dad35b86e0bfe85f900696e2d64fdf8
+Author: Reto Gantenbein <reto.gantenbein@linuxmonk.ch>
+Date:   Wed Jun 29 22:15:32 2022 +0200
+
+    Disable tests that need access to GPG keyserver
+
+diff --git a/sources/common_test.go b/sources/common_test.go
+deleted file mode 100644
+index b371b0c..0000000
+--- a/sources/common_test.go
++++ /dev/null
+@@ -1,140 +0,0 @@
+-package sources
+-
+-import (
+-	"context"
+-	"log"
+-	"os"
+-	"path"
+-	"path/filepath"
+-	"testing"
+-
+-	"github.com/lxc/distrobuilder/shared"
+-	lxd "github.com/lxc/lxd/shared"
+-	"github.com/stretchr/testify/require"
+-)
+-
+-func TestVerifyFile(t *testing.T) {
+-	wd, err := os.Getwd()
+-	if err != nil {
+-		t.Fatalf("Failed to retrieve working directory: %v", err)
+-	}
+-	testdataDir := filepath.Join(wd, "..", "testdata")
+-
+-	keys := []string{"0x5DE8949A899C8D99"}
+-	keyserver := "keyserver.ubuntu.com"
+-
+-	tests := []struct {
+-		name          string
+-		signedFile    string
+-		signatureFile string
+-		keys          []string
+-		keyserver     string
+-		shouldFail    bool
+-	}{
+-		{
+-			"testfile with detached signature",
+-			filepath.Join(testdataDir, "testfile"),
+-			filepath.Join(testdataDir, "testfile.sig"),
+-			keys,
+-			keyserver,
+-			false,
+-		},
+-		{
+-			"testfile with cleartext signature",
+-			filepath.Join(testdataDir, "testfile.asc"),
+-			"",
+-			keys,
+-			keyserver,
+-			false,
+-		},
+-		{
+-			"testfile with invalid cleartext signature",
+-			filepath.Join(testdataDir, "testfile-invalid.asc"),
+-			"",
+-			keys,
+-			keyserver,
+-			true,
+-		},
+-		{
+-			"testfile with normal signature",
+-			filepath.Join(testdataDir, "testfile.gpg"),
+-			"",
+-			keys,
+-			keyserver,
+-			false,
+-		},
+-		{
+-			"no keys",
+-			filepath.Join(testdataDir, "testfile"),
+-			filepath.Join(testdataDir, "testfile.sig"),
+-			[]string{},
+-			keyserver,
+-			true,
+-		},
+-		{
+-			"invalid key",
+-			filepath.Join(testdataDir, "testfile.asc"),
+-			"",
+-			[]string{"0x46181433FBB75451"},
+-			keyserver,
+-			true,
+-		},
+-	}
+-
+-	c := common{
+-		sourcesDir: os.TempDir(),
+-		definition: shared.Definition{
+-			Source: shared.DefinitionSource{},
+-		},
+-		ctx: context.TODO(),
+-	}
+-
+-	for i, tt := range tests {
+-		log.Printf("Running test #%d: %s", i, tt.name)
+-
+-		c.definition = shared.Definition{
+-			Source: shared.DefinitionSource{
+-				Keyserver: tt.keyserver,
+-				Keys:      tt.keys,
+-			},
+-		}
+-
+-		valid, err := c.VerifyFile(tt.signedFile, tt.signatureFile)
+-		if tt.shouldFail {
+-			require.Error(t, err)
+-			require.False(t, valid)
+-		} else {
+-			require.NoError(t, err)
+-			require.True(t, valid)
+-		}
+-	}
+-}
+-
+-func TestCreateGPGKeyring(t *testing.T) {
+-	c := common{
+-		sourcesDir: os.TempDir(),
+-		definition: shared.Definition{
+-			Source: shared.DefinitionSource{
+-				Keyserver: "keyserver.ubuntu.com",
+-				Keys:      []string{"0x5DE8949A899C8D99"},
+-			},
+-		},
+-		ctx: context.TODO(),
+-	}
+-
+-	keyring, err := c.CreateGPGKeyring()
+-	require.NoError(t, err)
+-
+-	require.FileExists(t, keyring)
+-	os.RemoveAll(path.Dir(keyring))
+-
+-	c.definition = shared.Definition{}
+-
+-	// This shouldn't fail, but the keyring file should not be created since
+-	// there are no keys to be exported.
+-	keyring, err = c.CreateGPGKeyring()
+-	require.NoError(t, err)
+-
+-	require.False(t, lxd.PathExists(keyring), "File should not exist")
+-	os.RemoveAll(path.Dir(keyring))
+-}
+
+commit eecf7a5e0a628182f55eccc591de13060f1805e3
+Author: Reto Gantenbein <reto.gantenbein@linuxmonk.ch>
+Date:   Sat Oct 3 13:25:49 2020 +0200
+
+    Disable tests that require access to upstream mirrors
+
+diff --git a/sources/apertis-http_test.go b/sources/apertis-http_test.go
+deleted file mode 100644
+index f1cf15a..0000000
+--- a/sources/apertis-http_test.go
++++ /dev/null
+@@ -1,28 +0,0 @@
+-package sources
+-
+-import (
+-	"fmt"
+-	"testing"
+-
+-	"github.com/stretchr/testify/require"
+-)
+-
+-func TestApertisHTTP_getLatestRelease(t *testing.T) {
+-	s := &apertis{}
+-
+-	tests := []struct {
+-		release string
+-		want    string
+-	}{
+-		{
+-			"18.12",
+-			"18.12.0",
+-		},
+-	}
+-	for _, tt := range tests {
+-		baseURL := fmt.Sprintf("https://images.apertis.org/release/%s", tt.release)
+-		release, err := s.getLatestRelease(baseURL, tt.release)
+-		require.NoError(t, err)
+-		require.Equal(t, tt.want, release)
+-	}
+-}
+diff --git a/sources/archlinux-http_test.go b/sources/archlinux-http_test.go
+deleted file mode 100644
+index a9489e3..0000000
+--- a/sources/archlinux-http_test.go
++++ /dev/null
+@@ -1,16 +0,0 @@
+-package sources
+-
+-import (
+-	"regexp"
+-	"testing"
+-
+-	"github.com/stretchr/testify/require"
+-)
+-
+-func TestArchLinuxGetLatestRelease(t *testing.T) {
+-	var src archlinux
+-
+-	release, err := src.getLatestRelease("https://archive.archlinux.org/iso/", "x86_64")
+-	require.NoError(t, err)
+-	require.Regexp(t, regexp.MustCompile(`^\d{4}\.\d{2}\.\d{2}$`), release)
+-}
+diff --git a/sources/openwrt-http_test.go b/sources/openwrt-http_test.go
+deleted file mode 100644
+index bb09a87..0000000
+--- a/sources/openwrt-http_test.go
++++ /dev/null
+@@ -1,32 +0,0 @@
+-package sources
+-
+-import (
+-	"regexp"
+-	"testing"
+-
+-	"github.com/stretchr/testify/require"
+-)
+-
+-func TestOpenWrtHTTP_getLatestServiceRelease(t *testing.T) {
+-	s := &openwrt{}
+-
+-	tests := []struct {
+-		release string
+-		want    *regexp.Regexp
+-	}{
+-		{
+-			"17.01",
+-			regexp.MustCompile(`17\.01\.\d+`),
+-		},
+-		{
+-			"18.06",
+-			regexp.MustCompile(`18\.06\.\d+`),
+-		},
+-	}
+-	for _, tt := range tests {
+-		baseURL := "https://downloads.openwrt.org/releases/"
+-		release, err := s.getLatestServiceRelease(baseURL, tt.release)
+-		require.NoError(t, err)
+-		require.Regexp(t, tt.want, release)
+-	}
+-}
+diff --git a/sources/ubuntu-http_test.go b/sources/ubuntu-http_test.go
+deleted file mode 100644
+index d2f4949..0000000
+--- a/sources/ubuntu-http_test.go
++++ /dev/null
+@@ -1,13 +0,0 @@
+-package sources
+-
+-import (
+-	"testing"
+-
+-	"github.com/stretchr/testify/require"
+-)
+-
+-func TestUbuntuGetLatestCoreBaseImage(t *testing.T) {
+-	release, err := getLatestCoreBaseImage("https://images.linuxcontainers.org/images", "bionic", "amd64")
+-	require.NoError(t, err)
+-	require.NotEmpty(t, release)
+-}
+
