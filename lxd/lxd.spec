@@ -13,7 +13,7 @@
 
 # https://github.com/lxc/lxd
 %global goipath github.com/lxc/lxd
-Version:        4.24
+Version:        5.3
 
 %gometa
 
@@ -21,7 +21,7 @@ Version:        4.24
 %global golicenses  COPYING
 
 Name:           lxd
-Release:        0.2%{?dist}
+Release:        0.1%{?dist}
 Summary:        Container hypervisor based on LXC
 
 # Upstream license specification: Apache-2.0
@@ -39,9 +39,7 @@ Source8:        lxd.profile
 Source9:        lxd-agent.service
 Source10:       lxd-agent-setup
 # Upstream bug fixes merged to master for next release
-Patch0:         lxd-4.24-Storage-Prevent-white-space-in-storage-pool-names.patch
-Patch1:         lxd-4.24-VM-Only-enable-io_uring-support-on-kernels-gt-5.13.0.patch
-Patch2:         lxd-4.24-HTTP-Ensure-Connection-Upgrade-header-is-returned.patch
+Patch0:         lxd-5.3-lxd-network-openvswitch-Dont-escape-delimiting-quotes.patch
 
 BuildRequires:  gettext
 BuildRequires:  help2man
@@ -164,8 +162,6 @@ This package contains user documentation.
 %prep
 %goprep -k
 %patch0 -p1
-%patch1 -p1
-%patch2 -p1
 
 %build
 export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
