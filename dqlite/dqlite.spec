@@ -1,5 +1,5 @@
 Name:           dqlite
-Version:        1.11.0
+Version:        1.11.1
 Release:        0.1%{?dist}
 Summary:        Embeddable, replicated and fault tolerant SQL engine
 
@@ -10,7 +10,7 @@ Source0:        %{URL}/archive/v%{version}.tar.gz
 BuildRequires:  autoconf libtool
 BuildRequires:  gcc
 BuildRequires:  pkgconfig(libuv)
-BuildRequires:  pkgconfig(raft) >= 0.13.0
+BuildRequires:  pkgconfig(raft) >= 0.14.0
 BuildRequires:  pkgconfig(sqlite3)
 
 %description
