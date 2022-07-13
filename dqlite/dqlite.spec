@@ -52,6 +52,9 @@ rm -f %{buildroot}%{_libdir}/libdqlite.la
 %{_includedir}/%{name}.h
 
 %changelog
+* Wed Jul 13 2022 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 1.11.1-0.1
+- Update to 1.11.1.
+
 * Sat Jul 09 2022 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 1.11.0-0.1
 - dqlite: Update to 1.11.0.
 
