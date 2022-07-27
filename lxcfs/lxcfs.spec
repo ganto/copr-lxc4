@@ -1,24 +1,23 @@
-Name:		  lxcfs
-Version:	  5.0.0
-Release:	  0.1%{?dist}
-Summary:	  FUSE based filesystem for LXC
-License:	  ASL 2.0
-URL:		  https://linuxcontainers.org/lxcfs
-Source0:	  https://linuxcontainers.org/downloads/%{name}/%{name}-%{version}.tar.gz
-Patch0:       5.0.0-meson-Include-documentation.patch
-Patch1:       5.0.0-Query-systemd-system-unit-dir.patch
-BuildRequires:    gcc
-BuildRequires:    gawk
+Name:         lxcfs
+Version:      5.0.1
+Release:      0.1%{?dist}
+Summary:      FUSE based filesystem for LXC
+License:      ASL 2.0
+URL:          https://linuxcontainers.org/lxcfs
+Source0:      https://linuxcontainers.org/downloads/%{name}/%{name}-%{version}.tar.gz
 BuildRequires:    meson
-BuildRequires:    fuse3-devel
+BuildRequires:    gcc
+BuildRequires:    python3-jinja2
+BuildRequires:    gawk
+BuildRequires:    make
+BuildRequires:    fuse-devel
 BuildRequires:    help2man
-BuildRequires:    python-jinja2
 BuildRequires:    systemd
 Requires(post):   systemd
 Requires(preun):  systemd
 Requires(postun): systemd
 # for /usr/share/lxc/config/common.conf.d:
-Requires:	  lxc-templates
+Requires:     lxc-templates
 
 
 %description
@@ -37,15 +36,13 @@ how long the host is running.
 
 
 %build
-%meson -Dinit-script=systemd -Dtests=true
+%meson
 %meson_build
+
 
 %install
 %meson_install
 mkdir -p %{buildroot}%{_sharedstatedir}/%{name}
-
-%check
-%meson_test
 
 
 %post
@@ -78,48 +75,47 @@ mkdir -p %{buildroot}%{_sharedstatedir}/%{name}
 
 
 %changelog
-* Sun Apr 10 2022 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 5.0.0-0.1
+* Wed May 25 2022 Thomas Moschny <thomas.moschny@gmx.de> - 5.0.0-1
 - Update to 5.0.0.
 
-* Sun Feb 13 2022 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.0.12-0.2
-- Rebuilt for https://fedoraproject.org/wiki/Fedora_36_Mass_Rebuild
-
-* Sat Feb 05 2022 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.0.12-0.1
+* Sat Mar  5 2022 Thomas Moschny <thomas.moschny@gmx.de> - 4.0.12-1
 - Update to 4.0.12.
 
-* Wed Oct 27 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.0.11-0.2
-- Fix build failure on armhfp
+* Thu Jan 20 2022 Fedora Release Engineering <releng@fedoraproject.org> - 4.0.11-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_36_Mass_Rebuild
 
-* Tue Oct 26 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.0.11-0.1
+* Sat Oct 23 2021 Thomas Moschny <thomas.moschny@gmx.de> - 4.0.11-1
 - Update to 4.0.11.
-- Switch to fuse3.
 
-* Wed Jul 21 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.0.9-0.1
+* Wed Jul 21 2021 Thomas Moschny <thomas.moschny@gmx.de> - 4.0.9-1
 - Update to 4.0.9.
 
-* Sat May 01 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.0.8-0.1
+* Sat May  1 2021 Thomas Moschny <thomas.moschny@gmx.de> - 4.0.8-1
 - Update to 4.0.8.
 
-* Mon Jan 18 2021 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.0.7-0.1
+* Tue Jan 26 2021 Fedora Release Engineering <releng@fedoraproject.org> - 4.0.7-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_34_Mass_Rebuild
+
+* Wed Jan 13 2021 Thomas Moschny <thomas.moschny@gmx.de> - 4.0.7-1
 - Update to 4.0.7.
 
-* Wed Oct 21 2020 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.0.6-0.1
+* Sun Oct 25 2020 Thomas Moschny <thomas.moschny@gmx.de> - 4.0.6-1
 - Update to 4.0.6.
 
-* Thu Aug 06 2020 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.0.5-0.1
+* Wed Aug  5 2020 Thomas Moschny <thomas.moschny@gmx.de> - 4.0.5-1
 - Update to 4.0.5.
 
-* Mon Jul 06 2020 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.0.4-0.2
-- Add patch to fix undefined symbol 'lxcfs_clone'
+* Tue Jul 28 2020 Fedora Release Engineering <releng@fedoraproject.org> - 4.0.4-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_33_Mass_Rebuild
 
-* Sun Jun 28 2020 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.0.4-0.1
+* Sat Jun 20 2020 Thomas Moschny <thomas.moschny@gmx.de> - 4.0.4-1
 - Update to 4.0.4.
 
-* Sat Apr 18 2020 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.0.3-0.1
+* Fri Apr 24 2020 Thomas Moschny <thomas.moschny@gmx.de> - 4.0.3-1
 - Update to 4.0.3.
 
-* Tue Apr 07 2020 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.0.1-0.1
-- Rebuild in COPR
+* Fri Apr 10 2020 Thomas Moschny <thomas.moschny@gmx.de> - 4.0.2-1
+- Update to 4.0.2.
 
 * Sat Mar 21 2020 Thomas Moschny <thomas.moschny@gmx.de> - 4.0.1-1
 - Update to 4.0.1.
