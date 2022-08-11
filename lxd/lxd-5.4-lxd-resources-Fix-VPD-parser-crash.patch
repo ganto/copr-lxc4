@@ -1,0 +1,33 @@
+From eab1a3a9eb1e6d4314f48528a021c1bae736eaa9 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?St=C3=A9phane=20Graber?= <stgraber@ubuntu.com>
+Date: Thu, 28 Jul 2022 12:54:51 -0400
+Subject: [PATCH] lxd/resources: Fix VPD parser crash
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Another case of invalid VPD data (length larger than record) causing the
+parser to crash.
+
+Closes #10708
+
+Signed-off-by: Stéphane Graber <stgraber@ubuntu.com>
+---
+ lxd/resources/pci_vpd.go | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/lxd/resources/pci_vpd.go b/lxd/resources/pci_vpd.go
+index 8be18d07a8a..8747da204d4 100644
+--- a/lxd/resources/pci_vpd.go
++++ b/lxd/resources/pci_vpd.go
+@@ -36,6 +36,10 @@ func vpdKnownKey(name string) bool {
+ }
+ 
+ func vpdReadInt(buf []byte, length int) ([]byte, int) {
++	if length > len(buf) {
++		return []byte{}, 0
++	}
++
+ 	value := 0
+ 	for i, n := range buf[:length] {
+ 		value += int(n) << (i * 8)
