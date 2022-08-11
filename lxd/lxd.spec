@@ -329,6 +329,9 @@ getent group %{name} > /dev/null || groupadd -r %{name}
 %doc doc/*
 
 %changelog
+* Thu Aug 11 2022 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 5.4-0.1
+- Update to 5.4.
+
 * Wed Aug 10 2022 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 5.3-0.2
 - Fix lxc-5.0 compatibility
 
