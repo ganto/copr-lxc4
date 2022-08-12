@@ -1,5 +1,5 @@
 Name:         lxcfs
-Version:      5.0.1
+Version:      5.0.2
 Release:      0.1%{?dist}
 Summary:      FUSE based filesystem for LXC
 License:      ASL 2.0
