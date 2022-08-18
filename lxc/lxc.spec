@@ -239,6 +239,9 @@ cp -a %{SOURCE1} %{buildroot}%{_sysconfdir}/sysconfig/%{name}-net
 
 
 %changelog
+* Thu Aug 18 2022 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 5.0.1-0.1
+- Update to 5.0.1.
+
 * Sun Feb 13 2022 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.0.12-0.2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_36_Mass_Rebuild
 
