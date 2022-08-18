@@ -1,0 +1,12 @@
+diff --git a/config/init/systemd/lxc-net.service.in b/config/init/systemd/lxc-net.service.in
+index a615d8b2d..4158493b9 100644
+--- a/config/init/systemd/lxc-net.service.in
++++ b/config/init/systemd/lxc-net.service.in
+@@ -1,6 +1,7 @@
+ [Unit]
+ Description=LXC network bridge setup
+ After=network-online.target
++Wants=network-online.target
+ Before=lxc.service
+ Documentation=man:lxc
+ ConditionVirtualization=!lxc

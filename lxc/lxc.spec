@@ -1,48 +1,30 @@
-%if 0%{?fedora}
-%global with_seccomp 1
-%global with_static_init 1
-%global with_uring 1
-%endif
-
-%if 0%{?rhel} >= 7
-%ifarch %{ix86} x86_64 %{arm} aarch64
-%global with_seccomp 1
-%endif
-%endif
-
 Name:           lxc
-Version:        4.0.12
-Release:        0.2%{?dist}
+Version:        5.0.1
+Release:        0.1%{?dist}
 Summary:        Linux Resource Containers
 License:        LGPLv2+ and GPLv2
 URL:            https://linuxcontainers.org/lxc
 Source0:        https://linuxcontainers.org/downloads/%{name}-%{version}.tar.gz
 Source1:        lxc-net
 Patch0:         lxc-2.0.7-fix-init.patch
-Patch1:         lxc-4.0.1-fix-lxc-net.patch
+Patch1:         lxc-5.0.0-fix-lxc-net.patch
 BuildRequires:  make
+BuildRequires:  meson
+BuildRequires:  gcc
 BuildRequires:  docbook2X
 BuildRequires:  doxygen
 BuildRequires:  kernel-headers
-BuildRequires:  libselinux-devel
-%if 0%{?with_seccomp}
-BuildRequires:  pkgconfig(libseccomp)
-%endif
-BuildRequires:  libcap-devel
-BuildRequires:  pam-devel
 BuildRequires:  openssl-devel
-%if 0%{?with_uring}
-BuildRequires:  liburing-devel
-%endif
-BuildRequires:  libtool
-BuildRequires:  systemd
+BuildRequires:  pam-devel
+BuildRequires:  pkgconfig(libcap)
+# TODO: io_uring support is currently broken, see lxc/lxc#4118
+#BuildRequires:  pkgconfig(liburing)
+BuildRequires:  pkgconfig(libseccomp)
+BuildRequires:  pkgconfig(libselinux)
+BuildRequires:  pkgconfig(libsystemd)
 BuildRequires:  pkgconfig(bash-completion)
-%if 0%{?with_static_init}
 BuildRequires:  libcap-static
 BuildRequires:  glibc-static
-%endif
-# we are patching configure.ac
-BuildRequires:  autoconf automake libtool
 # lxc-extra subpackage not needed anymore, lxc-ls has been rewriten in
 # C and does not depend on the Python3 binding anymore
 Provides:       lxc-extra = %{version}-%{release}
@@ -128,64 +110,53 @@ This package contains documentation for %{name}.
 
 
 %build
-autoreconf -vif
-%configure --with-distro=fedora \
-           --enable-doc \
-           --enable-api-docs \
-           --disable-silent-rules \
-           --docdir=%{_pkgdocdir} \
-           --disable-rpath \
-           --disable-static \
-           --disable-apparmor \
-           --enable-selinux \
-           --enable-capabilities \
-           --enable-pam \
-           --enable-openssl \
-%if 0%{?with_seccomp}
-           --enable-seccomp \
-%endif # with_seccomp
-           --with-init-script=systemd \
-           --disable-werror \
-# intentionally blank line
+%meson \
+    -Dapparmor=false \
+    -Dcoverity-build=false \
+    -Dpam-cgroup=true
 
-%{make_build}
+%meson_build
 
+# See https://github.com/lxc/lxc/issues/4156
+cd doc/api/ && doxygen
 
 %install
-%{make_install}
+%meson_install
 mkdir -p %{buildroot}%{_sharedstatedir}/%{name}
 
 # docs
-mkdir -p %{buildroot}%{_pkgdocdir}/api
 cp -a AUTHORS README.md %{buildroot}%{_pkgdocdir}
-cp -a doc/api/html/* %{buildroot}%{_pkgdocdir}/api/
+mkdir %{buildroot}%{_pkgdocdir}/api
+cp -a %{_builddir}/%{name}-%{version}/doc/api/html/* %{buildroot}%{_pkgdocdir}/api/
 
 # cache dir
 mkdir -p %{buildroot}%{_localstatedir}/cache/%{name}
 
-# remove libtool .la file
-rm -rf %{buildroot}%{_libdir}/liblxc.la
+rm -rf %{buildroot}%{_libdir}/liblxc_static.a
 
 # lxc-net config file
 cp -a %{SOURCE1} %{buildroot}%{_sysconfdir}/sysconfig/%{name}-net
 
 %check
-make check
+%meson_test
 
 
 %post libs
 %{?ldconfig}
+%systemd_post %{name}-monitord.service
 %systemd_post %{name}-net.service
 %systemd_post %{name}.service
 
 
 %preun libs
+%systemd_preun %{name}-monitord.service
 %systemd_preun %{name}-net.service
 %systemd_preun %{name}.service
 
 
 %postun libs
 %{?ldconfig}
+%systemd_postun %{name}-monitord.service
 %systemd_postun %{name}-net.service
 %systemd_postun %{name}.service
 
@@ -203,6 +174,7 @@ make check
 %{_datadir}/%{name}/%{name}.functions
 %dir %{_datadir}/bash-completion
 %dir %{_datadir}/bash-completion/completions
+%{_datadir}/bash-completion/completions/_%{name}
 %{_datadir}/bash-completion/completions/%{name}*
 
 
@@ -218,9 +190,7 @@ make check
 %{_libexecdir}/%{name}
 # fixme: should be in libexecdir?
 %{_sbindir}/init.%{name}
-%if 0%{?with_static_init}
 %{_sbindir}/init.%{name}.static
-%endif
 %{_bindir}/%{name}-autostart
 %{_sharedstatedir}/%{name}
 %dir %{_sysconfdir}/%{name}
@@ -244,8 +214,9 @@ make check
 %{_unitdir}/%{name}.service
 %{_unitdir}/%{name}@.service
 %{_unitdir}/%{name}-net.service
+%{_unitdir}/%{name}-monitord.service
 %dir %{_localstatedir}/cache/%{name}
-/%{_lib}/security/pam_cgfs.so
+%{_libdir}/security/pam_cgfs.so
 
 
 %files templates
