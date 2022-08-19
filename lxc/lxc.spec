@@ -1,6 +1,6 @@
 Name:           lxc
 Version:        5.0.1
-Release:        0.1%{?dist}
+Release:        0.2%{?dist}
 Summary:        Linux Resource Containers
 License:        LGPLv2+ and GPLv2
 URL:            https://linuxcontainers.org/lxc
@@ -8,6 +8,7 @@ Source0:        https://linuxcontainers.org/downloads/%{name}-%{version}.tar.gz
 Source1:        lxc-net
 Patch0:         lxc-2.0.7-fix-init.patch
 Patch1:         lxc-5.0.0-fix-lxc-net.patch
+Patch2:         lxc-5.0.1-glibc-2.36-compatibility.patch
 BuildRequires:  make
 BuildRequires:  meson
 BuildRequires:  gcc
