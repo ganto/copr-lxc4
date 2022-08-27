@@ -1,5 +1,5 @@
 Name:           raft
-Version:        0.14.0
+Version:        0.15.0
 Release:        0.1%{?dist}
 Summary:        C implementation of the Raft consensus protocol
 
@@ -46,11 +46,6 @@ This package contains the C-Raft documentation in HTML format.
 %prep
 %setup -q -n %{name}-%{version}
 %patch0 -p1
-%if 0%{?fedora} && 0%{?fedora} < 35
-# Strict c11 mode results in build failure caused by included liburing headers
-# See https://github.com/axboe/liburing/issues/181
-sed -i '/std=c11/d' configure.ac
-%endif
 
 %build
 autoreconf -i
