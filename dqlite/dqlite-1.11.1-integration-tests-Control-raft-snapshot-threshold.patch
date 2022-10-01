@@ -1,0 +1,234 @@
+From 7f018afd3db51e9012abbde643929e0cb3279914 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mathieu=20Border=C3=A9?= <mathieu.bordere@canonical.com>
+Date: Thu, 14 Jul 2022 11:19:41 +0200
+Subject: [PATCH] integration-tests: Control raft snapshot threshold
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Don't allow snapshots scheduled by raft to interfere with the snapshots
+scheduled by the tests.
+
+Signed-off-by: Mathieu Borderé <mathieu.bordere@canonical.com>
+---
+ test/integration/test_client.c     |  2 +-
+ test/integration/test_cluster.c    |  4 ++--
+ test/integration/test_fsm.c        | 31 +++++++++++++++++++-----------
+ test/integration/test_membership.c |  2 +-
+ test/lib/server.c                  |  9 ++++++++-
+ test/lib/server.h                  |  4 +++-
+ 6 files changed, 35 insertions(+), 17 deletions(-)
+
+diff --git a/test/integration/test_client.c b/test/integration/test_client.c
+index 397a42ac..1b48eef9 100644
+--- a/test/integration/test_client.c
++++ b/test/integration/test_client.c
+@@ -25,7 +25,7 @@ static void *setUp(const MunitParameter params[], void *user_data)
+ 	test_heap_setup(params, user_data);
+ 	test_sqlite_setup(params);
+ 	test_server_setup(&f->server, 1, params);
+-	test_server_start(&f->server);
++	test_server_start(&f->server, params);
+ 	f->client = test_server_client(&f->server);
+ 	HANDSHAKE;
+ 	OPEN;
+diff --git a/test/integration/test_cluster.c b/test/integration/test_cluster.c
+index 797a8702..5e9843e0 100644
+--- a/test/integration/test_cluster.c
++++ b/test/integration/test_cluster.c
+@@ -30,7 +30,7 @@
+ 	test_server_network(f->servers, N_SERVERS);           \
+ 	for (i_ = 0; i_ < N_SERVERS; i_++) {                  \
+ 		struct test_server *server = &f->servers[i_]; \
+-		test_server_start(server);                    \
++		test_server_start(server, params);            \
+ 	}                                                     \
+ 	SELECT(1)
+ 
+@@ -109,7 +109,7 @@ TEST(cluster, restart, setUp, tearDown, 0, num_records_params)
+ 
+ 	struct test_server *server = &f->servers[0];
+ 	test_server_stop(server);
+-	test_server_start(server);
++	test_server_start(server, params);
+ 
+ 	/* The table is visible after restart. */
+ 	HANDSHAKE;
+diff --git a/test/integration/test_fsm.c b/test/integration/test_fsm.c
+index 08609079..85c2a351 100644
+--- a/test/integration/test_fsm.c
++++ b/test/integration/test_fsm.c
+@@ -28,7 +28,7 @@
+ 	test_server_network(f->servers, N_SERVERS);           \
+ 	for (i_ = 0; i_ < N_SERVERS; i_++) {                  \
+ 		struct test_server *server = &f->servers[i_]; \
+-		test_server_start(server);                    \
++		test_server_start(server, params);            \
+ 	}                                                     \
+ 	SELECT(1)
+ 
+@@ -49,6 +49,14 @@
+ /* Use the client connected to the server with the given ID. */
+ #define SELECT(ID) f->client = test_server_client(&f->servers[ID - 1])
+ 
++/* Make sure the snapshots scheduled by raft don't interfere with the snapshots
++ * scheduled by the tests. */
++static char *snapshot_threshold[] = {"8192", NULL};
++static MunitParameterEnum snapshot_params[] = {
++	{SNAPSHOT_THRESHOLD_PARAM, snapshot_threshold},
++	{NULL, NULL},
++};
++
+ /******************************************************************************
+  *
+  * snapshot
+@@ -76,7 +84,7 @@ static void tearDown(void *data)
+ 	free(f);
+ }
+ 
+-TEST(fsm, snapshotFreshDb, setUp, tearDown, 0, NULL)
++TEST(fsm, snapshotFreshDb, setUp, tearDown, 0, snapshot_params)
+ {
+ 	struct fixture *f = data;
+ 	struct raft_fsm *fsm = &f->servers[0].dqlite->raft_fsm;
+@@ -95,7 +103,7 @@ TEST(fsm, snapshotFreshDb, setUp, tearDown, 0, NULL)
+ 	return MUNIT_OK;
+ }
+ 
+-TEST(fsm, snapshotWrittenDb, setUp, tearDown, 0, NULL)
++TEST(fsm, snapshotWrittenDb, setUp, tearDown, 0, snapshot_params)
+ {
+ 	struct fixture *f = data;
+ 	struct raft_fsm *fsm = &f->servers[0].dqlite->raft_fsm;
+@@ -126,7 +134,7 @@ TEST(fsm, snapshotWrittenDb, setUp, tearDown, 0, NULL)
+ 	return MUNIT_OK;
+ }
+ 
+-TEST(fsm, snapshotHeapFaultSingleDB, setUp, tearDown, 0, NULL)
++TEST(fsm, snapshotHeapFaultSingleDB, setUp, tearDown, 0, snapshot_params)
+ {
+ 	struct fixture *f = data;
+ 	struct raft_fsm *fsm = &f->servers[0].dqlite->raft_fsm;
+@@ -167,7 +175,7 @@ TEST(fsm, snapshotHeapFaultSingleDB, setUp, tearDown, 0, NULL)
+ 	return MUNIT_OK;
+ }
+ 
+-TEST(fsm, snapshotHeapFaultTwoDB, setUp, tearDown, 0, NULL)
++TEST(fsm, snapshotHeapFaultTwoDB, setUp, tearDown, 0, snapshot_params)
+ {
+ 	struct fixture *f = data;
+ 	struct raft_fsm *fsm = &f->servers[0].dqlite->raft_fsm;
+@@ -226,7 +234,7 @@ TEST(fsm, snapshotHeapFaultTwoDB, setUp, tearDown, 0, NULL)
+ 	return MUNIT_OK;
+ }
+ 
+-TEST(fsm, snapshotNewDbAddedBeforeFinalize, setUp, tearDown, 0, NULL)
++TEST(fsm, snapshotNewDbAddedBeforeFinalize, setUp, tearDown, 0, snapshot_params)
+ {
+ 	struct fixture *f = data;
+ 	struct raft_fsm *fsm = &f->servers[0].dqlite->raft_fsm;
+@@ -268,7 +276,7 @@ TEST(fsm, snapshotNewDbAddedBeforeFinalize, setUp, tearDown, 0, NULL)
+ 	return MUNIT_OK;
+ }
+ 
+-TEST(fsm, snapshotWritesBeforeFinalize, setUp, tearDown, 0, NULL)
++TEST(fsm, snapshotWritesBeforeFinalize, setUp, tearDown, 0, snapshot_params)
+ {
+ 	struct fixture *f = data;
+ 	struct raft_fsm *fsm = &f->servers[0].dqlite->raft_fsm;
+@@ -344,12 +352,13 @@ static char* num_records[] = {
+     "2200", NULL
+ };
+ 
+-static MunitParameterEnum num_writes_params[] = {
++static MunitParameterEnum restore_params[] = {
+     { "num_records", num_records },
++    { SNAPSHOT_THRESHOLD_PARAM, snapshot_threshold},
+     { NULL, NULL },
+ };
+ 
+-TEST(fsm, snapshotRestore, setUp, tearDown, 0, num_writes_params)
++TEST(fsm, snapshotRestore, setUp, tearDown, 0, restore_params)
+ {
+ 	struct fixture *f = data;
+ 	struct raft_fsm *fsm = &f->servers[0].dqlite->raft_fsm;
+@@ -407,7 +416,7 @@ TEST(fsm, snapshotRestore, setUp, tearDown, 0, num_writes_params)
+ 	return MUNIT_OK;
+ }
+ 
+-TEST(fsm, concurrentSnapshots, setUp, tearDown, 0, NULL)
++TEST(fsm, concurrentSnapshots, setUp, tearDown, 0, snapshot_params)
+ {
+ 	struct fixture *f = data;
+ 	struct raft_fsm *fsm = &f->servers[0].dqlite->raft_fsm;
+@@ -443,7 +452,7 @@ TEST(fsm, concurrentSnapshots, setUp, tearDown, 0, NULL)
+ 	return MUNIT_OK;
+ }
+ 
+-TEST(fsm, snapshotRestoreMultipleDBs, setUp, tearDown, 0, NULL)
++TEST(fsm, snapshotRestoreMultipleDBs, setUp, tearDown, 0, snapshot_params)
+ {
+ 	struct fixture *f = data;
+ 	struct raft_fsm *fsm = &f->servers[0].dqlite->raft_fsm;
+diff --git a/test/integration/test_membership.c b/test/integration/test_membership.c
+index 5494bed9..3780e135 100644
+--- a/test/integration/test_membership.c
++++ b/test/integration/test_membership.c
+@@ -31,7 +31,7 @@
+ 	test_server_network(f->servers, N_SERVERS);           \
+ 	for (i_ = 0; i_ < N_SERVERS; i_++) {                  \
+ 		struct test_server *server = &f->servers[i_]; \
+-		test_server_start(server);                    \
++		test_server_start(server, params);            \
+ 	}                                                     \
+ 	SELECT(1)
+ 
+diff --git a/test/lib/server.c b/test/lib/server.c
+index 7ed75825..540d4655 100644
+--- a/test/lib/server.c
++++ b/test/lib/server.c
+@@ -50,7 +50,7 @@ void test_server_tear_down(struct test_server *s)
+ 	test_dir_tear_down(s->dir);
+ }
+ 
+-void test_server_start(struct test_server *s)
++void test_server_start(struct test_server *s, const MunitParameter params[])
+ {
+ 	int rv;
+ 
+@@ -66,6 +66,13 @@ void test_server_start(struct test_server *s)
+ 	rv = dqlite_node_set_network_latency_ms(s->dqlite, 10);
+ 	munit_assert_int(rv, ==, 0);
+ 
++	if (munit_parameters_get(params, SNAPSHOT_THRESHOLD_PARAM) != NULL) {
++		unsigned threshold = (unsigned)atoi(munit_parameters_get(
++			    params, SNAPSHOT_THRESHOLD_PARAM));
++		rv = dqlite_node_set_snapshot_params(s->dqlite, threshold, threshold);
++		munit_assert_int(rv, ==, 0);
++	}
++
+ 	rv = dqlite_node_start(s->dqlite);
+ 	munit_assert_int(rv, ==, 0);
+ 
+diff --git a/test/lib/server.h b/test/lib/server.h
+index b65d1a04..c4e9dff8 100644
+--- a/test/lib/server.h
++++ b/test/lib/server.h
+@@ -13,6 +13,8 @@
+ #include "endpoint.h"
+ #include "munit.h"
+ 
++#define SNAPSHOT_THRESHOLD_PARAM "snapshot-threshold"
++
+ struct test_server
+ {
+ 	unsigned id;                   /* Server ID. */
+@@ -32,7 +34,7 @@ void test_server_setup(struct test_server *s,
+ void test_server_tear_down(struct test_server *s);
+ 
+ /* Start the test server. */
+-void test_server_start(struct test_server *s);
++void test_server_start(struct test_server *s, const MunitParameter params[]);
+ 
+ /* Stop the test server. */
+ void test_server_stop(struct test_server *s);

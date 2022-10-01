@@ -1,14 +1,16 @@
 Name:           dqlite
 Version:        1.11.1
-Release:        0.1%{?dist}
+Release:        0.2%{?dist}
 Summary:        Embeddable, replicated and fault tolerant SQL engine
 
 License:        LGPLv3 with exception
 URL:            https://github.com/canonical/dqlite
 Source0:        %{URL}/archive/v%{version}.tar.gz
+Patch0:         dqlite-1.11.1-integration-tests-Control-raft-snapshot-threshold.patch
 
 BuildRequires:  autoconf libtool
 BuildRequires:  gcc
+BuildRequires:  pkgconfig(liblz4)
 BuildRequires:  pkgconfig(libuv)
 BuildRequires:  pkgconfig(raft) >= 0.14.0
 BuildRequires:  pkgconfig(sqlite3)
@@ -26,6 +28,7 @@ Development headers and library for dqlite.
 
 %prep
 %setup -q -n %{name}-%{version}
+%patch0 -p1
 
 %build
 autoreconf -i
