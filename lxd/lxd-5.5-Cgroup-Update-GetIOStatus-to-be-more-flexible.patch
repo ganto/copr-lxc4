@@ -1,0 +1,70 @@
+From 72eb921ff49247a89e8f2f71bc6103d1586ca58c Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Tue, 27 Sep 2022 13:11:21 +0100
+Subject: [PATCH] lxd/cgroup/abstraction: Update GetIOStats to be more flexible
+
+Allows additional metrics to be added to io.stat file without it failing.
+
+Fixes #10953
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/cgroup/abstraction.go | 43 +++++++++++++++++++++++----------------
+ 1 file changed, 25 insertions(+), 18 deletions(-)
+
+diff --git a/lxd/cgroup/abstraction.go b/lxd/cgroup/abstraction.go
+index 2ed835f9ec16..7613ef9482fd 100644
+--- a/lxd/cgroup/abstraction.go
++++ b/lxd/cgroup/abstraction.go
+@@ -1027,26 +1027,33 @@ func (cg *CGroup) GetIOStats() (map[string]*IOStats, error) {
+ 		scanner := bufio.NewScanner(strings.NewReader(val))
+ 
+ 		for scanner.Scan() {
+-			var (
+-				devID           string
+-				readBytes       uint64
+-				readsCompleted  uint64
+-				writtenBytes    uint64
+-				writesCompleted uint64
+-				discardBytes    uint64
+-			)
+-
+-			_, err = fmt.Sscanf(scanner.Text(), "%s rbytes=%d wbytes=%d rios=%d wios=%d dbytes=%d", &devID, &readBytes, &writtenBytes, &readsCompleted, &writesCompleted, &discardBytes)
+-			if err != nil {
+-				return nil, fmt.Errorf("Failed parsing io.stat (%q): %w", scanner.Text(), err)
+-			}
++			devID, stats, _ := strings.Cut(scanner.Text(), " ")
++			ioStats := &IOStats{}
+ 
+-			ioMap[partMap[devID]] = &IOStats{
+-				ReadBytes:       readBytes,
+-				ReadsCompleted:  readsCompleted,
+-				WrittenBytes:    writtenBytes,
+-				WritesCompleted: writesCompleted,
++			for _, statPart := range strings.Split(stats, " ") {
++				statName, statValueStr, found := strings.Cut(statPart, "=")
++				if !found {
++					return nil, fmt.Errorf("Failed extracting io.stat %q (from %q)", statPart, scanner.Text())
++				}
++
++				statValue, err := strconv.ParseUint(statValueStr, 10, 64)
++				if err != nil {
++					return nil, fmt.Errorf("Failed parsing io.stat %q %q (from %q): %w", statName, statValueStr, scanner.Text(), err)
++				}
++
++				switch statName {
++				case "rbytes":
++					ioStats.ReadBytes = statValue
++				case "wbytes":
++					ioStats.WrittenBytes = statValue
++				case "rios":
++					ioStats.ReadsCompleted = statValue
++				case "wios":
++					ioStats.WritesCompleted = statValue
++				}
+ 			}
++
++			ioMap[partMap[devID]] = ioStats
+ 		}
+ 
+ 		return ioMap, nil

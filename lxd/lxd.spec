@@ -13,7 +13,7 @@
 
 # https://github.com/lxc/lxd
 %global goipath github.com/lxc/lxd
-Version:        5.4
+Version:        5.5
 
 %gometa
 
@@ -39,9 +39,9 @@ Source8:        lxd.profile
 Source9:        lxd-agent.service
 Source10:       lxd-agent-setup
 # Upstream bug fixes merged to master for next release
-Patch0:         lxd-5.4-lxd-resources-Fix-VPD-parser-crash.patch
-Patch1:         lxd-5.4-Client-Set-transport-DialTLSContext-in-tlsHTTPClient.patch
-Patch2:         lxd-5.4-cgo-Ensure-that-lxd-wrappers-dont-conflict-with-libc.patch
+Patch0:         lxd-5.5-VM-Dont-offer-VM-support-if-dev-vsock-is-missing.patch
+Patch1:         lxd-5.5-client-Handle-nil-args-in-CopyImage.patch
+Patch2:         lxd-5.5-Cgroup-Update-GetIOStatus-to-be-more-flexible.patch
 
 BuildRequires:  gettext
 BuildRequires:  help2man
