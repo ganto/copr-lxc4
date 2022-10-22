@@ -1,0 +1,46 @@
+From eb1ce1068b733f961ed2215b456ee3583935f6ce Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Wed, 12 Oct 2022 16:55:02 +0100
+Subject: [PATCH] lxc/file: Fix symlink following in cmdFilePull
+
+Also imposes a 255 max depth for symlinks.
+This aligns with the one in Go's walkSymlinks:
+https://cs.opensource.google/go/go/+/refs/tags/go1.19.2:src/path/filepath/symlink.go;l=99
+
+Fixes #11016
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxc/file.go | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/lxc/file.go b/lxc/file.go
+index 1ca4eafb8c78..c95eaaa80657 100644
+--- a/lxc/file.go
++++ b/lxc/file.go
+@@ -351,6 +351,7 @@ func (c *cmdFilePull) Run(cmd *cobra.Command, args []string) error {
+ 
+ 			// Follow the symlink
+ 			if targetPath == "-" || c.file.flagRecursive {
++				i := 0
+ 				for {
+ 					newPath := strings.TrimSuffix(string(linkTarget), "\n")
+ 					if !strings.HasPrefix(newPath, "/") {
+@@ -365,6 +366,17 @@ func (c *cmdFilePull) Run(cmd *cobra.Command, args []string) error {
+ 					if resp.Type != "symlink" {
+ 						break
+ 					}
++
++					i++
++					if i > 255 {
++						return fmt.Errorf("Too many links")
++					}
++
++					// Update link target for next iteration.
++					linkTarget, err = io.ReadAll(buf)
++					if err != nil {
++						return err
++					}
+ 				}
+ 			} else {
+ 				err = os.Symlink(strings.TrimSpace(string(linkTarget)), targetPath)

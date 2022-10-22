@@ -1,0 +1,31 @@
+From 399cac252a999d9bdae46d82703dc7d612d062b9 Mon Sep 17 00:00:00 2001
+From: Thomas Hipp <thomas.hipp@canonical.com>
+Date: Wed, 5 Oct 2022 09:05:16 +0200
+Subject: [PATCH] lxd-agent: Fix filesystem metrics
+
+This fixes an issue where available bytes and free bytes would always be
+0.
+
+This fixes #10994.
+
+Signed-off-by: Thomas Hipp <thomas.hipp@canonical.com>
+---
+ lxd-agent/metrics.go | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/lxd-agent/metrics.go b/lxd-agent/metrics.go
+index 8b44c741ef68..190a7c1e93bf 100644
+--- a/lxd-agent/metrics.go
++++ b/lxd-agent/metrics.go
+@@ -275,9 +275,8 @@ func getFilesystemMetrics(d *Daemon) (map[string]metrics.FilesystemMetrics, erro
+ 			stats.FSType = fsType
+ 		}
+ 
+-		stats.SizeBytes = statfs.Blocks * uint64(statfs.Bsize)
+-		stats.SizeBytes = statfs.Blocks * uint64(statfs.Bsize)
+-		stats.SizeBytes = statfs.Blocks * uint64(statfs.Bsize)
++		stats.AvailableBytes = statfs.Bavail * uint64(statfs.Bsize)
++		stats.FreeBytes = statfs.Bfree * uint64(statfs.Bsize)
+ 		stats.SizeBytes = statfs.Blocks * uint64(statfs.Bsize)
+ 
+ 		out[fields[0]] = stats

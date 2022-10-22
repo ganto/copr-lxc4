@@ -13,7 +13,7 @@
 
 # https://github.com/lxc/lxd
 %global goipath github.com/lxc/lxd
-Version:        5.5
+Version:        5.6
 
 %gometa
 
@@ -39,9 +39,10 @@ Source8:        lxd.profile
 Source9:        lxd-agent.service
 Source10:       lxd-agent-setup
 # Upstream bug fixes merged to master for next release
-Patch0:         lxd-5.5-VM-Dont-offer-VM-support-if-dev-vsock-is-missing.patch
-Patch1:         lxd-5.5-client-Handle-nil-args-in-CopyImage.patch
-Patch2:         lxd-5.5-Cgroup-Update-GetIOStatus-to-be-more-flexible.patch
+Patch0:         lxd-5.6-VM-Dont-offer-VM-support-if-dev-vsock-is-missing.patch
+Patch1:         lxd-5.6-Cgroup-Update-GetIOStatus-to-be-more-flexible.patch
+Patch2:         lxd-5.6-lxd-agent-Fix-filesystem-metrics.patch
+Patch3:         lxd-5.6-lxc-Fix-symlink-following-in-cmdFilePull.patch
 
 BuildRequires:  gettext
 BuildRequires:  help2man
@@ -166,6 +167,7 @@ This package contains user documentation.
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
+%patch3 -p1
 
 %build
 export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
