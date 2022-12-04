@@ -1,0 +1,450 @@
+From dc76d7f45216022b8c951ffba33504fb518b92b3 Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Fri, 28 Oct 2022 11:29:31 +0100
+Subject: [PATCH] shared/netutils/network/linux/cgo: Don't call
+ net.InterfaceByIndex in NetnsGetifaddrs
+
+As calling it repeatedly for a list of instance NICs is inefficient as internally it loads
+info about all interfaces.
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ shared/netutils/network_linux_cgo.go | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/shared/netutils/network_linux_cgo.go b/shared/netutils/network_linux_cgo.go
+index f435a3c37b5f..7417871a675f 100644
+--- a/shared/netutils/network_linux_cgo.go
++++ b/shared/netutils/network_linux_cgo.go
+@@ -62,7 +62,7 @@ const UnixFdsReceivedMore uint = C.UNIX_FDS_RECEIVED_MORE
+ const UnixFdsReceivedNone uint = C.UNIX_FDS_RECEIVED_NONE
+ 
+ // NetnsGetifaddrs returns a map of InstanceStateNetwork for a particular process.
+-func NetnsGetifaddrs(initPID int32) (map[string]api.InstanceStateNetwork, error) {
++func NetnsGetifaddrs(initPID int32, hostInterfaces []net.Interface) (map[string]api.InstanceStateNetwork, error) {
+ 	var netnsidAware C.bool
+ 	var ifaddrs *C.struct_netns_ifaddrs
+ 	var netnsID C.__s32
+@@ -133,9 +133,11 @@ func NetnsGetifaddrs(initPID int32) (map[string]api.InstanceStateNetwork, error)
+ 		addNetwork.Mtu = int(addr.ifa_mtu)
+ 
+ 		if initPID != 0 && int(addr.ifa_ifindex_peer) > 0 {
+-			hostInterface, err := net.InterfaceByIndex(int(addr.ifa_ifindex_peer))
+-			if err == nil {
+-				addNetwork.HostName = hostInterface.Name
++			for _, hostInterface := range hostInterfaces {
++				if hostInterface.Index == int(addr.ifa_ifindex_peer) {
++					addNetwork.HostName = hostInterface.Name
++					break
++				}
+ 			}
+ 		}
+ 
+From a5c84f24f5a3826f4a5f7a2f501238cef95d2522 Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Fri, 28 Oct 2022 11:31:09 +0100
+Subject: [PATCH] lxd/instance/instance/interface: Allow passing host interface
+ info into Render* functions
+
+Allows preloading host interface info once when listing multiple instances.
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/instance/instance_interface.go | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/lxd/instance/instance_interface.go b/lxd/instance/instance_interface.go
+index f8cc57e80725..c4766da019c4 100644
+--- a/lxd/instance/instance_interface.go
++++ b/lxd/instance/instance_interface.go
+@@ -105,8 +105,8 @@ type Instance interface {
+ 
+ 	// Status
+ 	Render(options ...func(response any) error) (any, any, error)
+-	RenderFull() (*api.InstanceFull, any, error)
+-	RenderState() (*api.InstanceState, error)
++	RenderFull(hostInterfaces []net.Interface) (*api.InstanceFull, any, error)
++	RenderState(hostInterfaces []net.Interface) (*api.InstanceState, error)
+ 	IsRunning() bool
+ 	IsFrozen() bool
+ 	IsEphemeral() bool
+From 184574af23d3e59f07b4789935d08f51a452ce9e Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Fri, 28 Oct 2022 11:32:27 +0100
+Subject: [PATCH] lxd/instance/drivers/driver/lxc: Update Render functions to
+ allow receiving list of host interface info
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/instance/drivers/driver_lxc.go | 19 ++++++++++---------
+ 1 file changed, 10 insertions(+), 9 deletions(-)
+
+diff --git a/lxd/instance/drivers/driver_lxc.go b/lxd/instance/drivers/driver_lxc.go
+index e08352619c58..08d1c8c1cb2e 100644
+--- a/lxd/instance/drivers/driver_lxc.go
++++ b/lxd/instance/drivers/driver_lxc.go
+@@ -3238,7 +3238,7 @@ func (d *lxc) Render(options ...func(response any) error) (any, any, error) {
+ }
+ 
+ // RenderFull renders the full state of the instance.
+-func (d *lxc) RenderFull() (*api.InstanceFull, any, error) {
++func (d *lxc) RenderFull(hostInterfaces []net.Interface) (*api.InstanceFull, any, error) {
+ 	if d.IsSnapshot() {
+ 		return nil, nil, fmt.Errorf("RenderFull only works with containers")
+ 	}
+@@ -3253,7 +3253,7 @@ func (d *lxc) RenderFull() (*api.InstanceFull, any, error) {
+ 	ct := api.InstanceFull{Instance: *base.(*api.Instance)}
+ 
+ 	// Add the ContainerState
+-	ct.State, err = d.renderState(ct.StatusCode)
++	ct.State, err = d.renderState(ct.StatusCode, hostInterfaces)
+ 	if err != nil {
+ 		return nil, nil, err
+ 	}
+@@ -3297,7 +3297,7 @@ func (d *lxc) RenderFull() (*api.InstanceFull, any, error) {
+ }
+ 
+ // renderState renders just the running state of the instance.
+-func (d *lxc) renderState(statusCode api.StatusCode) (*api.InstanceState, error) {
++func (d *lxc) renderState(statusCode api.StatusCode, hostInterfaces []net.Interface) (*api.InstanceState, error) {
+ 	status := api.InstanceState{
+ 		Status:     statusCode.String(),
+ 		StatusCode: statusCode,
+@@ -3307,7 +3307,7 @@ func (d *lxc) renderState(statusCode api.StatusCode) (*api.InstanceState, error)
+ 		pid := d.InitPID()
+ 		status.CPU = d.cpuState()
+ 		status.Memory = d.memoryState()
+-		status.Network = d.networkState()
++		status.Network = d.networkState(hostInterfaces)
+ 		status.Pid = int64(pid)
+ 		status.Processes = d.processesState()
+ 	}
+@@ -3320,8 +3320,8 @@ func (d *lxc) renderState(statusCode api.StatusCode) (*api.InstanceState, error)
+ }
+ 
+ // RenderState renders just the running state of the instance.
+-func (d *lxc) RenderState() (*api.InstanceState, error) {
+-	return d.renderState(d.statusCode())
++func (d *lxc) RenderState(hostInterfaces []net.Interface) (*api.InstanceState, error) {
++	return d.renderState(d.statusCode(), hostInterfaces)
+ }
+ 
+ // Snapshot takes a new snapshot.
+@@ -5894,7 +5894,7 @@ func (d *lxc) memoryState() api.InstanceStateMemory {
+ 	return memory
+ }
+ 
+-func (d *lxc) networkState() map[string]api.InstanceStateNetwork {
++func (d *lxc) networkState(hostInterfaces []net.Interface) map[string]api.InstanceStateNetwork {
+ 	result := map[string]api.InstanceStateNetwork{}
+ 
+ 	pid := d.InitPID()
+@@ -5904,7 +5904,7 @@ func (d *lxc) networkState() map[string]api.InstanceStateNetwork {
+ 
+ 	couldUseNetnsGetifaddrs := d.state.OS.NetnsGetifaddrs
+ 	if couldUseNetnsGetifaddrs {
+-		nw, err := netutils.NetnsGetifaddrs(int32(pid))
++		nw, err := netutils.NetnsGetifaddrs(int32(pid), hostInterfaces)
+ 		if err != nil {
+ 			couldUseNetnsGetifaddrs = false
+ 			d.logger.Error("Failed to retrieve network information via netlink", logger.Ctx{"pid": pid})
+@@ -6980,7 +6980,8 @@ func (d *lxc) Metrics() (*metrics.MetricSet, error) {
+ 	}
+ 
+ 	// Get network stats
+-	networkState := d.networkState()
++	hostInterfaces, _ := net.Interfaces()
++	networkState := d.networkState(hostInterfaces)
+ 
+ 	for name, state := range networkState {
+ 		labels := map[string]string{"device": name}
+From ebf7417ecd4a3746c8d5882b8203b0a334789b27 Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Fri, 28 Oct 2022 11:33:18 +0100
+Subject: [PATCH] lxd/instance/drivers/driver/qemu: Render* function interface
+ updates
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/instance/drivers/driver_qemu.go | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/lxd/instance/drivers/driver_qemu.go b/lxd/instance/drivers/driver_qemu.go
+index 9df381813963..1a72a2e24898 100644
+--- a/lxd/instance/drivers/driver_qemu.go
++++ b/lxd/instance/drivers/driver_qemu.go
+@@ -5668,7 +5668,7 @@ func (d *qemu) Render(options ...func(response any) error) (any, any, error) {
+ }
+ 
+ // RenderFull returns all info about the instance.
+-func (d *qemu) RenderFull() (*api.InstanceFull, any, error) {
++func (d *qemu) RenderFull(hostInterfaces []net.Interface) (*api.InstanceFull, any, error) {
+ 	if d.IsSnapshot() {
+ 		return nil, nil, fmt.Errorf("RenderFull doesn't work with snapshots")
+ 	}
+@@ -5798,7 +5798,7 @@ func (d *qemu) renderState(statusCode api.StatusCode) (*api.InstanceState, error
+ }
+ 
+ // RenderState returns just state info about the instance.
+-func (d *qemu) RenderState() (*api.InstanceState, error) {
++func (d *qemu) RenderState(hostInterfaces []net.Interface) (*api.InstanceState, error) {
+ 	return d.renderState(d.statusCode())
+ }
+ 
+From 8b67ca4bdf36776e7b657f903f174271546d586c Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Fri, 28 Oct 2022 11:33:48 +0100
+Subject: [PATCH] lxd/instance: Update Render* function usage
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/instance_get.go   | 4 +++-
+ lxd/instance_state.go | 4 +++-
+ lxd/instance_test.go  | 7 +++++--
+ lxd/instances_get.go  | 4 +++-
+ 4 files changed, 14 insertions(+), 5 deletions(-)
+
+diff --git a/lxd/instance_get.go b/lxd/instance_get.go
+index 7bdbfa7dc9c9..ae467a49bb8d 100644
+--- a/lxd/instance_get.go
++++ b/lxd/instance_get.go
+@@ -2,6 +2,7 @@ package main
+ 
+ import (
+ 	"fmt"
++	"net"
+ 	"net/http"
+ 	"net/url"
+ 	"strconv"
+@@ -140,7 +141,8 @@ func instanceGet(d *Daemon, r *http.Request) response.Response {
+ 	if recursion == 0 {
+ 		state, etag, err = c.Render()
+ 	} else {
+-		state, etag, err = c.RenderFull()
++		hostInterfaces, _ := net.Interfaces()
++		state, etag, err = c.RenderFull(hostInterfaces)
+ 	}
+ 
+ 	if err != nil {
+diff --git a/lxd/instance_state.go b/lxd/instance_state.go
+index 7f92e9b11800..22fa79151876 100644
+--- a/lxd/instance_state.go
++++ b/lxd/instance_state.go
+@@ -3,6 +3,7 @@ package main
+ import (
+ 	"encoding/json"
+ 	"fmt"
++	"net"
+ 	"net/http"
+ 	"net/url"
+ 	"time"
+@@ -93,7 +94,8 @@ func instanceState(d *Daemon, r *http.Request) response.Response {
+ 		return response.SmartError(err)
+ 	}
+ 
+-	state, err := c.RenderState()
++	hostInterfaces, _ := net.Interfaces()
++	state, err := c.RenderState(hostInterfaces)
+ 	if err != nil {
+ 		return response.InternalError(err)
+ 	}
+diff --git a/lxd/instance_test.go b/lxd/instance_test.go
+index acd07cd6ebca..e168a46978a3 100644
+--- a/lxd/instance_test.go
++++ b/lxd/instance_test.go
+@@ -3,6 +3,7 @@ package main
+ import (
+ 	"context"
+ 	"fmt"
++	"net"
+ 	"testing"
+ 
+ 	"github.com/stretchr/testify/suite"
+@@ -173,10 +174,12 @@ func (suite *containerTestSuite) TestContainer_LoadFromDB() {
+ 	c2.IsRunning()
+ 	suite.Req.Nil(err)
+ 
+-	apiC1, etagC1, err := c.RenderFull()
++	hostInterfaces, _ := net.Interfaces()
++
++	apiC1, etagC1, err := c.RenderFull(hostInterfaces)
+ 	suite.Req.Nil(err)
+ 
+-	apiC2, etagC2, err := c2.RenderFull()
++	apiC2, etagC2, err := c2.RenderFull(hostInterfaces)
+ 	suite.Req.Nil(err)
+ 
+ 	suite.Equal(etagC1, etagC2)
+diff --git a/lxd/instances_get.go b/lxd/instances_get.go
+index 236c9a042536..a1be83bbb131 100644
+--- a/lxd/instances_get.go
++++ b/lxd/instances_get.go
+@@ -3,6 +3,7 @@ package main
+ import (
+ 	"context"
+ 	"fmt"
++	"net"
+ 	"net/http"
+ 	"sort"
+ 	"strconv"
+@@ -447,6 +448,7 @@ func doInstancesGet(d *Daemon, r *http.Request) (any, error) {
+ 				threads = len(projectsInstances)
+ 			}
+ 
++			hostInterfaces, _ := net.Interfaces()
+ 			queue := make(chan [2]string, threads)
+ 
+ 			for i := 0; i < threads; i++ {
+@@ -475,7 +477,7 @@ func doInstancesGet(d *Daemon, r *http.Request) (any, error) {
+ 							continue
+ 						}
+ 
+-						c, _, err := inst.RenderFull()
++						c, _, err := inst.RenderFull(hostInterfaces)
+ 						if err != nil {
+ 							logger.Error("Unable to list instance", logger.Ctx{"project": inst.Project().Name, "instance": inst.Name(), "err": err})
+ 							resultFullListAppend(projectInstance, api.InstanceFull{}, err)
+From b8b71c9850087f9f558ac8a0b87be3b58415ac28 Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Fri, 28 Oct 2022 11:34:24 +0100
+Subject: [PATCH] lxd/main/forknet: netutils.NetnsGetifaddrs usage
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/main_forknet.go | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/lxd/main_forknet.go b/lxd/main_forknet.go
+index c25ceccfda8e..dbb7eb3071b7 100644
+--- a/lxd/main_forknet.go
++++ b/lxd/main_forknet.go
+@@ -3,6 +3,7 @@ package main
+ import (
+ 	"encoding/json"
+ 	"fmt"
++	"net"
+ 
+ 	"github.com/spf13/cobra"
+ 
+@@ -151,7 +152,8 @@ func (c *cmdForknet) Command() *cobra.Command {
+ }
+ 
+ func (c *cmdForknet) RunInfo(cmd *cobra.Command, args []string) error {
+-	networks, err := netutils.NetnsGetifaddrs(-1)
++	hostInterfaces, _ := net.Interfaces()
++	networks, err := netutils.NetnsGetifaddrs(-1, hostInterfaces)
+ 	if err != nil {
+ 		return err
+ 	}
+From 6bbe9e89546849b540a836ed58d1bd3ccfc8d166 Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Fri, 28 Oct 2022 12:23:39 +0100
+Subject: [PATCH] lxd/instance/instance/interface: Adds hostInterfaces argument
+ to Metrics
+
+To allow loading of host interfaces once even if getting metrics for multiple instances.
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/instance/instance_interface.go | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lxd/instance/instance_interface.go b/lxd/instance/instance_interface.go
+index c4766da019c4..9843501fbf8d 100644
+--- a/lxd/instance/instance_interface.go
++++ b/lxd/instance/instance_interface.go
+@@ -156,7 +156,7 @@ type Instance interface {
+ 
+ 	DeferTemplateApply(trigger TemplateTrigger) error
+ 
+-	Metrics() (*metrics.MetricSet, error)
++	Metrics(hostInterfaces []net.Interface) (*metrics.MetricSet, error)
+ }
+ 
+ // Container interface is for container specific functions.
+From de3ee17ef6788dd16ac6630d22e2d2c987591009 Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Fri, 28 Oct 2022 12:24:23 +0100
+Subject: [PATCH] lxd/instance/drivers: Updated Metrics implementation to
+ accept hostInterfaces argument
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/instance/drivers/driver_lxc.go  | 3 +--
+ lxd/instance/drivers/driver_qemu.go | 2 +-
+ 2 files changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/lxd/instance/drivers/driver_lxc.go b/lxd/instance/drivers/driver_lxc.go
+index 08d1c8c1cb2e..db422ab89890 100644
+--- a/lxd/instance/drivers/driver_lxc.go
++++ b/lxd/instance/drivers/driver_lxc.go
+@@ -6846,7 +6846,7 @@ func (d *lxc) Info() instance.Info {
+ 	}
+ }
+ 
+-func (d *lxc) Metrics() (*metrics.MetricSet, error) {
++func (d *lxc) Metrics(hostInterfaces []net.Interface) (*metrics.MetricSet, error) {
+ 	out := metrics.NewMetricSet(map[string]string{"project": d.project.Name, "name": d.name, "type": instancetype.Container.String()})
+ 
+ 	// Load cgroup abstraction
+@@ -6980,7 +6980,6 @@ func (d *lxc) Metrics() (*metrics.MetricSet, error) {
+ 	}
+ 
+ 	// Get network stats
+-	hostInterfaces, _ := net.Interfaces()
+ 	networkState := d.networkState(hostInterfaces)
+ 
+ 	for name, state := range networkState {
+diff --git a/lxd/instance/drivers/driver_qemu.go b/lxd/instance/drivers/driver_qemu.go
+index 1a72a2e24898..09f675c38bac 100644
+--- a/lxd/instance/drivers/driver_qemu.go
++++ b/lxd/instance/drivers/driver_qemu.go
+@@ -6359,7 +6359,7 @@ func (d *qemu) checkFeature(qemu string, args ...string) (bool, error) {
+ 	return true, nil
+ }
+ 
+-func (d *qemu) Metrics() (*metrics.MetricSet, error) {
++func (d *qemu) Metrics(hostInterfaces []net.Interface) (*metrics.MetricSet, error) {
+ 	if d.agentMetricsEnabled() {
+ 		return d.getAgentMetrics()
+ 	}
+From 381c5cfab81569697692ee1171b74f1608c0a224 Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Fri, 28 Oct 2022 12:24:46 +0100
+Subject: [PATCH] lxd/api/metrics: inst.Metrics usage
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/api_metrics.go | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/lxd/api_metrics.go b/lxd/api_metrics.go
+index 96374de6b839..76d768217d2d 100644
+--- a/lxd/api_metrics.go
++++ b/lxd/api_metrics.go
+@@ -2,6 +2,7 @@ package main
+ 
+ import (
+ 	"context"
++	"net"
+ 	"net/http"
+ 	"runtime"
+ 	"sync"
+@@ -161,6 +162,8 @@ func metricsGet(d *Daemon, r *http.Request) response.Response {
+ 		return response.SyncResponsePlain(true, metricSet.String())
+ 	}
+ 
++	hostInterfaces, _ := net.Interfaces()
++
+ 	// Prepare temporary metrics storage.
+ 	newMetrics := map[string]*metrics.MetricSet{}
+ 	newMetricsLock := sync.Mutex{}
+@@ -186,7 +189,7 @@ func metricsGet(d *Daemon, r *http.Request) response.Response {
+ 			go func(inst instance.Instance) {
+ 				defer wgInstances.Done()
+ 
+-				instanceMetrics, err := inst.Metrics()
++				instanceMetrics, err := inst.Metrics(hostInterfaces)
+ 				if err != nil {
+ 					logger.Warn("Failed to get instance metrics", logger.Ctx{"instance": inst.Name(), "project": inst.Project(), "err": err})
+ 					return

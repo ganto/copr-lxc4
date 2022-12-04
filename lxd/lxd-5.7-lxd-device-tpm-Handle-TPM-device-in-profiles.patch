@@ -1,0 +1,25 @@
+From 0470c09536078da868134047b2047b070fb23f1a Mon Sep 17 00:00:00 2001
+From: Thomas Hipp <thomas.hipp@canonical.com>
+Date: Fri, 4 Nov 2022 14:52:21 +0100
+Subject: [PATCH] lxd/device/tpm: Handle TPM devices in profiles
+
+This fixes #11703.
+
+Signed-off-by: Thomas Hipp <thomas.hipp@canonical.com>
+---
+ lxd/device/tpm.go | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/lxd/device/tpm.go b/lxd/device/tpm.go
+index cce259ea986a..1ee6a2d14e53 100644
+--- a/lxd/device/tpm.go
++++ b/lxd/device/tpm.go
+@@ -38,6 +38,8 @@ func (d *tpm) validateConfig(instConf instance.ConfigReader) error {
+ 
+ 	if instConf.Type() == instancetype.Container {
+ 		rules["path"] = validate.IsNotEmpty
++	} else {
++		rules["path"] = validate.Optional(validate.IsNotEmpty)
+ 	}
+ 
+ 	err := d.config.Validate(rules)

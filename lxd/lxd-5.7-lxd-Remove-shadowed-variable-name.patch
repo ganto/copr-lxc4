@@ -1,0 +1,29 @@
+From 87475b9df1ca0da0917831bd6730f8f7efed312d Mon Sep 17 00:00:00 2001
+From: Mark Laing <mark.laing@canonical.com>
+Date: Fri, 4 Nov 2022 09:37:22 +0100
+Subject: [PATCH] lxd: Remove shadowed variable name.
+
+The shadowed variable "p" of type *api.Profile was being used
+incorrectly to retreive the project name (via p.Name). So project names
+were incorrect when listing profiles without recursion.
+
+Signed-off-by: Mark Laing <mark.laing@canonical.com>
+---
+ lxd/profiles.go | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/lxd/profiles.go b/lxd/profiles.go
+index 96577e443971..a186bfd67285 100644
+--- a/lxd/profiles.go
++++ b/lxd/profiles.go
+@@ -178,8 +178,8 @@ func profilesGet(d *Daemon, r *http.Request) response.Response {
+ 			result = apiProfiles
+ 		} else {
+ 			urls := make([]string, len(apiProfiles))
+-			for i, p := range apiProfiles {
+-				urls[i] = p.URL(version.APIVersion, p.Name).String()
++			for i, apiProfile := range apiProfiles {
++				urls[i] = apiProfile.URL(version.APIVersion, p.Name).String()
+ 			}
+ 
+ 			result = urls

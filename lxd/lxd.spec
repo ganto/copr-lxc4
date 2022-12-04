@@ -13,7 +13,7 @@
 
 # https://github.com/lxc/lxd
 %global goipath github.com/lxc/lxd
-Version:        5.6
+Version:        5.7
 
 %gometa
 
@@ -39,10 +39,18 @@ Source8:        lxd.profile
 Source9:        lxd-agent.service
 Source10:       lxd-agent-setup
 # Upstream bug fixes merged to master for next release
-Patch0:         lxd-5.6-VM-Dont-offer-VM-support-if-dev-vsock-is-missing.patch
-Patch1:         lxd-5.6-Cgroup-Update-GetIOStatus-to-be-more-flexible.patch
-Patch2:         lxd-5.6-lxd-agent-Fix-filesystem-metrics.patch
-Patch3:         lxd-5.6-lxc-Fix-symlink-following-in-cmdFilePull.patch
+# https://github.com/lxc/lxd/issues/11042
+Patch0:         lxd-5.7-Device-Speed-up-getting-NIC-host-name-info.patch
+# https://github.com/lxc/lxd/issues/11072
+Patch1:         lxd-5.7-Network-Adds-MTU-DHCP-option-when-using-bridge-fan-mode.patch
+# https://github.com/lxc/lxd/issues/11073
+Patch2:         lxd-5.7-lxd-device-tpm-Handle-TPM-device-in-profiles.patch
+# https://github.com/lxc/lxd/issues/11083
+Patch3:         lxd-5.7-lxd-Remove-shadowed-variable-name.patch
+# https://github.com/lxc/lxd/issues/11084
+Patch4:         lxd-5.7-Storage-Dont-check-project-limits-when-doing-a-volume-snapshot-restore.patch
+# https://github.com/lxc/lxd/issues/11126
+Patch5:         lxd-5.8-Device-Fix-attaching-cephfs-disk-volumes-to-VMs.patch
 
 BuildRequires:  gettext
 BuildRequires:  help2man
@@ -168,6 +176,8 @@ This package contains user documentation.
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
+%patch4 -p1
+%patch5 -p1
 
 %build
 export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
