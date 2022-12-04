@@ -1,9 +1,9 @@
 Name:           raft
 Version:        0.16.0
-Release:        0.1%{?dist}
+Release:        0.2%{?dist}
 Summary:        C implementation of the Raft consensus protocol
 
-License:        LGPLv3 with exceptions
+License:        LGPL-3.0-only WITH LGPL-3.0-linking-exception
 URL:            https://github.com/canonical/raft
 Source0:        %{URL}/archive/v%{version}.tar.gz
 # https://github.com/canonical/raft/issues/263
