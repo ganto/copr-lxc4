@@ -1,9 +1,9 @@
 Name:           dqlite
-Version:        1.12.0
+Version:        1.13.0
 Release:        0.1%{?dist}
 Summary:        Embeddable, replicated and fault tolerant SQL engine
 
-License:        LGPLv3 with exception
+License:        LGPL-3.0-only WITH LGPL-3.0-linking-exception
 URL:            https://github.com/canonical/dqlite
 Source0:        %{URL}/archive/v%{version}.tar.gz
 
