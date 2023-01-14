@@ -13,7 +13,7 @@
 
 # https://github.com/lxc/lxd
 %global goipath github.com/lxc/lxd
-Version:        5.8
+Version:        5.9
 
 %gometa
 
@@ -39,12 +39,16 @@ Source8:        lxd.profile
 Source9:        lxd-agent.service
 Source10:       lxd-agent-setup
 # Upstream bug fixes merged to master for next release
-# https://github.com/lxc/lxd/issues/11129
-Patch0:         lxd-5.8-VM-Fix-blockNodeName-to-use-base64-raw-URL-format.patch
-# https://github.com/lxc/lxd/issues/11131, https://github.com/lxc/lxd/issues/11191
-Patch1:         lxd-5.8-Resources-Ignore-errors-from-ethtoolAddPortInfo.patch
-# https://github.com/lxc/lxd/issues/11187
-Patch2:         lxd-5.8-Instance-Fix-VM-vsock-nesting-regression.patch
+# https://github.com/lxc/lxd/issues/11205
+Patch0:         lxd-5.9-lxd-Fix-escaping-of-lxd-sql-dump-command.patch
+# https://github.com/lxc/lxd/issues/11210
+Patch1:         lxd-5.9-Storage-Fix-BTRFS-driver-getQGroup-to-support-BTRFS-6.0.1.patch
+# https://github.com/lxc/lxd/issues/11231
+Patch2:         lxd-5.9-lxd-migrate-Fix-usage-string.patch
+# https://github.com/lxc/lxd/issues/11254
+Patch3:         lxd-5.9-Instance-Fix-VM-QEMU-feature-detection-on-aarch64.patch
+# https://github.com/lxc/lxd/issues/11261
+Patch4:         lxd-5.9-Instance-Fixes-delete-of-ephemeral-VM-on-stop.patch
 
 BuildRequires:  gettext
 BuildRequires:  help2man
@@ -169,6 +173,8 @@ This package contains user documentation.
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
+%patch3 -p1
+%patch4 -p1
 
 %build
 export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"

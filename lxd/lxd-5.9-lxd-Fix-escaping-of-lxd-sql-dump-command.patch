@@ -1,0 +1,161 @@
+From 5ceb4753cf4b329678f29f9e5d6d00f46a9a451d Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Wed, 4 Jan 2023 11:50:47 +0000
+Subject: [PATCH] lxd/db/query/dump: Correctly generate CREATE TABLE statement
+
+Inline with sqlite3 .dump command.
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/db/query/dump.go | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/lxd/db/query/dump.go b/lxd/db/query/dump.go
+index 8ea924ed4d9d..36cc6b81f52a 100644
+--- a/lxd/db/query/dump.go
++++ b/lxd/db/query/dump.go
+@@ -80,6 +80,11 @@ func getEntitiesSchemas(ctx context.Context, tx *sql.Tx) (map[string][2]string,
+ 			return nil, nil, fmt.Errorf("Could not scan table name and schema: %w", err)
+ 		}
+ 
++		// This is based on logic from dump_callback in sqlite source for sqlite3_db_dump function.
++		if strings.HasPrefix(schema, `CREATE TABLE "`) {
++			schema = strings.Replace(schema, "CREATE TABLE", "CREATE TABLE IF NOT EXISTS", 1)
++		}
++
+ 		names = append(names, name)
+ 		tablesSchemas[name] = [2]string{kind, schema + ";"}
+ 	}
+From f3909299478ea5a5268658dc151d0e0290e6aa70 Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Wed, 4 Jan 2023 11:51:14 +0000
+Subject: [PATCH] lxd/db/query/dump: Correctly escape single quote and \n and
+ \r
+
+Inline with sqlite3 .dump command.
+
+Also changes datetime format to be similar to that used by sqlite3.
+
+Fixes #11205
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/db/query/dump.go | 25 +++++++++++++++++++++++--
+ 1 file changed, 23 insertions(+), 2 deletions(-)
+
+diff --git a/lxd/db/query/dump.go b/lxd/db/query/dump.go
+index 36cc6b81f52a..0238874da36d 100644
+--- a/lxd/db/query/dump.go
++++ b/lxd/db/query/dump.go
+@@ -130,11 +130,32 @@ func getTableData(ctx context.Context, tx *sql.Tx, table string) ([]string, erro
+ 			case int64:
+ 				values[j] = strconv.FormatInt(v, 10)
+ 			case string:
+-				values[j] = fmt.Sprintf("'%s'", v)
++				// This is based on logic from dump_callback in sqlite source for sqlite3_db_dump function.
++				v = fmt.Sprintf("'%s'", strings.ReplaceAll(v, "'", "''"))
++
++				if strings.Contains(v, "\r") {
++					v = "replace(" + strings.ReplaceAll(v, "\r", "\\r") + ",'\\r',char(13))"
++				}
++
++				if strings.Contains(v, "\n") {
++					v = "replace(" + strings.ReplaceAll(v, "\n", "\\n") + ",'\\n',char(10))"
++				}
++
++				values[j] = v
++
+ 			case []byte:
+ 				values[j] = fmt.Sprintf("'%s'", string(v))
+ 			case time.Time:
+-				values[j] = strconv.FormatInt(v.Unix(), 10)
++				// Try and match the sqlite3 .dump output format.
++				format := "2006-01-02 15:04:05"
++
++				if v.Nanosecond() > 0 {
++					format = format + ".000000000"
++				}
++
++				format = format + "-07:00"
++
++				values[j] = "'" + v.Format(format) + "'"
+ 			default:
+ 				if v != nil {
+ 					return nil, fmt.Errorf("Bad type in column %q of row %d in table %q", columns[j], i, table)
+From 1e06c62ab325a085e807b6f7b6fec94e56b94c04 Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Wed, 4 Jan 2023 14:25:19 +0000
+Subject: [PATCH] lxd/db/query/dump/test: Fix dump tests
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/db/query/dump_test.go | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/lxd/db/query/dump_test.go b/lxd/db/query/dump_test.go
+index 5a22474dbb77..25461276840d 100644
+--- a/lxd/db/query/dump_test.go
++++ b/lxd/db/query/dump_test.go
+@@ -23,7 +23,7 @@ CREATE TABLE schema (
+     updated_at DATETIME NOT NULL,
+     UNIQUE (version)
+ );
+-INSERT INTO schema VALUES(1,37,1523946366);
++INSERT INTO schema VALUES(1,37,'2018-04-17 06:26:06+00:00');
+ CREATE TABLE config (
+     id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+     key VARCHAR(255) NOT NULL,
+@@ -36,8 +36,8 @@ CREATE TABLE patches (
+     applied_at DATETIME NOT NULL,
+     UNIQUE (name)
+ );
+-INSERT INTO patches VALUES(1,'invalid_profile_names',1523946366);
+-INSERT INTO patches VALUES(2,'leftover_profile_config',1523946366);
++INSERT INTO patches VALUES(1,'invalid_profile_names','2018-04-17 06:26:06+00:00');
++INSERT INTO patches VALUES(2,'leftover_profile_config','2018-04-17 06:26:06+00:00');
+ CREATE TABLE raft_nodes (
+     id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+     address TEXT NOT NULL,
+@@ -65,8 +65,8 @@ func TestDumpTablePatches(t *testing.T) {
+ 	data, err := query.GetTableData(context.Background(), tx, "patches")
+ 	require.NoError(t, err)
+ 	assert.ElementsMatch(t, data, []string{
+-		"INSERT INTO patches VALUES(1,'invalid_profile_names',1523946366);",
+-		"INSERT INTO patches VALUES(2,'leftover_profile_config',1523946366);",
++		"INSERT INTO patches VALUES(1,'invalid_profile_names','2018-04-17 06:26:06+00:00');",
++		"INSERT INTO patches VALUES(2,'leftover_profile_config','2018-04-17 06:26:06+00:00');",
+ 	})
+ }
+ 
+From 848187f0f5a220aabd5d35ad6b6afde30901d141 Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Wed, 4 Jan 2023 14:13:35 +0000
+Subject: [PATCH] lxd/db/warnings: Store warning times in UTC
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/db/warnings.go | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/lxd/db/warnings.go b/lxd/db/warnings.go
+index 0f47451370b9..6ba6f1ecdc45 100644
+--- a/lxd/db/warnings.go
++++ b/lxd/db/warnings.go
+@@ -56,7 +56,7 @@ func (c *Cluster) UpsertWarning(nodeName string, projectName string, entityTypeC
+ 		return fmt.Errorf("Unknown warning type code %d", typeCode)
+ 	}
+ 
+-	now := time.Now()
++	now := time.Now().UTC()
+ 
+ 	err = c.Transaction(context.TODO(), func(ctx context.Context, tx *ClusterTx) error {
+ 		filter := cluster.WarningFilter{
+@@ -96,7 +96,7 @@ func (c *Cluster) UpsertWarning(nodeName string, projectName string, entityTypeC
+ 				Status:         warningtype.StatusNew,
+ 				FirstSeenDate:  now,
+ 				LastSeenDate:   now,
+-				UpdatedDate:    time.Time{},
++				UpdatedDate:    time.Time{}.UTC(),
+ 				LastMessage:    message,
+ 				Count:          1,
+ 			}
