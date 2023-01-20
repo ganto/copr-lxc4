@@ -1,6 +1,6 @@
 Name:           raft
 Version:        0.17.1
-Release:        0.1%{?dist}
+Release:        0.2%{?dist}
 Summary:        C implementation of the Raft consensus protocol
 
 License:        LGPL-3.0-only WITH LGPL-3.0-linking-exception
@@ -13,8 +13,8 @@ BuildRequires:  autoconf libtool
 BuildRequires:  gcc
 BuildRequires:  pkgconfig(liblz4)
 BuildRequires:  pkgconfig(libuv)
-# Breaking so-library change
-Conflicts:      dqlite < 1.10.0
+# Breaking header change
+Conflicts:      dqlite < 1.14.0
 
 %description
 Fully asynchronous C implementation of the Raft consensus protocol. It consists
