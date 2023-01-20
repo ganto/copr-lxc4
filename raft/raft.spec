@@ -82,6 +82,9 @@ rm -f %{buildroot}%{_libdir}/libraft.la
 %doc docs/_build/html/
 
 %changelog
+* Fri Jan 20 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.17.1-0.1
+- Update to 0.17.1.
+
 * Sun Dec 04 2022 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.16.0-0.2
 - Switch to SPDX license expression
 
