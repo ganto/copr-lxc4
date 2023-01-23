@@ -338,6 +338,9 @@ getent group %{name} > /dev/null || groupadd -r %{name}
 %doc doc/*
 
 %changelog
+* Mon Jan 23 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 5.9-0.2
+- Rebuild because of raft so-library version update
+
 * Sat Jan 14 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 5.9-0.1
 - Update to 5.9.
 
