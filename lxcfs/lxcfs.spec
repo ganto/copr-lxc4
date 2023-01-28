@@ -1,10 +1,11 @@
 Name:         lxcfs
-Version:      5.0.2
+Version:      5.0.3
 Release:      0.1%{?dist}
 Summary:      FUSE based filesystem for LXC
 License:      ASL 2.0
 URL:          https://linuxcontainers.org/lxcfs
 Source0:      https://linuxcontainers.org/downloads/%{name}/%{name}-%{version}.tar.gz
+Patch0:       5.0.3-Revert-init-respect-prefix-when-installing-systemd-unit.patch
 BuildRequires:    meson
 BuildRequires:    gcc
 BuildRequires:    python3-jinja2
