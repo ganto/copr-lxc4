@@ -240,6 +240,9 @@ cp -a %{SOURCE1} %{buildroot}%{_sysconfdir}/sysconfig/%{name}-net
 
 
 %changelog
+* Sat Feb 11 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 5.0.2-0.1
+- Update to 5.0.2.
+
 * Fri Aug 19 2022 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 5.0.1-0.2
 - Fix build against glibc-2.36
 
