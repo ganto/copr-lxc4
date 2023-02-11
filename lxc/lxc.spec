@@ -1,6 +1,6 @@
 Name:           lxc
-Version:        5.0.1
-Release:        0.2%{?dist}
+Version:        5.0.2
+Release:        0.1%{?dist}
 Summary:        Linux Resource Containers
 License:        LGPLv2+ and GPLv2
 URL:            https://linuxcontainers.org/lxc
@@ -8,7 +8,6 @@ Source0:        https://linuxcontainers.org/downloads/%{name}-%{version}.tar.gz
 Source1:        lxc-net
 Patch0:         lxc-2.0.7-fix-init.patch
 Patch1:         lxc-5.0.0-fix-lxc-net.patch
-Patch2:         lxc-5.0.1-glibc-2.36-compatibility.patch
 BuildRequires:  make
 BuildRequires:  meson
 BuildRequires:  gcc
@@ -17,6 +16,7 @@ BuildRequires:  doxygen
 BuildRequires:  kernel-headers
 BuildRequires:  openssl-devel
 BuildRequires:  pam-devel
+BuildRequires:  systemd
 BuildRequires:  pkgconfig(libcap)
 # TODO: io_uring support is currently broken, see lxc/lxc#4118
 #BuildRequires:  pkgconfig(liburing)
@@ -133,7 +133,7 @@ cp -a %{_builddir}/%{name}-%{version}/doc/api/html/* %{buildroot}%{_pkgdocdir}/a
 # cache dir
 mkdir -p %{buildroot}%{_localstatedir}/cache/%{name}
 
-rm -rf %{buildroot}%{_libdir}/liblxc_static.a
+rm -rf %{buildroot}%{_libdir}/liblxc.a
 
 # lxc-net config file
 cp -a %{SOURCE1} %{buildroot}%{_sysconfdir}/sysconfig/%{name}-net
