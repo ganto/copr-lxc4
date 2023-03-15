@@ -1,0 +1,452 @@
+From 253b268795a84bf3dd02e80be1681527749d22f7 Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Wed, 22 Feb 2023 13:54:32 +0000
+Subject: [PATCH] lxd/storage/backend/lxd: Pass volume config into
+ SetVolumeQuota in SetInstanceQuota
+
+To support ZFS block mode volumes.
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/storage/backend_lxd.go | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/lxd/storage/backend_lxd.go b/lxd/storage/backend_lxd.go
+index 1222a75e1619..cd8b559c47b2 100644
+--- a/lxd/storage/backend_lxd.go
++++ b/lxd/storage/backend_lxd.go
+@@ -2428,9 +2428,15 @@ func (b *lxdBackend) SetInstanceQuota(inst instance.Instance, size string, vmSta
+ 	contentVolume := InstanceContentType(inst)
+ 	volStorageName := project.Instance(inst.Project().Name, inst.Name())
+ 
++	// Load storage volume from database.
++	dbVol, err := VolumeDBGet(b, inst.Project().Name, inst.Name(), volType)
++	if err != nil {
++		return err
++	}
++
+ 	// Apply the main volume quota.
+ 	// There's no need to pass config as it's not needed when setting quotas.
+-	vol := b.GetVolume(volType, contentVolume, volStorageName, nil)
++	vol := b.GetVolume(volType, contentVolume, volStorageName, dbVol.Config)
+ 	err = b.driver.SetVolumeQuota(vol, size, false, op)
+ 	if err != nil {
+ 		return err
+From fe26f8efe9df704910c5e44926f0cd767619a9f9 Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Wed, 22 Feb 2023 13:55:21 +0000
+Subject: [PATCH] lxd/storage/drivers/driver/ceph/volumes: Log volume name
+ during mount
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/storage/drivers/driver_ceph_volumes.go | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lxd/storage/drivers/driver_ceph_volumes.go b/lxd/storage/drivers/driver_ceph_volumes.go
+index 86465886ad61..0bd15ddea1e4 100644
+--- a/lxd/storage/drivers/driver_ceph_volumes.go
++++ b/lxd/storage/drivers/driver_ceph_volumes.go
+@@ -1184,7 +1184,7 @@ func (d *ceph) MountVolume(vol Volume, op *operations.Operation) error {
+ 				return err
+ 			}
+ 
+-			d.logger.Debug("Mounted RBD volume", logger.Ctx{"dev": volDevPath, "path": mountPath, "options": mountOptions})
++			d.logger.Debug("Mounted RBD volume", logger.Ctx{"volName": vol.name, "dev": volDevPath, "path": mountPath, "options": mountOptions})
+ 		}
+ 	} else if vol.contentType == ContentTypeBlock {
+ 		// For VMs, mount the filesystem volume.
+From 05fd1710ecf32afdbc57d2dbfa7a20d53b585b3e Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Wed, 22 Feb 2023 13:55:41 +0000
+Subject: [PATCH] lxd/storage/drivers/driver/lvm/volumes: Log volume name
+ during mount
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/storage/drivers/driver_lvm_volumes.go | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lxd/storage/drivers/driver_lvm_volumes.go b/lxd/storage/drivers/driver_lvm_volumes.go
+index bc2f10822bf1..79be27f74720 100644
+--- a/lxd/storage/drivers/driver_lvm_volumes.go
++++ b/lxd/storage/drivers/driver_lvm_volumes.go
+@@ -655,7 +655,7 @@ func (d *lvm) MountVolume(vol Volume, op *operations.Operation) error {
+ 				return fmt.Errorf("Failed to mount LVM logical volume: %w", err)
+ 			}
+ 
+-			d.logger.Debug("Mounted logical volume", logger.Ctx{"dev": volDevPath, "path": mountPath, "options": mountOptions})
++			d.logger.Debug("Mounted logical volume", logger.Ctx{"volName": vol.name, "dev": volDevPath, "path": mountPath, "options": mountOptions})
+ 		}
+ 	} else if vol.contentType == ContentTypeBlock {
+ 		// For VMs, mount the filesystem volume.
+From 186652fef4563e19cff10d5b4a57cc004aeabaaf Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Wed, 22 Feb 2023 13:56:39 +0000
+Subject: [PATCH] lxd/storage/drivers/driver/zfs/volumes: Adds activateVolume
+ and deactiveVolume functions
+
+To avoid code duplication.
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/storage/drivers/driver_zfs_volumes.go | 179 +++++++++++++---------
+ 1 file changed, 108 insertions(+), 71 deletions(-)
+
+diff --git a/lxd/storage/drivers/driver_zfs_volumes.go b/lxd/storage/drivers/driver_zfs_volumes.go
+index 54415502aac0..bca444acbd15 100644
+--- a/lxd/storage/drivers/driver_zfs_volumes.go
++++ b/lxd/storage/drivers/driver_zfs_volumes.go
+@@ -749,31 +749,12 @@ func (d *zfs) CreateVolumeFromCopy(vol Volume, srcVol Volume, copySnapshots bool
+ 			}
+ 		}
+ 
+-		// Mount the volume and ensure the permissions are set correctly inside the mounted volume.
+-		err := vol.MountTask(func(_ string, _ *operations.Operation) error {
+-			return vol.EnsureMountPath()
+-		}, op)
+-		if err != nil {
+-			return err
+-		}
+-
+ 		if d.isBlockBacked(srcVol) && renegerateFilesystemUUIDNeeded(vol.ConfigBlockFilesystem()) {
+-			dataset := d.dataset(vol, false)
+-
+-			err := d.setDatasetProperties(dataset, "volmode=dev")
++			_, err := d.activateVolume(vol)
+ 			if err != nil {
+ 				return err
+ 			}
+ 
+-			revert.Add(func() {
+-				_ = d.setDatasetProperties(dataset, "volmode=none")
+-			})
+-
+-			// Wait half a second to give udev a chance to kick in.
+-			time.Sleep(500 * time.Millisecond)
+-
+-			d.logger.Debug("Activated ZFS volume", logger.Ctx{"dev": dataset})
+-
+ 			volPath, err := d.GetVolumeDiskPath(vol)
+ 			if err != nil {
+ 				return err
+@@ -785,6 +766,14 @@ func (d *zfs) CreateVolumeFromCopy(vol Volume, srcVol Volume, copySnapshots bool
+ 				return err
+ 			}
+ 		}
++
++		// Mount the volume and ensure the permissions are set correctly inside the mounted volume.
++		err := vol.MountTask(func(_ string, _ *operations.Operation) error {
++			return vol.EnsureMountPath()
++		}, op)
++		if err != nil {
++			return err
++		}
+ 	}
+ 
+ 	// Resize volume to the size specified. Only uses volume "size" property and does not use pool/defaults
+@@ -1797,6 +1786,98 @@ func (d *zfs) ListVolumes() ([]Volume, error) {
+ 	return volList, nil
+ }
+ 
++// activateVolume activates a ZFS volume if not already active. Returns true if activated, false if not.
++func (d *zfs) activateVolume(vol Volume) (bool, error) {
++	if vol.contentType != ContentTypeBlock && !vol.IsBlockBacked() {
++		return false, nil // Nothing to do for non-block or non-block backed volumes.
++	}
++
++	dataset := d.dataset(vol, false)
++
++	// Check if already active.
++	current, err := d.getDatasetProperty(dataset, "volmode")
++	if err != nil {
++		return false, err
++	}
++
++	if current != "dev" {
++		// For block backed volumes, we make their associated device appear.
++		err = d.setDatasetProperties(dataset, "volmode=dev")
++		if err != nil {
++			return false, err
++		}
++
++		// Wait half a second to give udev a chance to kick in.
++		time.Sleep(500 * time.Millisecond)
++
++		d.logger.Debug("Activated ZFS volume", logger.Ctx{"volName": vol.Name(), "dev": dataset})
++
++		return true, nil
++	}
++
++	return false, nil
++}
++
++// deactivateVolume deactivates a ZFS volume if activate. Returns true if deactivated, false if not.
++func (d *zfs) deactivateVolume(vol Volume) (bool, error) {
++	if !vol.IsBlockBacked() {
++		return false, nil // Nothing to do for non-block backed volumes.
++	}
++
++	dataset := d.dataset(vol, false)
++
++	// Check if currently active.
++	current, err := d.getDatasetProperty(dataset, "volmode")
++	if err != nil {
++		return false, err
++	}
++
++	if current == "dev" {
++		devPath, err := d.GetVolumeDiskPath(vol)
++		if err != nil {
++			return false, fmt.Errorf("Failed locating zvol for deactivation: %w", err)
++		}
++
++		// We cannot wait longer than the operationlock.TimeoutShutdown to avoid continuing
++		// the unmount process beyond the ongoing request.
++		waitDuration := operationlock.TimeoutShutdown
++		waitUntil := time.Now().Add(waitDuration)
++		i := 0
++		for {
++			// Sometimes it takes multiple attempts for ZFS to actually apply this.
++			err = d.setDatasetProperties(dataset, "volmode=none")
++			if err != nil {
++				return false, err
++			}
++
++			if !shared.PathExists(devPath) {
++				d.logger.Debug("Deactivated ZFS volume", logger.Ctx{"volName": vol.name, "dev": dataset})
++				break
++			}
++
++			if time.Now().After(waitUntil) {
++				return false, fmt.Errorf("Failed to deactivate zvol after %v", waitDuration)
++			}
++
++			// Wait for ZFS a chance to flush and udev to remove the device path.
++			d.logger.Debug("Waiting for ZFS volume to deactivate", logger.Ctx{"volName": vol.name, "dev": dataset, "path": devPath, "attempt": i})
++
++			if i <= 5 {
++				// Retry more quickly early on.
++				time.Sleep(time.Second * time.Duration(i))
++			} else {
++				time.Sleep(time.Second * time.Duration(5))
++			}
++
++			i++
++		}
++
++		return true, nil
++	}
++
++	return false, nil
++}
++
+ // MountVolume mounts a volume and increments ref counter. Please call UnmountVolume() when done with the volume.
+ func (d *zfs) MountVolume(vol Volume, op *operations.Operation) error {
+ 	unlock := vol.MountLock()
+@@ -1831,25 +1912,13 @@ func (d *zfs) MountVolume(vol Volume, op *operations.Operation) error {
+ 		}
+ 	} else {
+ 		// For block devices, we make them appear.
+-		// Check if already active.
+-		current, err := d.getDatasetProperty(dataset, "volmode")
++		activated, err := d.activateVolume(vol)
+ 		if err != nil {
+ 			return err
+ 		}
+ 
+-		if current != "dev" {
+-			// Activate.
+-			err = d.setDatasetProperties(dataset, "volmode=dev")
+-			if err != nil {
+-				return err
+-			}
+-
+-			revert.Add(func() { _ = d.setDatasetProperties(dataset, "volmode=none") })
+-
+-			// Wait half a second to give udev a chance to kick in.
+-			time.Sleep(500 * time.Millisecond)
+-
+-			d.logger.Debug("Activated ZFS volume", logger.Ctx{"dev": dataset})
++		if activated {
++			revert.Add(func() { _, _ = d.deactivateVolume(vol) })
+ 		}
+ 
+ 		if vol.contentType != ContentTypeBlock && d.isBlockBacked(vol) && !filesystem.IsMountPoint(mountPath) {
+@@ -1912,47 +1981,15 @@ func (d *zfs) UnmountVolume(vol Volume, keepBlockDev bool, op *operations.Operat
+ 				return false, ErrInUse
+ 			}
+ 
+-			devPath, _ := d.GetVolumeDiskPath(vol)
++			_, err = d.deactivateVolume(vol)
+ 			if err != nil {
+-				return false, fmt.Errorf("Failed locating zvol for deactivation: %w", err)
++				return false, err
+ 			}
+ 
+-			// We cannot wait longer than the operationlock.TimeoutShutdown to avoid continuing
+-			// the unmount process beyond the ongoing request.
+-			waitDuration := operationlock.TimeoutShutdown
+-			waitUntil := time.Now().Add(waitDuration)
+-			i := 0
+-			for {
+-				// Sometimes it takes multiple attempts for ZFS to actually apply this.
+-				err = d.setDatasetProperties(dataset, "volmode=none")
+-				if err != nil {
+-					return false, err
+-				}
+-
+-				if !shared.PathExists(devPath) {
+-					d.logger.Debug("Deactivated ZFS volume", logger.Ctx{"volName": vol.name, "dev": dataset})
+-					break
+-				}
+-
+-				if time.Now().After(waitUntil) {
+-					return false, fmt.Errorf("Failed to deactivate zvol after %v", waitDuration)
+-				}
+-
+-				// Wait for ZFS a chance to flush and udev to remove the device path.
+-				d.logger.Debug("Waiting for ZFS volume to deactivate", logger.Ctx{"volName": vol.name, "dev": dataset, "path": devPath, "attempt": i})
+-
+-				if i <= 5 {
+-					// Retry more quickly early on.
+-					time.Sleep(time.Second * time.Duration(i))
+-				} else {
+-					time.Sleep(time.Second * time.Duration(5))
+-				}
+-
+-				i++
+-			}
++			return true, nil
+ 		}
+ 
+-		return true, nil
++		return false, nil
+ 	}
+ 
+ 	if vol.contentType == ContentTypeFS && filesystem.IsMountPoint(mountPath) {
+From 30a5c5c6592006eb9a9a5c50826fca7cfaa46a48 Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Wed, 22 Feb 2023 13:57:13 +0000
+Subject: [PATCH] lxd/storage/drivers/driver/zfs/volumes: Improve mount and
+ unmount logging consistency
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/storage/drivers/driver_zfs_volumes.go | 13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
+
+diff --git a/lxd/storage/drivers/driver_zfs_volumes.go b/lxd/storage/drivers/driver_zfs_volumes.go
+index bca444acbd15..9940d27af3d6 100644
+--- a/lxd/storage/drivers/driver_zfs_volumes.go
++++ b/lxd/storage/drivers/driver_zfs_volumes.go
+@@ -1908,7 +1908,7 @@ func (d *zfs) MountVolume(vol Volume, op *operations.Operation) error {
+ 				return err
+ 			}
+ 
+-			d.logger.Debug("Mounted ZFS dataset", logger.Ctx{"dev": dataset, "path": mountPath})
++			d.logger.Debug("Mounted ZFS dataset", logger.Ctx{"volName": vol.name, "dev": dataset, "path": mountPath})
+ 		}
+ 	} else {
+ 		// For block devices, we make them appear.
+@@ -1938,6 +1938,8 @@ func (d *zfs) MountVolume(vol Volume, op *operations.Operation) error {
+ 			if err != nil {
+ 				return err
+ 			}
++
++			d.logger.Debug("Mounted ZFS volume", logger.Ctx{"volName": vol.name, "dev": dataset, "path": mountPath})
+ 		}
+ 
+ 		if vol.IsVMBlock() {
+@@ -2004,7 +2006,14 @@ func (d *zfs) UnmountVolume(vol Volume, keepBlockDev bool, op *operations.Operat
+ 			return false, err
+ 		}
+ 
+-		d.logger.Debug("Unmounted ZFS dataset", logger.Ctx{"volName": vol.name, "dev": dataset, "path": mountPath})
++		blockBacked := d.isBlockBacked(vol)
++
++		if blockBacked {
++			d.logger.Debug("Unmounted ZFS volume", logger.Ctx{"volName": vol.name, "dev": dataset, "path": mountPath})
++		} else {
++			d.logger.Debug("Unmounted ZFS dataset", logger.Ctx{"volName": vol.name, "dev": dataset, "path": mountPath})
++		}
++
+ 		ourUnmount = true
+ 
+ 		// If vol is a zvol, also deactivate it.
+From 72c5f4c0b921eead8442705ac1c54ca9579a9da4 Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Wed, 22 Feb 2023 13:57:34 +0000
+Subject: [PATCH] lxc/storage/drivers/driver/zfs/volumes: Only call InUse once
+ during SetVolumeQuota
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/storage/drivers/driver_zfs_volumes.go | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/lxd/storage/drivers/driver_zfs_volumes.go b/lxd/storage/drivers/driver_zfs_volumes.go
+index 9940d27af3d6..9c98d42aaac4 100644
+--- a/lxd/storage/drivers/driver_zfs_volumes.go
++++ b/lxd/storage/drivers/driver_zfs_volumes.go
+@@ -1468,6 +1468,8 @@ func (d *zfs) SetVolumeQuota(vol Volume, size string, allowUnsafeResize bool, op
+ 		return err
+ 	}
+ 
++	inUse := vol.MountInUse()
++
+ 	// Handle volume datasets.
+ 	if vol.contentType == ContentTypeBlock || d.isBlockBacked(vol) && vol.contentType == ContentTypeFS {
+ 		// Do nothing if size isn't specified.
+@@ -1512,7 +1514,7 @@ func (d *zfs) SetVolumeQuota(vol Volume, size string, allowUnsafeResize bool, op
+ 					return fmt.Errorf("Filesystem %q cannot be shrunk: %w", fsType, ErrCannotBeShrunk)
+ 				}
+ 
+-				if vol.MountInUse() {
++				if inUse {
+ 					return ErrInUse // We don't allow online shrinking of filesystem block volumes.
+ 				}
+ 
+@@ -1560,7 +1562,7 @@ func (d *zfs) SetVolumeQuota(vol Volume, size string, allowUnsafeResize bool, op
+ 					return fmt.Errorf("Block volumes cannot be shrunk: %w", ErrCannotBeShrunk)
+ 				}
+ 
+-				if vol.MountInUse() {
++				if inUse {
+ 					return ErrInUse // We don't allow online resizing of block volumes.
+ 				}
+ 			}
+From 3527e5928511f86581fe60c9eeac7ceb1843a5ed Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Wed, 22 Feb 2023 13:58:26 +0000
+Subject: [PATCH] lxd/storage/drivers/driver/zfs/volumes: Fix block mode
+ filesystem volume resize in SetVolumeQuota
+
+By activating the volume first.
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/storage/drivers/driver_zfs_volumes.go | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/lxd/storage/drivers/driver_zfs_volumes.go b/lxd/storage/drivers/driver_zfs_volumes.go
+index 9c98d42aaac4..71b2be9ca27a 100644
+--- a/lxd/storage/drivers/driver_zfs_volumes.go
++++ b/lxd/storage/drivers/driver_zfs_volumes.go
+@@ -1496,6 +1496,16 @@ func (d *zfs) SetVolumeQuota(vol Volume, size string, allowUnsafeResize bool, op
+ 		}
+ 
+ 		if vol.contentType == ContentTypeFS {
++			// Activate volume if needed.
++			activated, err := d.activateVolume(vol)
++			if err != nil {
++				return err
++			}
++
++			if activated {
++				defer func() { _, _ = d.deactivateVolume(vol) }()
++			}
++
+ 			if vol.volType == VolumeTypeImage {
+ 				return fmt.Errorf("Image volumes cannot be resized: %w", ErrCannotBeShrunk)
+ 			}

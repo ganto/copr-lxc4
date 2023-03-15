@@ -1,0 +1,28 @@
+From 9effc227d188c69d46d868a6252f1504c7c4bc7f Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Fri, 24 Feb 2023 16:03:01 +0000
+Subject: [PATCH] lxd/instance/drivers/driver/qemu: Don't collect metrics
+ unless VM is running
+
+Fixes #11404
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/instance/drivers/driver_qemu.go | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/lxd/instance/drivers/driver_qemu.go b/lxd/instance/drivers/driver_qemu.go
+index 721ff47e0398..c257c7e6ffc2 100644
+--- a/lxd/instance/drivers/driver_qemu.go
++++ b/lxd/instance/drivers/driver_qemu.go
+@@ -6486,6 +6486,10 @@ func (d *qemu) checkFeatures(hostArch int, qemuPath string) ([]string, error) {
+ }
+ 
+ func (d *qemu) Metrics(hostInterfaces []net.Interface) (*metrics.MetricSet, error) {
++	if !d.IsRunning() {
++		return nil, ErrInstanceIsStopped
++	}
++
+ 	if d.agentMetricsEnabled() {
+ 		metrics, err := d.getAgentMetrics()
+ 		if err != nil {

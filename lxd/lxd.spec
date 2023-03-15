@@ -13,7 +13,7 @@
 
 # https://github.com/lxc/lxd
 %global goipath github.com/lxc/lxd
-Version:        5.10
+Version:        5.11
 
 %gometa
 
@@ -21,7 +21,7 @@ Version:        5.10
 %global golicenses  COPYING
 
 Name:           lxd
-Release:        0.2%{?dist}
+Release:        0.1%{?dist}
 Summary:        Container hypervisor based on LXC
 
 # Upstream license specification: Apache-2.0
@@ -39,8 +39,16 @@ Source8:        lxd.profile
 Source9:        lxd-agent.service
 Source10:       lxd-agent-setup
 # Upstream bug fixes merged to master for next release
-# https://github.com/lxc/lxd/issues/11294
-Patch0:         lxd-5.10-shared-util-Update-RunCommandCLocale-to-pass-LANGUAGE-env-var.patch
+# https://github.com/lxc/lxd/issues/11396
+Patch0:         lxd-5.11-Storage-Fix-volume-resize-for-ZFS-block-mode-filesystem-volumes.patch
+# https://github.com/lxc/lxd/issues/11404
+Patch1:         lxd-5.11-Instance-Dont-collect-metrics-unless-VM-is-running.patch
+# https://github.com/lxc/lxd/issues/11410
+Patch2:         lxd-5.11-Storage-Only-use-path-parts-of-URL-to-extract-bucket-name.patch
+# https://github.com/lxc/lxd/issues/11417
+Patch3:         lxd-5.11-zfs-Regenerate-UUID-on-optimized-migration.patch
+# https://github.com/lxc/lxd/issues/11426
+Patch4:         lxd-5.11-lxd-instance-qemu-Fix-SMP-on-s390x.patch
 
 BuildRequires:  gettext
 BuildRequires:  help2man
@@ -163,6 +171,10 @@ This package contains user documentation.
 %prep
 %goprep -k
 %patch0 -p1
+%patch1 -p1
+%patch2 -p1
+%patch3 -p1
+%patch4 -p1
 
 %build
 export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"

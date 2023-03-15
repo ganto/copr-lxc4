@@ -1,0 +1,50 @@
+From ad182951de117f28fa155bda95b75d97b32fcd74 Mon Sep 17 00:00:00 2001
+From: Thomas Hipp <thomas.hipp@canonical.com>
+Date: Wed, 22 Feb 2023 14:30:44 +0100
+Subject: [PATCH] zfs: Regenerate UUID on optimized migration
+
+For Btrfs and XFS the filesystem UUID wasn't regenerated on migration.
+
+This fixes the issue by correctly regenerating the UUID.
+
+Fixes #11417
+
+Signed-off-by: Thomas Hipp <thomas.hipp@canonical.com>
+---
+ lxd/storage/drivers/driver_zfs_volumes.go | 23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
+
+diff --git a/lxd/storage/drivers/driver_zfs_volumes.go b/lxd/storage/drivers/driver_zfs_volumes.go
+index 71b2be9ca27a..614f64febe2d 100644
+--- a/lxd/storage/drivers/driver_zfs_volumes.go
++++ b/lxd/storage/drivers/driver_zfs_volumes.go
+@@ -1074,6 +1074,29 @@ func (d *zfs) createVolumeFromMigrationOptimized(vol Volume, conn io.ReadWriteCl
+ 				return err
+ 			}
+ 		}
++
++		if d.isBlockBacked(vol) && renegerateFilesystemUUIDNeeded(vol.ConfigBlockFilesystem()) {
++			// Activate volume if needed.
++			activated, err := d.activateVolume(vol)
++			if err != nil {
++				return err
++			}
++
++			if activated {
++				defer func() { _, _ = d.deactivateVolume(vol) }()
++			}
++
++			volPath, err := d.GetVolumeDiskPath(vol)
++			if err != nil {
++				return err
++			}
++
++			d.logger.Debug("Regenerating filesystem UUID", logger.Ctx{"dev": volPath, "fs": vol.ConfigBlockFilesystem()})
++			err = regenerateFilesystemUUID(vol.ConfigBlockFilesystem(), volPath)
++			if err != nil {
++				return err
++			}
++		}
+ 	}
+ 
+ 	return nil
