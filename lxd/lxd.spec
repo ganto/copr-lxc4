@@ -338,6 +338,9 @@ getent group %{name} > /dev/null || groupadd -r %{name}
 %doc doc/*
 
 %changelog
+* Sat Apr 22 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 5.12-0.1
+- Update to lxd-5.12.
+
 * Wed Mar 15 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 5.11-0.1
 - Update to lxd-5.11.
 
