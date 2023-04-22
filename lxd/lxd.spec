@@ -13,7 +13,7 @@
 
 # https://github.com/lxc/lxd
 %global goipath github.com/lxc/lxd
-Version:        5.11
+Version:        5.12
 
 %gometa
 
@@ -39,16 +39,16 @@ Source8:        lxd.profile
 Source9:        lxd-agent.service
 Source10:       lxd-agent-setup
 # Upstream bug fixes merged to master for next release
-# https://github.com/lxc/lxd/issues/11396
-Patch0:         lxd-5.11-Storage-Fix-volume-resize-for-ZFS-block-mode-filesystem-volumes.patch
-# https://github.com/lxc/lxd/issues/11404
-Patch1:         lxd-5.11-Instance-Dont-collect-metrics-unless-VM-is-running.patch
-# https://github.com/lxc/lxd/issues/11410
-Patch2:         lxd-5.11-Storage-Only-use-path-parts-of-URL-to-extract-bucket-name.patch
-# https://github.com/lxc/lxd/issues/11417
-Patch3:         lxd-5.11-zfs-Regenerate-UUID-on-optimized-migration.patch
-# https://github.com/lxc/lxd/issues/11426
-Patch4:         lxd-5.11-lxd-instance-qemu-Fix-SMP-on-s390x.patch
+# https://github.com/lxc/lxd/issues/11466
+Patch0:         lxd-5.12-Fix-config-trust-command-fail-when-remote-is-specified.patch
+# https://github.com/lxc/lxd/pull/11480
+Patch1:         lxd-5.12-lxd-instance-qemu-vmgenid-isn-t-supported-on-aarch64.patch
+# https://github.com/lxc/lxd/issues/11482
+Patch2:         lxd-5.12-Instance-Disable-vhost-accelerator-for-veth-based-NICs.patch
+# https://github.com/lxc/lxd/issues/11501
+Patch3:         lxd-5.12-instance-no-timeout-on-the-operationlock-for-creating-an-instance.patch
+# https://github.com/lxc/lxd/issues/11539
+Patch4:         lxd-5.12-Instance-Forcefully-stop-SFTP-forkfile-process-when-forcefully-stopping-container.patch
 
 BuildRequires:  gettext
 BuildRequires:  help2man

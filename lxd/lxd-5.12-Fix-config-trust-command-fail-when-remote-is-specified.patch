@@ -1,0 +1,30 @@
+From c4915b02a94ba7da27fdab3cc5285818163ba8c1 Mon Sep 17 00:00:00 2001
+From: Piotr Resztak <piotr.resztak@gmail.com>
+Date: Wed, 22 Mar 2023 21:59:49 +0100
+Subject: [PATCH] lxc/config: Fix config trust fail when remote is specified
+
+Signed-off-by: Piotr Resztak <piotr.resztak@gmail.com>
+---
+ lxc/config_trust.go | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/lxc/config_trust.go b/lxc/config_trust.go
+index b3b80688de31..aaed5eab87a5 100644
+--- a/lxc/config_trust.go
++++ b/lxc/config_trust.go
+@@ -139,7 +139,14 @@ func (c *cmdConfigTrustAdd) Run(cmd *cobra.Command, args []string) error {
+ 
+ 	cert := api.CertificatesPost{}
+ 
+-	if len(args) == 0 {
++	// Check if remote is the first argument
++	// to detect method of adding trusted client
++	useToken := false
++	if len(args) == 0 || (len(args) == 1 && resource.name == "") {
++		useToken = true
++	}
++
++	if useToken {
+ 		// Use token
+ 		cert.Token = true
+ 
