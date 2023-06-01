@@ -1,0 +1,110 @@
+From 2778721d9f68878c6cbd8955c880f0c1f62a8afd Mon Sep 17 00:00:00 2001
+From: Mark Laing <mark.laing@canonical.com>
+Date: Thu, 27 Apr 2023 08:12:20 +0100
+Subject: [PATCH] client: Update return type of
+ GetStoragePoolVolumeNamesAllProjects.
+
+Fixes the method (previously failed with "Unexpected URL Path ...")
+and changes the return type to easily differentiate between resources
+in different projects.
+
+Signed-off-by: Mark Laing <mark.laing@canonical.com>
+---
+ client/interfaces.go          |  2 +-
+ client/lxd_storage_volumes.go | 26 +++++++++++++++++++++++---
+ 2 files changed, 24 insertions(+), 4 deletions(-)
+
+diff --git a/client/interfaces.go b/client/interfaces.go
+index 814082611dde..aa336362152c 100644
+--- a/client/interfaces.go
++++ b/client/interfaces.go
+@@ -352,7 +352,7 @@ type InstanceServer interface {
+ 
+ 	// Storage volume functions ("storage" API extension)
+ 	GetStoragePoolVolumeNames(pool string) (names []string, err error)
+-	GetStoragePoolVolumeNamesAllProjects(pool string) (names []string, err error)
++	GetStoragePoolVolumeNamesAllProjects(pool string) (names map[string][]string, err error)
+ 	GetStoragePoolVolumes(pool string) (volumes []api.StorageVolume, err error)
+ 	GetStoragePoolVolumesAllProjects(pool string) (volumes []api.StorageVolume, err error)
+ 	GetStoragePoolVolumesWithFilter(pool string, filters []string) (volumes []api.StorageVolume, err error)
+diff --git a/client/lxd_storage_volumes.go b/client/lxd_storage_volumes.go
+index 7b82a66480d7..6ae7fa449af9 100644
+--- a/client/lxd_storage_volumes.go
++++ b/client/lxd_storage_volumes.go
+@@ -5,6 +5,7 @@ import (
+ 	"io"
+ 	"net/http"
+ 	"net/url"
++	"strings"
+ 
+ 	"github.com/lxc/lxd/shared"
+ 	"github.com/lxc/lxd/shared/api"
+@@ -34,7 +35,7 @@ func (r *ProtocolLXD) GetStoragePoolVolumeNames(pool string) ([]string, error) {
+ }
+ 
+ // GetStoragePoolVolumeNamesAllProjects returns the names of all volumes in a pool for all projects.
+-func (r *ProtocolLXD) GetStoragePoolVolumeNamesAllProjects(pool string) ([]string, error) {
++func (r *ProtocolLXD) GetStoragePoolVolumeNamesAllProjects(pool string) (map[string][]string, error) {
+ 	err := r.CheckExtension("storage")
+ 	if err != nil {
+ 		return nil, err
+@@ -53,8 +54,27 @@ func (r *ProtocolLXD) GetStoragePoolVolumeNamesAllProjects(pool string) ([]strin
+ 		return nil, err
+ 	}
+ 
+-	// Parse it.
+-	return urlsToResourceNames(u.String(), urls...)
++	names := make(map[string][]string)
++	for _, urlString := range urls {
++		resourceURL, err := url.Parse(urlString)
++		if err != nil {
++			return nil, fmt.Errorf("Could not parse unexpected URL %q: %w", urlString, err)
++		}
++
++		project := resourceURL.Query().Get("project")
++		if project == "" {
++			project = "default"
++		}
++
++		_, after, found := strings.Cut(resourceURL.Path, fmt.Sprintf("%s/", u.URL.Path))
++		if !found {
++			return nil, fmt.Errorf("Unexpected URL path %q", resourceURL)
++		}
++
++		names[project] = append(names[project], after)
++	}
++
++	return names, nil
+ }
+ 
+ // GetStoragePoolVolumes returns a list of StorageVolume entries for the provided pool.
+From 6d18e39b2028f90b3c3bf4090779607a75b70f89 Mon Sep 17 00:00:00 2001
+From: Mark Laing <mark.laing@canonical.com>
+Date: Thu, 27 Apr 2023 08:59:44 +0100
+Subject: [PATCH] client: Updates urlsToResourceNames to use strings.Cut.
+
+Signed-off-by: Mark Laing <mark.laing@canonical.com>
+---
+ client/util.go | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/client/util.go b/client/util.go
+index 1816ec85f27a..9d61278e50c9 100644
+--- a/client/util.go
++++ b/client/util.go
+@@ -210,12 +210,12 @@ func urlsToResourceNames(matchPathPrefix string, urls ...string) ([]string, erro
+ 			return nil, fmt.Errorf("Failed parsing URL %q: %w", urlRaw, err)
+ 		}
+ 
+-		fields := strings.Split(u.Path, fmt.Sprintf("%s/", matchPathPrefix))
+-		if len(fields) != 2 {
++		_, after, found := strings.Cut(u.Path, fmt.Sprintf("%s/", matchPathPrefix))
++		if !found {
+ 			return nil, fmt.Errorf("Unexpected URL path %q", u)
+ 		}
+ 
+-		resourceNames = append(resourceNames, fields[len(fields)-1])
++		resourceNames = append(resourceNames, after)
+ 	}
+ 
+ 	return resourceNames, nil

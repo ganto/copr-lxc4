@@ -13,7 +13,7 @@
 
 # https://github.com/lxc/lxd
 %global goipath github.com/lxc/lxd
-Version:        5.12
+Version:        5.13
 
 %gometa
 
@@ -39,16 +39,10 @@ Source8:        lxd.profile
 Source9:        lxd-agent.service
 Source10:       lxd-agent-setup
 # Upstream bug fixes merged to master for next release
-# https://github.com/lxc/lxd/issues/11466
-Patch0:         lxd-5.12-Fix-config-trust-command-fail-when-remote-is-specified.patch
-# https://github.com/lxc/lxd/pull/11480
-Patch1:         lxd-5.12-lxd-instance-qemu-vmgenid-isn-t-supported-on-aarch64.patch
-# https://github.com/lxc/lxd/issues/11482
-Patch2:         lxd-5.12-Instance-Disable-vhost-accelerator-for-veth-based-NICs.patch
-# https://github.com/lxc/lxd/issues/11501
-Patch3:         lxd-5.12-instance-no-timeout-on-the-operationlock-for-creating-an-instance.patch
-# https://github.com/lxc/lxd/issues/11539
-Patch4:         lxd-5.12-Instance-Forcefully-stop-SFTP-forkfile-process-when-forcefully-stopping-container.patch
+# https://github.com/lxc/lxd/issues/11599
+Patch0:         lxd-5.13-Snapshots-Fixes-expired-snapshot-pruning-regression.patch
+# https://github.com/lxc/lxd/issues/11607
+Patch1:         lxd-5.13-Update-return-type-of-GetStoragePoolVolumeNamesAllProjects.patch
 
 BuildRequires:  gettext
 BuildRequires:  help2man
@@ -172,9 +166,6 @@ This package contains user documentation.
 %goprep -k
 %patch0 -p1
 %patch1 -p1
-%patch2 -p1
-%patch3 -p1
-%patch4 -p1
 
 %build
 export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
