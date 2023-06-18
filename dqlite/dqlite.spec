@@ -53,6 +53,9 @@ rm -f %{buildroot}%{_libdir}/libdqlite.la
 %{_includedir}/%{name}.h
 
 %changelog
+* Sun Jun 18 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 1.15.1-0.1
+- Update to 1.15.1.
+
 * Sat Jan 21 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 1.14.0-0.1
 - Update to 1.14.0.
 
