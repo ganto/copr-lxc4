@@ -1,5 +1,5 @@
 Name:           dqlite
-Version:        1.14.0
+Version:        1.15.1
 Release:        0.1%{?dist}
 Summary:        Embeddable, replicated and fault tolerant SQL engine
 
