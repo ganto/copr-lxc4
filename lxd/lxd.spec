@@ -344,6 +344,9 @@ getent group %{name} > /dev/null || groupadd -r %{name}
 %doc doc/*
 
 %changelog
+* Tue Jul 04 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 5.14-0.1
+- Update to 5.14.
+
 * Thu Jun 01 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 5.13-0.1
 - Update to 5.13.
 
