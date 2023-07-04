@@ -1,0 +1,25 @@
+From 7a62450e842b63ce4af4d6e2a22e4bcacbc77468 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?St=C3=A9phane=20Graber?= <stgraber@ubuntu.com>
+Date: Fri, 26 May 2023 15:19:21 -0400
+Subject: [PATCH] doc/faq: Drop reference to eth1
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Closes #11730
+
+Signed-off-by: Stéphane Graber <stgraber@ubuntu.com>
+---
+ doc/faq.md | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/doc/faq.md b/doc/faq.md
+index 6661c82f12bd..2f294ecff300 100644
+--- a/doc/faq.md
++++ b/doc/faq.md
+@@ -80,4 +80,4 @@ Various configuration files are stored in that directory, for example:
+ Many switches do not allow MAC address changes, and will either drop traffic with an incorrect MAC or disable the port totally.
+ If you can ping a LXD instance from the host, but are not able to ping it from a different host, this could be the cause.
+ 
+-The way to diagnose this problem is to run a `tcpdump` on the uplink (`eth1` in the example from the previous question), and you will see either ``ARP Who has `xx.xx.xx.xx` tell `yy.yy.yy.yy` ``, with you sending responses but them not getting acknowledged, or ICMP packets going in and out successfully, but never being received by the other host.
++The way to diagnose this problem is to run a `tcpdump` on the uplink and you will see either ``ARP Who has `xx.xx.xx.xx` tell `yy.yy.yy.yy` ``, with you sending responses but them not getting acknowledged, or ICMP packets going in and out successfully, but never being received by the other host.

@@ -1,0 +1,42 @@
+From 62c8d74f840a12ce4721bab3f12456d3d4143b0f Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Tue, 13 Jun 2023 10:05:42 +0100
+Subject: [PATCH] lxd/storage/drivers/driver/zfs/volumes: Only delete volume on
+ failure if not doing refresh in createVolumeFromMigrationOptimized
+
+Fixes #11822
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/storage/drivers/driver_zfs_volumes.go | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
+
+diff --git a/lxd/storage/drivers/driver_zfs_volumes.go b/lxd/storage/drivers/driver_zfs_volumes.go
+index df5e9b3d03a8..ec33e54a4fa4 100644
+--- a/lxd/storage/drivers/driver_zfs_volumes.go
++++ b/lxd/storage/drivers/driver_zfs_volumes.go
+@@ -1064,18 +1064,19 @@ func (d *zfs) createVolumeFromMigrationOptimized(vol Volume, conn io.ReadWriteCl
+ 		}
+ 	}
+ 
++	if !volTargetArgs.Refresh {
++		revert.Add(func() {
++			_ = d.DeleteVolume(vol, op)
++		})
++	}
++
+ 	// Transfer the main volume.
+ 	wrapper := migration.ProgressWriter(op, "fs_progress", vol.name)
+ 	err = d.receiveDataset(vol, conn, wrapper)
+ 	if err != nil {
+-		_ = d.DeleteVolume(vol, op)
+ 		return fmt.Errorf("Failed receiving volume %q: %w", vol.Name(), err)
+ 	}
+ 
+-	revert.Add(func() {
+-		_ = d.DeleteVolume(vol, op)
+-	})
+-
+ 	// Strip internal snapshots.
+ 	entries, err := d.getDatasets(d.dataset(vol, false))
+ 	if err != nil {

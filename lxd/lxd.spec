@@ -13,7 +13,7 @@
 
 # https://github.com/lxc/lxd
 %global goipath github.com/lxc/lxd
-Version:        5.13
+Version:        5.14
 
 %gometa
 
@@ -39,10 +39,20 @@ Source8:        lxd.profile
 Source9:        lxd-agent.service
 Source10:       lxd-agent-setup
 # Upstream bug fixes merged to master for next release
-# https://github.com/lxc/lxd/issues/11599
-Patch0:         lxd-5.13-Snapshots-Fixes-expired-snapshot-pruning-regression.patch
-# https://github.com/lxc/lxd/issues/11607
-Patch1:         lxd-5.13-Update-return-type-of-GetStoragePoolVolumeNamesAllProjects.patch
+# https://github.com/lxc/lxd/issues/11728
+Patch0:         lxd-5.14-Storage-Allow-revert-of-storage-DB-volumes.patch
+# https://github.com/canonical/lxd/issues/11730
+Patch1:         lxd-5.14-doc-faq-Drop-reference-to-eth1.patch
+# https://github.com/canonical/lxd/issues/11741
+Patch2:         lxd-5.14-Instance-Handle-VM-panic-by-shutting-down.patch
+# https://github.com/canonical/lxd/issues/11746
+Patch3:         lxd-5.14-lxd-device-nic-ovn-Enable-hotplug-for-VMs.patch
+# https://github.com/canonical/lxd/issues/11787
+Patch4:         lxd-5.14-lxc-copy-Dont-try-and-modify-volatile-idmap-next.patch
+# https://github.com/canonical/lxd/issues/11822
+Patch5:         lxd-5.14-Storage-Only-delete-ZFS-volume-on-failure-if-not-doing-refresh.patch
+# https://github.com/canonical/lxd/issues/11829
+Patch6:         lxd-5.14-lxd-migrate-Fix-SecureBoot-handling.patch
 
 BuildRequires:  gettext
 BuildRequires:  help2man
@@ -166,6 +176,11 @@ This package contains user documentation.
 %goprep -k
 %patch0 -p1
 %patch1 -p1
+%patch2 -p1
+%patch3 -p1
+%patch4 -p1
+%patch5 -p1
+%patch6 -p1
 
 %build
 export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"

@@ -1,0 +1,353 @@
+From 68b0e52ec46e3db5dd7b56d897a7f99c80b24fe2 Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Wed, 31 May 2023 08:45:09 +0100
+Subject: [PATCH] lxd/storage/pool/interface: Updates ImportInstance and
+ ImportCustomVolume to return reverter
+
+Allows removing DB records created during import at a later point.
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/storage/pool_interface.go | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/lxd/storage/pool_interface.go b/lxd/storage/pool_interface.go
+index 62a47ccd920d..1dfddd330a11 100644
+--- a/lxd/storage/pool_interface.go
++++ b/lxd/storage/pool_interface.go
+@@ -73,7 +73,7 @@ type Pool interface {
+ 	UpdateInstanceBackupFile(inst instance.Instance, op *operations.Operation) error
+ 	GenerateInstanceBackupConfig(inst instance.Instance, snapshots bool, op *operations.Operation) (*backupConfig.Config, error)
+ 	CheckInstanceBackupFileSnapshots(backupConf *backupConfig.Config, projectName string, deleteMissing bool, op *operations.Operation) ([]*api.InstanceSnapshot, error)
+-	ImportInstance(inst instance.Instance, poolVol *backupConfig.Config, op *operations.Operation) error
++	ImportInstance(inst instance.Instance, poolVol *backupConfig.Config, op *operations.Operation) (revert.Hook, error)
+ 	CleanupInstancePaths(inst instance.Instance, op *operations.Operation) error
+ 
+ 	MigrateInstance(inst instance.Instance, conn io.ReadWriteCloser, args *migration.VolumeSourceArgs, op *operations.Operation) error
+@@ -120,7 +120,7 @@ type Pool interface {
+ 	GetCustomVolumeUsage(projectName string, volName string) (*VolumeUsage, error)
+ 	MountCustomVolume(projectName string, volName string, op *operations.Operation) error
+ 	UnmountCustomVolume(projectName string, volName string, op *operations.Operation) (bool, error)
+-	ImportCustomVolume(projectName string, poolVol *backupConfig.Config, op *operations.Operation) error
++	ImportCustomVolume(projectName string, poolVol *backupConfig.Config, op *operations.Operation) (revert.Hook, error)
+ 	RefreshCustomVolume(projectName string, srcProjectName string, volName, desc string, config map[string]string, srcPoolName, srcVolName string, snapshots bool, op *operations.Operation) error
+ 	GenerateCustomVolumeBackupConfig(projectName string, volName string, snapshots bool, op *operations.Operation) (*backupConfig.Config, error)
+ 
+From 77ac5f4369184d237693f7e971353eaa686e4576 Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Wed, 31 May 2023 08:45:40 +0100
+Subject: [PATCH] lxd/storage/backend/mock: Update ImportInstance and
+ ImportCustomVolume signatures
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/storage/backend_mock.go | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/lxd/storage/backend_mock.go b/lxd/storage/backend_mock.go
+index c02eb0a9b41d..58a21d48f5b8 100644
+--- a/lxd/storage/backend_mock.go
++++ b/lxd/storage/backend_mock.go
+@@ -160,8 +160,8 @@ func (b *mockBackend) ListUnknownVolumes(op *operations.Operation) (map[string][
+ 	return nil, nil
+ }
+ 
+-func (b *mockBackend) ImportInstance(inst instance.Instance, poolVol *backupConfig.Config, op *operations.Operation) error {
+-	return nil
++func (b *mockBackend) ImportInstance(inst instance.Instance, poolVol *backupConfig.Config, op *operations.Operation) (revert.Hook, error) {
++	return nil, nil
+ }
+ 
+ func (b *mockBackend) MigrateInstance(inst instance.Instance, conn io.ReadWriteCloser, args *migration.VolumeSourceArgs, op *operations.Operation) error {
+@@ -316,8 +316,8 @@ func (b *mockBackend) UnmountCustomVolume(projectName string, volName string, op
+ 	return true, nil
+ }
+ 
+-func (b *mockBackend) ImportCustomVolume(projectName string, poolVol *backupConfig.Config, op *operations.Operation) error {
+-	return nil
++func (b *mockBackend) ImportCustomVolume(projectName string, poolVol *backupConfig.Config, op *operations.Operation) (revert.Hook, error) {
++	return nil, nil
+ }
+ 
+ func (b *mockBackend) CreateCustomVolumeSnapshot(projectName string, volName string, newSnapshotName string, expiryDate time.Time, op *operations.Operation) error {
+From dd73b3e9cf971059b046feed3f04ba62f8ecf78e Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Wed, 31 May 2023 08:46:12 +0100
+Subject: [PATCH] lxd/storage/backend/lxd: Return reverter from
+ ImportCustomVolume
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/storage/backend_lxd.go | 17 +++++++++--------
+ 1 file changed, 9 insertions(+), 8 deletions(-)
+
+diff --git a/lxd/storage/backend_lxd.go b/lxd/storage/backend_lxd.go
+index c28b7f2a7575..dd25da0b3284 100644
+--- a/lxd/storage/backend_lxd.go
++++ b/lxd/storage/backend_lxd.go
+@@ -5073,9 +5073,9 @@ func (b *lxdBackend) UnmountCustomVolume(projectName, volName string, op *operat
+ // ImportCustomVolume takes an existing custom volume on the storage backend and ensures that the DB records,
+ // volume directories and symlinks are restored as needed to make it operational with LXD.
+ // Used during the recovery import stage.
+-func (b *lxdBackend) ImportCustomVolume(projectName string, poolVol *backupConfig.Config, op *operations.Operation) error {
++func (b *lxdBackend) ImportCustomVolume(projectName string, poolVol *backupConfig.Config, op *operations.Operation) (revert.Hook, error) {
+ 	if poolVol.Volume == nil {
+-		return fmt.Errorf("Invalid pool volume config supplied")
++		return nil, fmt.Errorf("Invalid pool volume config supplied")
+ 	}
+ 
+ 	l := b.logger.AddContext(logger.Ctx{"project": projectName, "volName": poolVol.Volume.Name})
+@@ -5094,7 +5094,7 @@ func (b *lxdBackend) ImportCustomVolume(projectName string, poolVol *backupConfi
+ 	// Validate config and create database entry for restored storage volume.
+ 	err := VolumeDBCreate(b, projectName, poolVol.Volume.Name, poolVol.Volume.Description, drivers.VolumeTypeCustom, false, volumeConfig, poolVol.Volume.CreatedAt, time.Time{}, drivers.ContentType(poolVol.Volume.ContentType), false, true)
+ 	if err != nil {
+-		return err
++		return nil, err
+ 	}
+ 
+ 	revert.Add(func() { _ = VolumeDBDelete(b, projectName, poolVol.Volume.Name, drivers.VolumeTypeCustom) })
+@@ -5113,7 +5113,7 @@ func (b *lxdBackend) ImportCustomVolume(projectName string, poolVol *backupConfi
+ 		// Validate config and create database entry for restored storage volume.
+ 		err = VolumeDBCreate(b, projectName, fullSnapName, poolVolSnap.Description, drivers.VolumeTypeCustom, true, snapVolumeConfig, poolVolSnap.CreatedAt, time.Time{}, drivers.ContentType(poolVolSnap.ContentType), false, true)
+ 		if err != nil {
+-			return err
++			return nil, err
+ 		}
+ 
+ 		revert.Add(func() { _ = VolumeDBDelete(b, projectName, fullSnapName, drivers.VolumeTypeCustom) })
+@@ -5126,7 +5126,7 @@ func (b *lxdBackend) ImportCustomVolume(projectName string, poolVol *backupConfi
+ 	// Create the mount path if needed.
+ 	err = vol.EnsureMountPath()
+ 	if err != nil {
+-		return err
++		return nil, err
+ 	}
+ 
+ 	// Create snapshot mount paths and snapshot parent directory if needed.
+@@ -5135,17 +5135,18 @@ func (b *lxdBackend) ImportCustomVolume(projectName string, poolVol *backupConfi
+ 
+ 		snapVol, err := vol.NewSnapshot(poolVolSnap.Name)
+ 		if err != nil {
+-			return err
++			return nil, err
+ 		}
+ 
+ 		err = snapVol.EnsureMountPath()
+ 		if err != nil {
+-			return err
++			return nil, err
+ 		}
+ 	}
+ 
++	cleanup := revert.Clone().Fail
+ 	revert.Success()
+-	return nil
++	return cleanup, err
+ }
+ 
+ // CreateCustomVolumeSnapshot creates a snapshot of a custom volume.
+From f198b7b576e6859aea544d92c92a945dd9f3883f Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Wed, 31 May 2023 08:46:30 +0100
+Subject: [PATCH] lxd/storage/backend/lxd: Return reverter from ImportInstance
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/storage/backend_lxd.go | 31 ++++++++++++++++---------------
+ 1 file changed, 16 insertions(+), 15 deletions(-)
+
+diff --git a/lxd/storage/backend_lxd.go b/lxd/storage/backend_lxd.go
+index dd25da0b3284..bce0ce55abeb 100644
+--- a/lxd/storage/backend_lxd.go
++++ b/lxd/storage/backend_lxd.go
+@@ -6018,20 +6018,20 @@ func (b *lxdBackend) detectUnknownCustomVolume(vol *drivers.Volume, projectVols
+ // and symlinks are restored as needed to make it operational with LXD. Used during the recovery import stage.
+ // If the instance exists on the local cluster member then the local mount status is restored as needed.
+ // If the optional poolVol argument is provided then it is used to create the storage volume database records.
+-func (b *lxdBackend) ImportInstance(inst instance.Instance, poolVol *backupConfig.Config, op *operations.Operation) error {
++func (b *lxdBackend) ImportInstance(inst instance.Instance, poolVol *backupConfig.Config, op *operations.Operation) (revert.Hook, error) {
+ 	l := b.logger.AddContext(logger.Ctx{"project": inst.Project().Name, "instance": inst.Name()})
+ 	l.Debug("ImportInstance started")
+ 	defer l.Debug("ImportInstance finished")
+ 
+ 	volType, err := InstanceTypeToVolumeType(inst.Type())
+ 	if err != nil {
+-		return err
++		return nil, err
+ 	}
+ 
+ 	// Get any snapshots the instance has in the format <instance name>/<snapshot name>.
+ 	snapshots, err := b.state.DB.Cluster.GetInstanceSnapshotsNames(inst.Project().Name, inst.Name())
+ 	if err != nil {
+-		return err
++		return nil, err
+ 	}
+ 
+ 	contentType := InstanceContentType(inst)
+@@ -6061,7 +6061,7 @@ func (b *lxdBackend) ImportInstance(inst instance.Instance, poolVol *backupConfi
+ 		// Validate config and create database entry for recovered storage volume.
+ 		err = VolumeDBCreate(b, inst.Project().Name, inst.Name(), "", volType, false, volumeConfig, creationDate, time.Time{}, contentType, false, true)
+ 		if err != nil {
+-			return err
++			return nil, err
+ 		}
+ 
+ 		revert.Add(func() { _ = VolumeDBDelete(b, inst.Project().Name, inst.Name(), volType) })
+@@ -6081,7 +6081,7 @@ func (b *lxdBackend) ImportInstance(inst instance.Instance, poolVol *backupConfi
+ 				// Validate config and create database entry for recovered storage volume.
+ 				err = VolumeDBCreate(b, inst.Project().Name, fullSnapName, poolVolSnap.Description, volType, true, snapVolumeConfig, poolVolSnap.CreatedAt, time.Time{}, contentType, false, true)
+ 				if err != nil {
+-					return err
++					return nil, err
+ 				}
+ 
+ 				revert.Add(func() { _ = VolumeDBDelete(b, inst.Project().Name, fullSnapName, volType) })
+@@ -6100,7 +6100,7 @@ func (b *lxdBackend) ImportInstance(inst instance.Instance, poolVol *backupConfi
+ 				// Use parent volume config.
+ 				err = VolumeDBCreate(b, inst.Project().Name, fullSnapName, "", volType, true, volumeConfig, time.Time{}, time.Time{}, contentType, false, true)
+ 				if err != nil {
+-					return err
++					return nil, err
+ 				}
+ 
+ 				revert.Add(func() { _ = VolumeDBDelete(b, inst.Project().Name, fullSnapName, volType) })
+@@ -6113,12 +6113,12 @@ func (b *lxdBackend) ImportInstance(inst instance.Instance, poolVol *backupConfi
+ 	vol := b.GetVolume(volType, contentType, volStorageName, volumeConfig)
+ 	err = b.applyInstanceRootDiskOverrides(inst, &vol)
+ 	if err != nil {
+-		return err
++		return nil, err
+ 	}
+ 
+ 	err = vol.EnsureMountPath()
+ 	if err != nil {
+-		return err
++		return nil, err
+ 	}
+ 
+ 	// Only attempt to restore mount status on instance's local cluster member.
+@@ -6133,7 +6133,7 @@ func (b *lxdBackend) ImportInstance(inst instance.Instance, poolVol *backupConfi
+ 			if !vol.MountInUse() {
+ 				_, err = b.MountInstance(inst, op)
+ 				if err != nil {
+-					return fmt.Errorf("Failed mounting instance: %w", err)
++					return nil, fmt.Errorf("Failed mounting instance: %w", err)
+ 				}
+ 			}
+ 		} else {
+@@ -6141,7 +6141,7 @@ func (b *lxdBackend) ImportInstance(inst instance.Instance, poolVol *backupConfi
+ 			// import.
+ 			err = b.UnmountInstance(inst, op)
+ 			if err != nil {
+-				return fmt.Errorf("Failed unmounting instance: %w", err)
++				return nil, fmt.Errorf("Failed unmounting instance: %w", err)
+ 			}
+ 		}
+ 	}
+@@ -6149,7 +6149,7 @@ func (b *lxdBackend) ImportInstance(inst instance.Instance, poolVol *backupConfi
+ 	// Create symlink.
+ 	err = b.ensureInstanceSymlink(inst.Type(), inst.Project().Name, inst.Name(), vol.MountPath())
+ 	if err != nil {
+-		return err
++		return nil, err
+ 	}
+ 
+ 	revert.Add(func() {
+@@ -6166,23 +6166,24 @@ func (b *lxdBackend) ImportInstance(inst instance.Instance, poolVol *backupConfi
+ 
+ 			snapVol, err := vol.NewSnapshot(snapOnlyName)
+ 			if err != nil {
+-				return err
++				return nil, err
+ 			}
+ 
+ 			err = snapVol.EnsureMountPath()
+ 			if err != nil {
+-				return err
++				return nil, err
+ 			}
+ 		}
+ 
+ 		err = b.ensureInstanceSnapshotSymlink(inst.Type(), inst.Project().Name, inst.Name())
+ 		if err != nil {
+-			return err
++			return nil, err
+ 		}
+ 	}
+ 
++	cleanup := revert.Clone().Fail
+ 	revert.Success()
+-	return nil
++	return cleanup, err
+ }
+ 
+ func (b *lxdBackend) BackupCustomVolume(projectName string, volName string, tarWriter *instancewriter.InstanceTarWriter, optimized bool, snapshots bool, op *operations.Operation) error {
+From ed607a23141a2775da8cb6bc8e0b49c2e120693a Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Wed, 31 May 2023 08:46:45 +0100
+Subject: [PATCH] lxd/instance/post: ImportInstance usage
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/instance_post.go | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lxd/instance_post.go b/lxd/instance_post.go
+index 563b7bf5f22b..e937986b98b8 100644
+--- a/lxd/instance_post.go
++++ b/lxd/instance_post.go
+@@ -851,7 +851,7 @@ func instancePostClusteringMigrateWithCeph(s *state.State, r *http.Request, srcP
+ 			srcInstName = srcInst.Name()
+ 		}
+ 
+-		err = srcPool.ImportInstance(srcInst, nil, nil)
++		_, err = srcPool.ImportInstance(srcInst, nil, nil)
+ 		if err != nil {
+ 			return fmt.Errorf("Failed creating mount point of instance on target node: %w", err)
+ 		}
+From a6a016e8ea4f347d24f05817237c206fd76bd385 Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Wed, 31 May 2023 08:47:04 +0100
+Subject: [PATCH] lxd/api/internal/recover: Use pool.ImportInstance and
+ pool.ImportCustomVolume reverters in internalRecoverScan
+
+Fixes #11728
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/api_internal_recover.go | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/lxd/api_internal_recover.go b/lxd/api_internal_recover.go
+index 9012af7df025..e4a91b3e2654 100644
+--- a/lxd/api_internal_recover.go
++++ b/lxd/api_internal_recover.go
+@@ -401,10 +401,12 @@ func internalRecoverScan(s *state.State, userPools []api.StoragePoolsPost, valid
+ 				}
+ 
+ 				// Import custom volume and any snapshots.
+-				err = pool.ImportCustomVolume(customStorageProjectName, poolVol, nil)
++				cleanup, err := pool.ImportCustomVolume(customStorageProjectName, poolVol, nil)
+ 				if err != nil {
+ 					return response.SmartError(fmt.Errorf("Failed importing custom volume %q in project %q: %w", poolVol.Volume.Name, projectName, err))
+ 				}
++
++				revert.Add(cleanup)
+ 			}
+ 
+ 			// Recover unknown instance volumes.
+@@ -450,11 +452,13 @@ func internalRecoverScan(s *state.State, userPools []api.StoragePoolsPost, valid
+ 				}
+ 
+ 				// Recreate instance mount path and symlinks (must come after snapshot recovery).
+-				err = pool.ImportInstance(inst, poolVol, nil)
++				cleanup, err = pool.ImportInstance(inst, poolVol, nil)
+ 				if err != nil {
+ 					return response.SmartError(fmt.Errorf("Failed importing instance %q in project %q: %w", poolVol.Container.Name, projectName, err))
+ 				}
+ 
++				revert.Add(cleanup)
++
+ 				// Reinitialise the instance's root disk quota even if no size specified (allows the storage driver the
+ 				// opportunity to reinitialise the quota based on the new storage volume's DB ID).
+ 				_, rootConfig, err := shared.GetRootDiskDevice(inst.ExpandedDevices().CloneNative())
