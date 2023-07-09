@@ -39,6 +39,9 @@ chmod -x examples/*
 
 
 %changelog
+* Sun Jul 09 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 5.0.0-0.1
+- Update to 5.0.0.
+
 * Sun Feb 20 2022 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 3.0.4-0.5
 - Add latest upstream patches
 
