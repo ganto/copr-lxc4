@@ -75,6 +75,9 @@ mkdir -p %{buildroot}%{_sharedstatedir}/%{name}
 
 
 %changelog
+* Sat Jul 29 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 5.0.4-0.1
+- Update to 5.0.4.
+
 * Sat Jan 28 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 5.0.3-0.1
 - Update to 5.0.3.
 
