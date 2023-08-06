@@ -245,6 +245,9 @@ cp -a %{SOURCE1} %{buildroot}%{_sysconfdir}/sysconfig/%{name}-net
 
 
 %changelog
+* Sun Aug 06 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 5.0.3-0.1
+- Update to 5.0.3.
+
 * Sun Jun 18 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 5.0.2-0.2
 - Fix various build errors
 
