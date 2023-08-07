@@ -13,7 +13,7 @@
 
 # https://github.com/lxc/lxd
 %global goipath github.com/lxc/lxd
-Version:        5.14
+Version:        5.15
 
 %gometa
 
@@ -26,8 +26,8 @@ Summary:        Container hypervisor based on LXC
 
 # Upstream license specification: Apache-2.0
 License:        ASL 2.0
-URL:            https://linuxcontainers.org/lxd
-Source0:        https://linuxcontainers.org/downloads/%{name}/%{name}-%{version}.tar.gz
+URL:            https://ubuntu.com/lxd
+Source0:        https://github.com/canonical/lxd/releases/download/%{name}-%{version}/%{name}-%{version}.tar.gz
 Source1:        %{name}.socket
 Source2:        %{name}.service
 Source3:        lxd-containers.service
@@ -39,20 +39,26 @@ Source8:        lxd.profile
 Source9:        lxd-agent.service
 Source10:       lxd-agent-setup
 # Upstream bug fixes merged to master for next release
-# https://github.com/lxc/lxd/issues/11728
-Patch0:         lxd-5.14-Storage-Allow-revert-of-storage-DB-volumes.patch
-# https://github.com/canonical/lxd/issues/11730
-Patch1:         lxd-5.14-doc-faq-Drop-reference-to-eth1.patch
-# https://github.com/canonical/lxd/issues/11741
-Patch2:         lxd-5.14-Instance-Handle-VM-panic-by-shutting-down.patch
-# https://github.com/canonical/lxd/issues/11746
-Patch3:         lxd-5.14-lxd-device-nic-ovn-Enable-hotplug-for-VMs.patch
-# https://github.com/canonical/lxd/issues/11787
-Patch4:         lxd-5.14-lxc-copy-Dont-try-and-modify-volatile-idmap-next.patch
-# https://github.com/canonical/lxd/issues/11822
-Patch5:         lxd-5.14-Storage-Only-delete-ZFS-volume-on-failure-if-not-doing-refresh.patch
-# https://github.com/canonical/lxd/issues/11829
-Patch6:         lxd-5.14-lxd-migrate-Fix-SecureBoot-handling.patch
+# https://github.com/canonical/lxd/issues/11877
+Patch0:         lxd-5.15-lxc-rebuild-Dont-stop-all-instances-on-force.patch
+# https://github.com/canonical/lxd/issues/11888
+Patch1:         lxd-5.15-VM-Ignore-container-config-keys.patch
+# https://github.com/canonical/lxd/issues/11901
+Patch2:         lxd-5.15-instancewriter-Use-right-header-key-for-tar-ACL.patch
+# https://github.com/canonical/lxd/issues/11943
+Patch3:         lxd-5.15-Cluster-Remove-obsolete-group-delete-create-for-PUT-endpoint.patch
+# https://github.com/canonical/lxd/issues/11947
+Patch4:         lxd-5.15-Add-instance-type-to-instances-of-offline-cluster-members.patch
+# https://github.com/canonical/lxd/issues/11958
+Patch5:         lxd-5.15-lxd-Check-project-permissions-when-importing-from-backup.patch
+# https://github.com/canonical/lxd/issues/12065
+Patch6:         lxd-5.15-Update-instance-name-in-backup-file-when-importing-new-instance.patch
+# Fix link to Grafana dashboard
+Patch7:         lxd-5.15-docs-metrics-update-link-to-Grafana-dashboard.patch
+# Allow offline builds
+Patch8:         lxd-5.15-doc-Remove-downloads-from-sphinx-build.patch
+Patch9:         lxd-5.15-doc-Enhance-related-links-definitions-for-offline-build.patch
+Patch10:        lxd-5.15-doc-Disable-version-lookup-and-switching.patch
 
 BuildRequires:  gettext
 BuildRequires:  help2man
@@ -88,10 +94,7 @@ BuildRequires:  ebtables
 BuildRequires:  iptables
 %endif
 
-Obsoletes: lxd-libs < %{version}-%{release}
-
 Suggests: logrotate
-
 # Virtual machine support requires additional packages
 Suggests: edk2-ovmf
 Suggests: genisoimage
@@ -140,8 +143,6 @@ This package contains extra tools provided with LXD.
 Summary:        A physical to container migration tool
 #Requires:       netcat
 Requires:       rsync
-Obsoletes:      %{name}-p2c < %{version}
-Conflicts:      %{name}-p2c < %{version}
 
 %description migrate
 Physical to container migration tool
@@ -181,6 +182,10 @@ This package contains user documentation.
 %patch4 -p1
 %patch5 -p1
 %patch6 -p1
+%patch7 -p1
+%patch8 -p1
+%patch9 -p1
+%patch10 -p1
 
 %build
 export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"

@@ -1,0 +1,52 @@
+From 9f1ac9047e63b86e2394984bf64cd045c297db9a Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Julian=20Peliz=C3=A4us?= <julian.pelizaeus@canonical.com>
+Date: Mon, 17 Jul 2023 11:41:19 +0200
+Subject: [PATCH] lxd/shared/instancewriter: Use right header key for tar ACLs
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+When creating an archive from a container, use the right header key for the go tar module.
+There is no reference to `SCHILY.acl.*` in the go codebase under src/archive/tar.
+
+Signed-off-by: Julian Pelizäus <julian.pelizaeus@canonical.com>
+---
+ shared/instancewriter/instance_tar_writer.go | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/shared/instancewriter/instance_tar_writer.go b/shared/instancewriter/instance_tar_writer.go
+index 210fabbaa79a..38327a180234 100644
+--- a/shared/instancewriter/instance_tar_writer.go
++++ b/shared/instancewriter/instance_tar_writer.go
+@@ -117,7 +117,7 @@ func (ctw *InstanceTarWriter) WriteFile(name string, srcPath string, fi os.FileI
+ 					continue
+ 				}
+ 
+-				hdr.PAXRecords["SCHILY.acl.access"] = aclAccess
++				val = aclAccess
+ 			} else if key == "system.posix_acl_default" && ctw.idmapSet != nil {
+ 				aclDefault, err := idmap.UnshiftACL(val, ctw.idmapSet)
+ 				if err != nil {
+@@ -125,7 +125,7 @@ func (ctw *InstanceTarWriter) WriteFile(name string, srcPath string, fi os.FileI
+ 					continue
+ 				}
+ 
+-				hdr.PAXRecords["SCHILY.acl.default"] = aclDefault
++				val = aclDefault
+ 			} else if key == "security.capability" && ctw.idmapSet != nil {
+ 				vfsCaps, err := idmap.UnshiftCaps(val, ctw.idmapSet)
+ 				if err != nil {
+@@ -133,10 +133,10 @@ func (ctw *InstanceTarWriter) WriteFile(name string, srcPath string, fi os.FileI
+ 					continue
+ 				}
+ 
+-				hdr.PAXRecords["SCHILY.xattr."+key] = vfsCaps
+-			} else {
+-				hdr.PAXRecords["SCHILY.xattr."+key] = val
++				val = vfsCaps
+ 			}
++
++			hdr.PAXRecords["SCHILY.xattr."+key] = val
+ 		}
+ 	}
+ 

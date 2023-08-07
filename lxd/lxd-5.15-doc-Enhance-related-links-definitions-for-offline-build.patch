@@ -1,0 +1,636 @@
+commit 253990d2f84e1b01b6405c6e4419d8de8112d272
+Author: Reto Gantenbein <reto.gantenbein@linuxmonk.ch>
+Date:   Mon Aug 7 19:28:50 2023 +0200
+
+    doc: Enhance related-links definitions for offline build
+
+diff --git a/doc/authentication.md b/doc/authentication.md
+index 36aea593c..303f617ec 100644
+--- a/doc/authentication.md
++++ b/doc/authentication.md
+@@ -1,6 +1,6 @@
+ ---
+ discourse: 13114,15142
+-relatedlinks: https://www.youtube.com/watch?v=6O0q3rSWr8A
++relatedlinks: "[LXD&#32;for&#32;multi-user&#32;systems&#32;-&#32;Youtube](https://www.youtube.com/watch?v=6O0q3rSWr8A)"
+ ---
+ 
+ (authentication)=
+@@ -20,6 +20,7 @@ The following authentication methods are supported:
+ ## TLS client certificates
+ 
+ ```{youtube} https://www.youtube.com/watch?v=4iNpiL-lrXU
++:title: LXD token based remote authentication - Youtube
+ ```
+ 
+ When using {abbr}`TLS (Transport Layer Security)` client certificates for authentication, both the client and the server will generate a key pair the first time they're launched.
+@@ -157,6 +158,7 @@ The LXD client then retrieves and stores the access and refresh tokens and provi
+ ## Candid-based authentication
+ 
+ ```{youtube} https://www.youtube.com/watch?v=FebTipM1jJk
++:title: External authentication on LXD with Candid - Youtube
+ ```
+ 
+ You can configure LXD to use [Candid](https://github.com/canonical/candid) authentication by setting the [`candid.*`](server-options-candid-rbac) server configuration options.
+@@ -176,6 +178,7 @@ For instructions on how to set up Candid-based authentication, see the [Candid a
+ ## Role Based Access Control (RBAC)
+ 
+ ```{youtube} https://www.youtube.com/watch?v=VE60AbJHT6E
++:title: Access control with Canonical RBAC - Youtube
+ ```
+ 
+ LXD supports integrating with the Canonical RBAC service, which is included in the [Ubuntu Pro](https://ubuntu.com/pro) subscription.
+diff --git a/doc/cloud-init.md b/doc/cloud-init.md
+index ad82cf5e4..6050b1f35 100644
+--- a/doc/cloud-init.md
++++ b/doc/cloud-init.md
+@@ -1,12 +1,13 @@
+ ---
+ discourse: 12559
+-relatedlinks: https://cloudinit.readthedocs.org/
++relatedlinks: "[cloud-init&#32;documentation](https://cloudinit.readthedocs.org/)"
+ ---
+ 
+ (cloud-init)=
+ # How to use `cloud-init`
+ 
+ ```{youtube} https://www.youtube.com/watch?v=8OCG15TAldI
++:title: LXD instance configuration with cloud-init - Youtube
+ ```
+ 
+ [`cloud-init`](https://cloud-init.io/) is a tool for automatically initializing and customizing an instance of a Linux distribution.
+diff --git a/doc/contributing.md b/doc/contributing.md
+index ba20b4021..a66d0dcbe 100644
+--- a/doc/contributing.md
++++ b/doc/contributing.md
+@@ -1,5 +1,5 @@
+ ---
+-relatedlinks: https://www.youtube.com/watch?v=pqV0Z1qwbkg
++relatedlinks: "[LXD's&#32;development&#32;process&#32;-&#32;Youtube](https://www.youtube.com/watch?v=pqV0Z1qwbkg)"
+ ---
+ 
+ % Include content from [../CONTRIBUTING.md](../CONTRIBUTING.md)
+diff --git a/doc/database.md b/doc/database.md
+index f3bca6717..3addf0237 100644
+--- a/doc/database.md
++++ b/doc/database.md
+@@ -1,5 +1,5 @@
+ ---
+-relatedlinks: https://dqlite.io/, https://github.com/canonical/dqlite
++relatedlinks: "[Canonical&#32;Dqlite](https://dqlite.io/)", "[canonical/dqlite:&#32;Embeddable,&#32;replicated&#32;and&#32;fault&#32;tolerant&#32;SQL&#32;engine.](https://github.com/canonical/dqlite)"
+ ---
+ 
+ (database)=
+diff --git a/doc/dev-lxd.md b/doc/dev-lxd.md
+index c3d78bd92..ecabb1976 100644
+--- a/doc/dev-lxd.md
++++ b/doc/dev-lxd.md
+@@ -1,6 +1,7 @@
+ # Communication between instance and host
+ 
+ ```{youtube} https://www.youtube.com/watch?v=xZSnqqWykmo
++:title: The LXD instance API - Youtube
+ ```
+ 
+ Communication between the hosted workload (instance) and its host while
+diff --git a/doc/explanation/clustering.md b/doc/explanation/clustering.md
+index 69ee6833e..a9ebd8f7a 100644
+--- a/doc/explanation/clustering.md
++++ b/doc/explanation/clustering.md
+@@ -6,6 +6,7 @@ discourse: 15728
+ # About clustering
+ 
+ ```{youtube} https://www.youtube.com/watch?v=nrOR6yaO_MY
++:title: Deep dive into LXD clustering - Youtube
+ ```
+ 
+ To spread the total workload over several servers, LXD can be run in clustering mode.
+diff --git a/doc/explanation/instances.md b/doc/explanation/instances.md
+index 0e7131da3..956a02d17 100644
+--- a/doc/explanation/instances.md
++++ b/doc/explanation/instances.md
+@@ -1,6 +1,6 @@
+ ---
+ discourse: 8767,7519,9281
+-relatedlinks: https://ubuntu.com/blog/lxd-virtual-machines-an-overview
++relatedlinks: "[LXD&#32;virtual&#32;machines:&#32;an&32;overview&#32;|&#32;Ubuntu](https://ubuntu.com/blog/lxd-virtual-machines-an-overview)"
+ ---
+ 
+ (expl-instances)=
+diff --git a/doc/explanation/performance_tuning.md b/doc/explanation/performance_tuning.md
+index 4478ef51d..18a061e46 100644
+--- a/doc/explanation/performance_tuning.md
++++ b/doc/explanation/performance_tuning.md
+@@ -1,5 +1,5 @@
+ ---
+-relatedlinks: https://www.youtube.com/watch?v=QyXOOE_4cm0
++relatedlinks: "[Running&#32;LXD&#32;in&#32;production](https://www.youtube.com/watch?v=QyXOOE_4cm0)"
+ ---
+ 
+ (performance-tuning)=
+diff --git a/doc/explanation/projects.md b/doc/explanation/projects.md
+index e8fb2e538..055ce80db 100644
+--- a/doc/explanation/projects.md
++++ b/doc/explanation/projects.md
+@@ -2,6 +2,7 @@
+ # About projects
+ 
+ ```{youtube} https://www.youtube.com/watch?v=cUHkgg6TovM
++:title: Overview of LXD projects - Youtube
+ ```
+ 
+ You can use projects to keep your LXD server clean by grouping related instances together.
+diff --git a/doc/explanation/security.md b/doc/explanation/security.md
+index 8a38af371..9968e3655 100644
+--- a/doc/explanation/security.md
++++ b/doc/explanation/security.md
+@@ -2,6 +2,7 @@
+ # About security
+ 
+ ```{youtube} https://www.youtube.com/watch?v=cOOzKdYHkus
++:title: LXD security - Youtube
+ ```
+ 
+ % Include content from [../../README.md](../../README.md)
+diff --git a/doc/explanation/storage.md b/doc/explanation/storage.md
+index 478181b60..db0ce4fe5 100644
+--- a/doc/explanation/storage.md
++++ b/doc/explanation/storage.md
+@@ -100,6 +100,7 @@ In the default profile, this pool is set to the storage pool that was created du
+ ## Storage volumes
+ 
+ ```{youtube} https://www.youtube.com/watch?v=dvQ111pbqtk
++:title: Custom storage volumes in LXD - Youtube
+ ```
+ 
+ When you create an instance, LXD automatically creates the required storage volumes for it.
+@@ -160,6 +161,7 @@ Each storage volume uses one of the following content types:
+ ## Storage buckets
+ 
+ ```{youtube} https://www.youtube.com/watch?v=T1EeXPrjkEY
++:title: LXD's S3 API - Youtube
+ ```
+ 
+ Storage buckets provide object storage functionality via the S3 protocol.
+diff --git a/doc/faq.md b/doc/faq.md
+index 216e05f93..4262b1c0a 100644
+--- a/doc/faq.md
++++ b/doc/faq.md
+@@ -51,6 +51,7 @@ But that's also the cause of most of the security issues with such privileged co
+ ## How can I run Docker inside a LXD container?
+ 
+ ```{youtube} https://www.youtube.com/watch?v=_fCSSEyiGro
++:title: Running Docker inside of a LXD container - Youtube
+ ```
+ 
+ To run Docker inside a LXD container, set the [`security.nesting`](instance-options-security) property of the container to `true`:
+diff --git a/doc/getting_started.md b/doc/getting_started.md
+index 2f0348d76..425f70f37 100644
+--- a/doc/getting_started.md
++++ b/doc/getting_started.md
+@@ -1,5 +1,5 @@
+ ---
+-relatedlinks: https://linuxcontainers.org/lxd/getting-started-cli/,https://www.youtube.com/watch?v=QyXOOE_4cm0
++relatedlinks: "[Running&#32;LXD&#32;in&#32;production&#32;-&#32;Youtube](https://www.youtube.com/watch?v=QyXOOE_4cm0)"
+ ---
+ 
+ # Getting started
+diff --git a/doc/howto/access_ui.md b/doc/howto/access_ui.md
+index 6d080b3ac..cd2800348 100644
+--- a/doc/howto/access_ui.md
++++ b/doc/howto/access_ui.md
+@@ -10,6 +10,7 @@ See the [LXD-UI GitHub repository](https://github.com/canonical/lxd-ui) for the
+ ![Graphical console of an instance in the LXD web UI](../images/ui_console.png)
+ 
+ ```{youtube} https://www.youtube.com/watch?v=wqEH_d8LC1k
++:title: Early look at the LXD web UI - Youtube
+ ```
+ 
+ The LXD web UI provides you with a graphical interface to manage your LXD server and instances.
+diff --git a/doc/howto/benchmark_performance.md b/doc/howto/benchmark_performance.md
+index 22caf4a3f..2e0914298 100644
+--- a/doc/howto/benchmark_performance.md
++++ b/doc/howto/benchmark_performance.md
+@@ -2,6 +2,7 @@
+ # How to benchmark performance
+ 
+ ```{youtube} https://www.youtube.com/watch?v=z_OKwO5TskA
++:title: Benchmarking LXD storage drivers - Youtube
+ ```
+ 
+ The performance of your LXD server or cluster depends on a lot of different factors, ranging from the hardware, the server configuration, the selected storage driver and the network bandwidth to the overall usage patterns.
+diff --git a/doc/howto/cluster_form.md b/doc/howto/cluster_form.md
+index 7fac1dd94..100eb2a86 100644
+--- a/doc/howto/cluster_form.md
++++ b/doc/howto/cluster_form.md
+@@ -378,6 +378,7 @@ opyQ1VRpAg2sV2C4W8irbNqeUsTeZZxhLqp4vNOXXBBrSqUCdPu1JXADV0kavg1l
+ ## Use MicroCloud
+ 
+ ```{youtube} https://www.youtube.com/watch?v=ZSZoLnp-Ip0
++:title: Introducing MicroCloud - Youtube
+ ```
+ 
+ Instead of setting up your LXD cluster manually, you can use [MicroCloud](https://snapcraft.io/microcloud) to get a fully highly available LXD cluster with Ceph storage up and running.
+diff --git a/doc/howto/cluster_groups.md b/doc/howto/cluster_groups.md
+index 51251a4f1..4d22893c6 100644
+--- a/doc/howto/cluster_groups.md
++++ b/doc/howto/cluster_groups.md
+@@ -6,6 +6,7 @@ discourse: 12716
+ # How to set up cluster groups
+ 
+ ```{youtube} https://www.youtube.com/watch?v=t_3YJo_xItM
++:title: LXD cluster groups - Youtube
+ ```
+ 
+ Cluster members can be assigned to {ref}`cluster-groups`.
+diff --git a/doc/howto/import_machines_to_instances.md b/doc/howto/import_machines_to_instances.md
+index a2c581582..e81fa34dd 100644
+--- a/doc/howto/import_machines_to_instances.md
++++ b/doc/howto/import_machines_to_instances.md
+@@ -6,6 +6,7 @@ discourse: 14345
+ # How to import physical or virtual machines to LXD instances
+ 
+ ```{youtube} https://www.youtube.com/watch?v=F9GALjHtnUU
++:title: Migrating systems into LXD - Youtube
+ ```
+ 
+ LXD provides a tool (`lxd-migrate`) to create a LXD instance based on an existing disk or image.
+diff --git a/doc/howto/instances_console.md b/doc/howto/instances_console.md
+index 620b941f2..92b7e4c12 100644
+--- a/doc/howto/instances_console.md
++++ b/doc/howto/instances_console.md
+@@ -24,6 +24,7 @@ You can also immediately attach to the console when you start your instance:
+ ## Access the graphical console (for virtual machines)
+ 
+ ```{youtube} https://www.youtube.com/watch?v=pEUsTMiq4B4
++:title: Arch Linux and Ubuntu Desktop in LXD VMs - Youtube
+ ```
+ 
+ On virtual machines, log on to the console to get graphical output.
+diff --git a/doc/howto/migrate_from_lxc.md b/doc/howto/migrate_from_lxc.md
+index 4ebf4142a..81819da86 100644
+--- a/doc/howto/migrate_from_lxc.md
++++ b/doc/howto/migrate_from_lxc.md
+@@ -2,6 +2,7 @@
+ # How to migrate containers from LXC to LXD
+ 
+ ```{youtube} https://www.youtube.com/watch?v=F9GALjHtnUU
++:title: Migrating systems into LXD - Youtube
+ ```
+ 
+ LXD provides a tool (`lxc-to-lxd`) that you can use to import LXC containers into your LXD server.
+diff --git a/doc/howto/network_acls.md b/doc/howto/network_acls.md
+index 64e6fd197..8b3fe5c2c 100644
+--- a/doc/howto/network_acls.md
++++ b/doc/howto/network_acls.md
+@@ -10,6 +10,7 @@ Network ACLs are available for the {ref}`OVN NIC type <nic-ovn>`, the {ref}`netw
+ ```
+ 
+ ```{youtube} https://www.youtube.com/watch?v=mu34G0cX6Io
++:title: LXD network ACLs - Youtube
+ ```
+ 
+ Network {abbr}`ACLs (Access Control Lists)` define traffic rules that allow controlling network access between different instances connected to the same network, and access to and from other networks.
+diff --git a/doc/howto/network_bgp.md b/doc/howto/network_bgp.md
+index 38a22f520..de8094756 100644
+--- a/doc/howto/network_bgp.md
++++ b/doc/howto/network_bgp.md
+@@ -10,6 +10,7 @@ The BGP server feature is available for the {ref}`network-bridge` and the {ref}`
+ ```
+ 
+ ```{youtube} https://www.youtube.com/watch?v=C9zU-FEqtTw
++:title: LXD and BGP - Youtube
+ ```
+ 
+ {abbr}`BGP (Border Gateway Protocol)` is a protocol that allows exchanging routing information between autonomous systems.
+diff --git a/doc/howto/network_forwards.md b/doc/howto/network_forwards.md
+index 474c7d5da..012b2a71f 100644
+--- a/doc/howto/network_forwards.md
++++ b/doc/howto/network_forwards.md
+@@ -10,6 +10,7 @@ Network forwards are available for the {ref}`network-ovn` and the {ref}`network-
+ ```
+ 
+ ```{youtube} https://www.youtube.com/watch?v=B-Uzo9WldMs
++:title: LXD network forwards - Youtube
+ ```
+ 
+ Network forwards allow an external IP address (or specific ports on it) to be forwarded to an internal IP address (or specific ports on it) in the network that the forward belongs to.
+diff --git a/doc/howto/network_ovn_setup.md b/doc/howto/network_ovn_setup.md
+index 72fc8f45f..07abb1642 100644
+--- a/doc/howto/network_ovn_setup.md
++++ b/doc/howto/network_ovn_setup.md
+@@ -45,6 +45,7 @@ Complete the following steps to create a standalone OVN network that is connecte
+ ## Set up a LXD cluster on OVN
+ 
+ ```{youtube} https://www.youtube.com/watch?v=1M__Rm9iZb8
++:title: OVN and a LXD cluster - Youtube
+ ```
+ 
+ Complete the following steps to set up a LXD cluster that uses an OVN network.
+diff --git a/doc/howto/network_zones.md b/doc/howto/network_zones.md
+index 4db8fb09b..d4ca4069f 100644
+--- a/doc/howto/network_zones.md
++++ b/doc/howto/network_zones.md
+@@ -10,6 +10,7 @@ Network zones are available for the {ref}`network-ovn` and the {ref}`network-bri
+ ```
+ 
+ ```{youtube} https://www.youtube.com/watch?v=2MqpJOogNVQ
++:title: LXD network zones - Youtube
+ ```
+ 
+ Network zones can be used to serve DNS records for LXD networks.
+diff --git a/doc/howto/projects_confine.md b/doc/howto/projects_confine.md
+index 504a2568f..f1e6bf6ad 100644
+--- a/doc/howto/projects_confine.md
++++ b/doc/howto/projects_confine.md
+@@ -9,6 +9,7 @@ How to confine a project to a specific user depends on the authentication method
+ ## Confine projects to specific TLS clients
+ 
+ ```{youtube} https://www.youtube.com/watch?v=4iNpiL-lrXU&t=525s
++:title: LXD token based remote authentication - Youtube
+ ```
+ 
+ You can confine access to specific projects by restricting the TLS client certificate that is used to connect to the LXD server.
+@@ -51,6 +52,7 @@ However, it does not confine the client to this project.
+ ## Confine projects to specific RBAC roles
+ 
+ ```{youtube} https://www.youtube.com/watch?v=VE60AbJHT6E
++:title: Access control with Canonical RBAC - Youtube
+ ```
+ 
+ If you are using the Canonical RBAC service, the RBAC roles define what operations a user with that role can carry out.
+@@ -61,6 +63,7 @@ To use RBAC to confine a project, go to the respective project in the RBAC inter
+ ## Confine projects to specific LXD users
+ 
+ ```{youtube} https://www.youtube.com/watch?v=6O0q3rSWr8A
++:title: LXD for multi-user systems - Youtube
+ ```
+ 
+ If you use the [LXD snap](https://snapcraft.io/lxd), you can configure the multi-user LXD daemon contained in the snap to dynamically create projects for all users in a specific user group.
+diff --git a/doc/howto/storage_buckets.md b/doc/howto/storage_buckets.md
+index 54d0b428c..ec861fe56 100644
+--- a/doc/howto/storage_buckets.md
++++ b/doc/howto/storage_buckets.md
+@@ -2,6 +2,7 @@
+ # How to manage storage buckets and keys
+ 
+ ```{youtube} https://www.youtube.com/watch?v=T1EeXPrjkEY
++:title: LXD's S3 API - Youtube
+ ```
+ 
+ See the following sections for instructions on how to create, configure, view and resize {ref}`storage-buckets` and how to manage storage bucket keys.
+diff --git a/doc/howto/storage_volumes.md b/doc/howto/storage_volumes.md
+index 3f3b4426f..f3dbbf246 100644
+--- a/doc/howto/storage_volumes.md
++++ b/doc/howto/storage_volumes.md
+@@ -2,6 +2,7 @@
+ # How to manage storage volumes
+ 
+ ```{youtube} https://www.youtube.com/watch?v=dvQ111pbqtk
++:title: Custom storage volumes in LXD - Youtube
+ ```
+ 
+ See the following sections for instructions on how to create, configure, view and resize {ref}`storage-volumes`.
+diff --git a/doc/image-handling.md b/doc/image-handling.md
+index d87a54932..d34df62b8 100644
+--- a/doc/image-handling.md
++++ b/doc/image-handling.md
+@@ -2,6 +2,7 @@
+ # About images
+ 
+ ```{youtube} https://www.youtube.com/watch?v=wT7IDjo0Wgg
++:title: Image servers and image handling in LXD - Youtube
+ ```
+ 
+ LXD uses an image-based workflow.
+diff --git a/doc/index.md b/doc/index.md
+index f49d49eec..24f292236 100644
+--- a/doc/index.md
++++ b/doc/index.md
+@@ -1,5 +1,5 @@
+ ---
+-relatedlinks: https://linuxcontainers.org/, https://ubuntu.com/lxd, https://ubuntu.com/blog/open-source-for-beginners-dev-environment-with-lxd
++relatedlinks: "[Linux&#32;Containers](https://linuxcontainers.org/)", "[Run&#32;system&#32;containers&#32;with&#32;LXD&#32;|&#32;Ubuntu](https://ubuntu.com/lxd)", "[Open&#32;source&#32;for&#32;beginners:&#32;setting&#32;up&#32;your&#32;dev&#32;environment&#32;with&#32;LXD&#32;|&#32;Ubuntu](https://ubuntu.com/blog/open-source-for-beginners-dev-environment-with-lxd)"
+ ---
+ 
+ [![LXD](.sphinx/_static/download/containers.png)](https://linuxcontainers.org/lxd)
+diff --git a/doc/metrics.md b/doc/metrics.md
+index 3466cab62..29b4c978d 100644
+--- a/doc/metrics.md
++++ b/doc/metrics.md
+@@ -1,12 +1,13 @@
+ ---
+ discourse: 12281,11735
+-relatedlinks: https://grafana.com/grafana/dashboards/19131-lxd/
++relatedlinks: "[LXD&#32;|&#32;Grafana Labs](https://grafana.com/grafana/dashboards/19131-lxd/)"
+ ---
+ 
+ (metrics)=
+ # How to monitor metrics
+ 
+ ```{youtube} https://www.youtube.com/watch?v=EthK-8hm_fY
++:title: LXD metrics with Prometheus and Grafana - Youtube
+ ```
+ 
+ <!-- Include start metrics intro -->
+diff --git a/doc/migration.md b/doc/migration.md
+index e13379c4d..390e927e3 100644
+--- a/doc/migration.md
++++ b/doc/migration.md
+@@ -2,6 +2,7 @@
+ # Migration
+ 
+ ```{youtube} https://www.youtube.com/watch?v=F9GALjHtnUU
++:title: Migrating systems into LXD - Youtube
+ ```
+ 
+ LXD provides tools and functionality to migrate instances in different contexts.
+diff --git a/doc/projects.md b/doc/projects.md
+index f9f5dbb1d..9afdf22b4 100644
+--- a/doc/projects.md
++++ b/doc/projects.md
+@@ -1,5 +1,5 @@
+ ---
+-relatedlinks: https://ubuntu.com/tutorials/introduction-to-lxd-projects
++relatedlinks: "[Introduction&#32;to&#32;LXD&#32;projects](https://ubuntu.com/tutorials/introduction-to-lxd-projects)"
+ ---
+ 
+ (projects)=
+diff --git a/doc/reference/devices_disk.md b/doc/reference/devices_disk.md
+index 5fa76e81c..e9287c936 100644
+--- a/doc/reference/devices_disk.md
++++ b/doc/reference/devices_disk.md
+@@ -2,6 +2,7 @@
+ # Type: `disk`
+ 
+ ```{youtube} https://www.youtube.com/watch?v=JhRw2OYTgtg
++:title: LXD disk devices - YouTube
+ ```
+ 
+ ```{note}
+diff --git a/doc/reference/devices_gpu.md b/doc/reference/devices_gpu.md
+index 84f404842..8e439009a 100644
+--- a/doc/reference/devices_gpu.md
++++ b/doc/reference/devices_gpu.md
+@@ -2,6 +2,7 @@
+ # Type: `gpu`
+ 
+ ```{youtube} https://www.youtube.com/watch?v=T0aV2LsMpoA
++:title: LXD and the NVIDIA A100 - Youtube
+ ```
+ 
+ GPU devices make the specified GPU device or devices appear in the instance.
+diff --git a/doc/reference/devices_none.md b/doc/reference/devices_none.md
+index 2024118a3..4f1089883 100644
+--- a/doc/reference/devices_none.md
++++ b/doc/reference/devices_none.md
+@@ -2,6 +2,7 @@
+ # Type: `none`
+ 
+ ```{youtube} https://www.youtube.com/watch?v=6NCLnd5_guQ
++:title: LXD none devices - Youtube
+ ```
+ 
+ ```{note}
+diff --git a/doc/reference/devices_proxy.md b/doc/reference/devices_proxy.md
+index 4f747339c..dfcca8fcd 100644
+--- a/doc/reference/devices_proxy.md
++++ b/doc/reference/devices_proxy.md
+@@ -6,6 +6,7 @@ discourse: 8355
+ # Type: `proxy`
+ 
+ ```{youtube} https://www.youtube.com/watch?v=IbAKwRBW8V0
++:title: LXD proxy devices - Youtube
+ ```
+ 
+ ```{note}
+diff --git a/doc/reference/remote_image_servers.md b/doc/reference/remote_image_servers.md
+index 1b463524a..a68bfe8eb 100644
+--- a/doc/reference/remote_image_servers.md
++++ b/doc/reference/remote_image_servers.md
+@@ -1,6 +1,6 @@
+ ---
+ discourse: 16647
+-relatedlinks: https://www.youtube.com/watch?v=pM0EgUqj2a0
++relatedlinks: "[Deploying&#32;a&#32;new&#32;LXD&#32;image&#32;server&#32;-&#32;Youtube](https://www.youtube.com/watch?v=pM0EgUqj2a0)"
+ ---
+ 
+ (remote-image-servers)=
+diff --git a/doc/reference/storage_btrfs.md b/doc/reference/storage_btrfs.md
+index b5b498558..96970a473 100644
+--- a/doc/reference/storage_btrfs.md
++++ b/doc/reference/storage_btrfs.md
+@@ -2,6 +2,7 @@
+ # Btrfs - `btrfs`
+ 
+ ```{youtube} https://www.youtube.com/watch?v=2r5FYuusxNc
++:title: Btrfs storage and LXD - Youtube
+ ```
+ 
+ {abbr}`Btrfs (B-tree file system)` is a local file system based on the {abbr}`COW (copy-on-write)` principle.
+diff --git a/doc/reference/storage_ceph.md b/doc/reference/storage_ceph.md
+index cd22f42f5..ca1647fbe 100644
+--- a/doc/reference/storage_ceph.md
++++ b/doc/reference/storage_ceph.md
+@@ -6,6 +6,7 @@ discourse: 15457
+ # Ceph RBD - `ceph`
+ 
+ ```{youtube} https://youtube.com/watch?v=kVLGbvRU98A
++:title: Ceph and a LXD cluster - Youtube
+ ```
+ 
+ <!-- Include start Ceph intro -->
+diff --git a/doc/reference/storage_cephfs.md b/doc/reference/storage_cephfs.md
+index 24a9fd248..09c0439a2 100644
+--- a/doc/reference/storage_cephfs.md
++++ b/doc/reference/storage_cephfs.md
+@@ -6,6 +6,7 @@ discourse: 15457
+ # CephFS - `cephfs`
+ 
+ ```{youtube} https://youtube.com/watch?v=kVLGbvRU98A
++:title: Ceph and a LXD cluster - Youtube
+ ```
+ 
+ % Include content from [storage_ceph.md](storage_ceph.md)
+diff --git a/doc/reference/storage_cephobject.md b/doc/reference/storage_cephobject.md
+index 2988c25dd..2a0ae6f26 100644
+--- a/doc/reference/storage_cephobject.md
++++ b/doc/reference/storage_cephobject.md
+@@ -1,6 +1,6 @@
+ ---
+ discourse: 14579,15457
+-relatedlinks: https://youtube.com/watch?v=kVLGbvRU98A
++relatedlinks: "[Ceph&#32;and&#32;a&#32;LXD&#32;cluster&#32;-&#32;Youtube](https://youtube.com/watch?v=kVLGbvRU98A)"
+ ---
+ 
+ (storage-cephobject)=
+diff --git a/doc/reference/storage_dir.md b/doc/reference/storage_dir.md
+index b24210bf5..eb708db24 100644
+--- a/doc/reference/storage_dir.md
++++ b/doc/reference/storage_dir.md
+@@ -2,6 +2,7 @@
+ # Directory - `dir`
+ 
+ ```{youtube} https://www.youtube.com/watch?v=imWkPM9GjCY
++:title: Directory storage and LXD - Youtube
+ ```
+ 
+ The directory storage driver is a basic backend that stores its data in a standard file and directory structure.
+diff --git a/doc/reference/storage_drivers.md b/doc/reference/storage_drivers.md
+index 34f255131..e38d97083 100644
+--- a/doc/reference/storage_drivers.md
++++ b/doc/reference/storage_drivers.md
+@@ -1,5 +1,5 @@
+ ---
+-relatedlinks: https://www.youtube.com/watch?v=z_OKwO5TskA
++relatedlinks: "[Benchmarking&#32;LXD&#32;storage&#32;drivers&#32;-&#32;Youtube](https://www.youtube.com/watch?v=z_OKwO5TskA)"
+ ---
+ 
+ (storage-drivers)=
+diff --git a/doc/reference/storage_lvm.md b/doc/reference/storage_lvm.md
+index 9fcfaab72..56f0e23c3 100644
+--- a/doc/reference/storage_lvm.md
++++ b/doc/reference/storage_lvm.md
+@@ -2,6 +2,7 @@
+ # LVM - `lvm`
+ 
+ ```{youtube} https://www.youtube.com/watch?v=AqLl2eMZE6U
++:title: LVM storage and LXD - Youtube
+ ```
+ 
+ {abbr}`LVM (Logical Volume Manager)` is a storage management framework rather than a file system.
+diff --git a/doc/reference/storage_zfs.md b/doc/reference/storage_zfs.md
+index c22be7752..83183c4d5 100644
+--- a/doc/reference/storage_zfs.md
++++ b/doc/reference/storage_zfs.md
+@@ -6,6 +6,7 @@ discourse: 15872
+ # ZFS - `zfs`
+ 
+ ```{youtube} https://www.youtube.com/watch?v=ysLi_LYAs_M
++:title: ZFS storage and LXD - Youtube
+ ```
+ 
+ {abbr}`ZFS (Zettabyte file system)` combines both physical volume management and a file system.
+diff --git a/doc/rest-api.md b/doc/rest-api.md
+index 9a51555a9..5abd6f966 100644
+--- a/doc/rest-api.md
++++ b/doc/rest-api.md
+@@ -1,6 +1,7 @@
+ # REST API
+ 
+ ```{youtube} https://www.youtube.com/watch?v=YvGbvspXObI
++:title: LXD REST API - Youtube
+ ```
+ 
+ All communication between LXD and its clients happens using a RESTful API over HTTP.
+diff --git a/doc/restapi_landing.md b/doc/restapi_landing.md
+index 974d8e3ae..861f92a9b 100644
+--- a/doc/restapi_landing.md
++++ b/doc/restapi_landing.md
+@@ -1,5 +1,5 @@
+ ---
+-relatedlinks: https://ubuntu.com/blog/directly-interacting-with-the-lxd-api
++relatedlinks: "[Directly&#32;interacting&#32;with&#32;the&#32;LXD&#32;API&#32;|&#32;Ubuntu](https://ubuntu.com/blog/directly-interacting-with-the-lxd-api)"
+ ---
+ 
+ # REST API

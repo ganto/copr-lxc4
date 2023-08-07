@@ -1,0 +1,35 @@
+commit f2253f42b5c00bccb2e046d1919bdc4af680fc9e
+Author: Reto Gantenbein <reto.gantenbein@linuxmonk.ch>
+Date:   Sun Aug 6 18:18:43 2023 +0200
+
+    doc: Remove download from sphinx build
+
+diff --git a/doc/conf.py b/doc/conf.py
+index 0a7ec239a..31edf0b34 100644
+--- a/doc/conf.py
++++ b/doc/conf.py
+@@ -3,7 +3,6 @@ import os
+ import sys
+ import yaml
+ from git import Repo
+-import wget
+ 
+ # Download and link swagger-ui files
+ if not os.path.isdir('.sphinx/deps/swagger-ui'):
+@@ -18,16 +17,6 @@ if not os.path.islink('.sphinx/_static/swagger-ui/swagger-ui-standalone-preset.j
+ if not os.path.islink('.sphinx/_static/swagger-ui/swagger-ui.css'):
+     os.symlink('../../deps/swagger-ui/dist/swagger-ui.css', '.sphinx/_static/swagger-ui/swagger-ui.css')
+ 
+-# Download and link images
+-os.makedirs('.sphinx/_static/download/', exist_ok=True)
+-
+-if not os.path.isfile('.sphinx/_static/download/favicon.ico'):
+-    wget.download("https://linuxcontainers.org/static/img/favicon.ico", ".sphinx/_static/download/favicon.ico")
+-if not os.path.isfile('.sphinx/_static/download/containers.png'):
+-    wget.download("https://linuxcontainers.org/static/img/containers.png", ".sphinx/_static/download/containers.png")
+-if not os.path.isfile('doc/.sphinx/_static/download/containers.small.png'):
+-    wget.download("https://linuxcontainers.org/static/img/containers.small.png", ".sphinx/_static/download/containers.small.png")
+-
+ # Project config.
+ project = "LXD"
+ author = "LXD contributors"

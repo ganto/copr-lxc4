@@ -1,0 +1,103 @@
+From 9aeae537fec9d616f03dea8fffec610120fd3a63 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Julian=20Peliz=C3=A4us?= <julian.pelizaeus@canonical.com>
+Date: Tue, 4 Jul 2023 17:55:16 +0200
+Subject: [PATCH] lxd/instance/drivers/qemu: Skip container config keys
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Signed-off-by: Julian Pelizäus <julian.pelizaeus@canonical.com>
+---
+ lxd/instance/drivers/driver_qemu.go | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/lxd/instance/drivers/driver_qemu.go b/lxd/instance/drivers/driver_qemu.go
+index 0ef49ecf51f4..30e1466c3b1c 100644
+--- a/lxd/instance/drivers/driver_qemu.go
++++ b/lxd/instance/drivers/driver_qemu.go
+@@ -5119,6 +5119,12 @@ func (d *qemu) Update(args db.InstanceArgs, userRequested bool) error {
+ 		}
+ 
+ 		isLiveUpdatable := func(key string) bool {
++			// Skip container config keys for VMs
++			_, ok := shared.InstanceConfigKeysContainer[key]
++			if ok {
++				return true
++			}
++
+ 			if key == "limits.cpu" {
+ 				return d.architectureSupportsCPUHotplug()
+ 			}
+From fa595dea7577c4848537cea863b12021384c355e Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Julian=20Peliz=C3=A4us?= <julian.pelizaeus@canonical.com>
+Date: Wed, 5 Jul 2023 09:02:48 +0200
+Subject: [PATCH] lxd/instance/drivers/qemu: Restructure live updateable keys
+ prefix check
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Signed-off-by: Julian Pelizäus <julian.pelizaeus@canonical.com>
+---
+ lxd/instance/drivers/driver_qemu.go | 38 +++++++++--------------------
+ 1 file changed, 12 insertions(+), 26 deletions(-)
+
+diff --git a/lxd/instance/drivers/driver_qemu.go b/lxd/instance/drivers/driver_qemu.go
+index 30e1466c3b1c..64284be4ed18 100644
+--- a/lxd/instance/drivers/driver_qemu.go
++++ b/lxd/instance/drivers/driver_qemu.go
+@@ -5118,6 +5118,16 @@ func (d *qemu) Update(args db.InstanceArgs, userRequested bool) error {
+ 			"security.secureboot",
+ 		}
+ 
++		liveUpdateKeyPrefixes := []string{
++			"boot.",
++			"cloud-init.",
++			"environment.",
++			"image.",
++			"snapshots.",
++			"user.",
++			"volatile.",
++		}
++
+ 		isLiveUpdatable := func(key string) bool {
+ 			// Skip container config keys for VMs
+ 			_, ok := shared.InstanceConfigKeysContainer[key]
+@@ -5129,35 +5139,11 @@ func (d *qemu) Update(args db.InstanceArgs, userRequested bool) error {
+ 				return d.architectureSupportsCPUHotplug()
+ 			}
+ 
+-			if strings.HasPrefix(key, "boot.") {
+-				return true
+-			}
+-
+-			if strings.HasPrefix(key, "cloud-init.") {
+-				return true
+-			}
+-
+-			if strings.HasPrefix(key, "environment.") {
+-				return true
+-			}
+-
+-			if strings.HasPrefix(key, "image.") {
+-				return true
+-			}
+-
+-			if strings.HasPrefix(key, "snapshots.") {
+-				return true
+-			}
+-
+-			if strings.HasPrefix(key, "user.") {
+-				return true
+-			}
+-
+-			if strings.HasPrefix(key, "volatile.") {
++			if shared.StringInSlice(key, liveUpdateKeys) {
+ 				return true
+ 			}
+ 
+-			if shared.StringInSlice(key, liveUpdateKeys) {
++			if shared.StringHasPrefix(key, liveUpdateKeyPrefixes...) {
+ 				return true
+ 			}
+ 

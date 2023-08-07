@@ -1,0 +1,159 @@
+From e232727f065661e39d9e5680de2b771185d33a32 Mon Sep 17 00:00:00 2001
+From: Din Music <din.music@canonical.com>
+Date: Wed, 26 Jul 2023 10:00:22 +0200
+Subject: [PATCH] lxd/backup/backup_config_utils: Change helper function to
+ update multiple backup file properties
+
+Signed-off-by: Din Music <din.music@canonical.com>
+---
+ lxd/backup/backup_config_utils.go | 91 +++++++++++++++++--------------
+ 1 file changed, 49 insertions(+), 42 deletions(-)
+
+diff --git a/lxd/backup/backup_config_utils.go b/lxd/backup/backup_config_utils.go
+index a1985d167679..eb180802620e 100644
+--- a/lxd/backup/backup_config_utils.go
++++ b/lxd/backup/backup_config_utils.go
+@@ -105,67 +105,74 @@ func updateRootDevicePool(devices map[string]map[string]string, poolName string)
+ 	return false
+ }
+ 
+-// UpdateInstanceConfigStoragePool changes the pool information in the backup.yaml to the pool specified in b.Pool.
+-func UpdateInstanceConfigStoragePool(c *db.Cluster, b Info, mountPath string) error {
+-	// Load the storage pool.
+-	_, pool, _, err := c.GetStoragePool(b.Pool)
++// UpdateInstanceConfig updates the instance's backup.yaml configuration file.
++func UpdateInstanceConfig(c *db.Cluster, b Info, mountPath string) error {
++	backupFilePath := filepath.Join(mountPath, "backup.yaml")
++
++	// Read in the backup.yaml file.
++	backup, err := ParseConfigYamlFile(backupFilePath)
+ 	if err != nil {
+ 		return err
+ 	}
+ 
+-	f := func(path string) error {
+-		// Read in the backup.yaml file.
+-		backup, err := ParseConfigYamlFile(path)
+-		if err != nil {
+-			return err
+-		}
++	// Update instance information in the backup.yaml.
++	if backup.Container != nil {
++		backup.Container.Name = b.Name
++		backup.Container.Project = b.Project
++	}
+ 
+-		rootDiskDeviceFound := false
++	// Update volume information in the backup.yaml.
++	if backup.Volume != nil {
++		backup.Volume.Name = b.Name
++		backup.Volume.Project = b.Project
++	}
+ 
+-		// Change the pool in the backup.yaml.
+-		backup.Pool = pool
++	// Load the storage pool.
++	_, pool, _, err := c.GetStoragePool(b.Pool)
++	if err != nil {
++		return err
++	}
+ 
+-		if updateRootDevicePool(backup.Container.Devices, pool.Name) {
+-			rootDiskDeviceFound = true
+-		}
++	rootDiskDeviceFound := false
+ 
+-		if updateRootDevicePool(backup.Container.ExpandedDevices, pool.Name) {
+-			rootDiskDeviceFound = true
+-		}
++	// Change the pool in the backup.yaml.
++	backup.Pool = pool
+ 
+-		for _, snapshot := range backup.Snapshots {
+-			updateRootDevicePool(snapshot.Devices, pool.Name)
+-			updateRootDevicePool(snapshot.ExpandedDevices, pool.Name)
+-		}
++	if updateRootDevicePool(backup.Container.Devices, pool.Name) {
++		rootDiskDeviceFound = true
++	}
+ 
+-		if !rootDiskDeviceFound {
+-			return fmt.Errorf("No root device could be found")
+-		}
++	if updateRootDevicePool(backup.Container.ExpandedDevices, pool.Name) {
++		rootDiskDeviceFound = true
++	}
+ 
+-		file, err := os.Create(path)
+-		if err != nil {
+-			return err
+-		}
++	for _, snapshot := range backup.Snapshots {
++		updateRootDevicePool(snapshot.Devices, pool.Name)
++		updateRootDevicePool(snapshot.ExpandedDevices, pool.Name)
++	}
+ 
+-		defer func() { _ = file.Close() }()
++	if !rootDiskDeviceFound {
++		return fmt.Errorf("No root device could be found")
++	}
+ 
+-		data, err := yaml.Marshal(&backup)
+-		if err != nil {
+-			return err
+-		}
++	// Write updated backup.yaml file.
+ 
+-		_, err = file.Write(data)
+-		if err != nil {
+-			return err
+-		}
++	file, err := os.Create(backupFilePath)
++	if err != nil {
++		return err
++	}
++
++	defer func() { _ = file.Close() }()
+ 
+-		return file.Close()
++	data, err := yaml.Marshal(&backup)
++	if err != nil {
++		return err
+ 	}
+ 
+-	err = f(filepath.Join(mountPath, "backup.yaml"))
++	_, err = file.Write(data)
+ 	if err != nil {
+ 		return err
+ 	}
+ 
+-	return nil
++	return file.Close()
+ }
+From 6dccca3f4e0478a22ba2682275b16b6f1498d7da Mon Sep 17 00:00:00 2001
+From: Din Music <din.music@canonical.com>
+Date: Wed, 26 Jul 2023 10:01:46 +0200
+Subject: [PATCH] lxd/storage/backend: Update instance backup file on instance
+ import
+
+Signed-off-by: Din Music <din.music@canonical.com>
+---
+ lxd/storage/backend_lxd.go | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/lxd/storage/backend_lxd.go b/lxd/storage/backend_lxd.go
+index 6f3d1c9283a8..00569bb02834 100644
+--- a/lxd/storage/backend_lxd.go
++++ b/lxd/storage/backend_lxd.go
+@@ -743,9 +743,9 @@ func (b *lxdBackend) CreateInstanceFromBackup(srcBackup backup.Info, srcData io.
+ 		})
+ 	}
+ 
+-	// Update pool information in the backup.yaml file.
++	// Update information in the backup.yaml file.
+ 	err = vol.MountTask(func(mountPath string, op *operations.Operation) error {
+-		return backup.UpdateInstanceConfigStoragePool(b.state.DB.Cluster, srcBackup, mountPath)
++		return backup.UpdateInstanceConfig(b.state.DB.Cluster, srcBackup, mountPath)
+ 	}, op)
+ 	if err != nil {
+ 		return nil, nil, fmt.Errorf("Error updating backup file: %w", err)
