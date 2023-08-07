@@ -38,6 +38,12 @@ Source7:        lxd.sysctl
 Source8:        lxd.profile
 Source9:        lxd-agent.service
 Source10:       lxd-agent-setup
+Source11:       favicon.ico
+Source12:       containers.png
+Source13:       containers.small.png
+Source14:       swagger-ui-bundle.js
+Source15:       swagger-ui-standalone-preset.js
+Source16:       swagger-ui.css
 # Upstream bug fixes merged to master for next release
 # https://github.com/canonical/lxd/issues/11877
 Patch0:         lxd-5.15-lxc-rebuild-Dont-stop-all-instances-on-force.patch
@@ -167,6 +173,25 @@ injection capability when creating a virtual machine.
 Summary:        Container hypervisor based on LXC - Documentation
 BuildArch:      noarch
 
+BuildRequires:  golang(gopkg.in/yaml.v3)
+BuildRequires:  golang(github.com/spf13/cobra)
+BuildRequires:  python3-furo
+BuildRequires:  python3-linkify-it-py
+BuildRequires:  python3-lxd-sphinx-extensions
+BuildRequires:  python3-myst-parser
+BuildRequires:  python3-sphinx
+BuildRequires:  python3-sphinx-copybutton
+BuildRequires:  python3-sphinx-reredirects
+BuildRequires:  python3-sphinx-tabs
+BuildRequires:  python3-sphinxcontrib-applehelp
+BuildRequires:  python3-sphinxcontrib-devhelp
+BuildRequires:  python3-sphinxcontrib-htmlhelp
+BuildRequires:  python3-sphinxcontrib-jquery
+BuildRequires:  python3-sphinxcontrib-jsmath
+BuildRequires:  python3-sphinxcontrib-qthelp
+BuildRequires:  python3-sphinxcontrib-serializinghtml
+BuildRequires:  python3-sphinxext-opengraph
+
 %description doc
 LXD offers a REST API to remotely manage containers over the network,
 using an image based work-flow and with support for live migration.
@@ -196,7 +221,21 @@ done
 export CGO_ENABLED=0
 BUILDTAGS="netgo" %gobuild -o %{gobuilddir}/bin/lxd-migrate %{goipath}/lxd-migrate
 BUILDTAGS="agent netgo" %gobuild -o %{gobuilddir}/bin/lxd-agent %{goipath}/lxd-agent
+
+# build documentation
+pushd lxd/config/generate
+%gobuild -o %{gobuilddir}/lxd-doc
+popd
 unset CGO_ENABLED
+%{gobuilddir}/lxd-doc ./lxd -y ./doc/config_options.yaml -t ./doc/config_options.txt
+mkdir -p doc/.sphinx/_static/download
+cp %{SOURCE11} %{SOURCE12} %{SOURCE13} doc/.sphinx/_static/download
+mkdir -p doc/.sphinx/_static/swagger-ui
+cp %{SOURCE14} %{SOURCE15} %{SOURCE16} doc/.sphinx/_static/swagger-ui
+ls -l doc/.sphinx/_static/download
+sphinx-build -c doc/ -b dirhtml doc/ doc/html/
+ls -l doc/.sphinx/_static/download
+rm -rf doc/html/{.buildinfo,.doctrees}
 
 # build translations
 rm -f po/ber.po po/zh_Hans.po po/zh_Hant.po    # remove invalid locales
@@ -346,7 +385,7 @@ getent group %{name} > /dev/null || groupadd -r %{name}
 
 %files doc
 %license %{golicenses}
-%doc doc/*
+%doc doc/html
 
 %changelog
 * Tue Jul 04 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 5.14-0.1
