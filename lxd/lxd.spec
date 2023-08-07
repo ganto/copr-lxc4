@@ -388,6 +388,10 @@ getent group %{name} > /dev/null || groupadd -r %{name}
 %doc doc/html
 
 %changelog
+* Mon Aug 07 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 5.15-0.1
+- Update to 5.15.
+- Build documentation with sphinx instead of only distributing the markdown files
+
 * Tue Jul 04 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 5.14-0.1
 - Update to 5.14.
 
