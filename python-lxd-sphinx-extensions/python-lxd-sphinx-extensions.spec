@@ -49,5 +49,8 @@ Summary:        %{summary}
 
 
 %changelog
+* Thu Aug 24 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.0.10-0.1
+- Update to 0.0.10
+
 * Sun Aug 6 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> - 0.0.9-0.1
 - Initial packaging
