@@ -1,7 +1,7 @@
 %global pypi_name lxd-sphinx-extensions
 
 Name:           python-%{pypi_name}
-Version:        0.0.9
+Version:        0.0.10
 Release:        0.1%{?dist}
 Summary:        A collection of Sphinx extensions used in LXD
 License:        ASL 2.0
@@ -49,5 +49,5 @@ Summary:        %{summary}
 
 
 %changelog
-* Mon Aug 7 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> - 0.0.9-0.1
+* Sun Aug 6 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> - 0.0.9-0.1
 - Initial packaging
