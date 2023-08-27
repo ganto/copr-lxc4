@@ -366,6 +366,9 @@ getent group %{name} > /dev/null || groupadd -r %{name}
 %doc doc/html
 
 %changelog
+* Sun Aug 27 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 5.16-0.1
+- Update to 5.16.
+- Update swagger-ui to v5.4.2
 * Mon Aug 07 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 5.15-0.1
 - Update to 5.15.
 - Build documentation with sphinx instead of only distributing the markdown files
