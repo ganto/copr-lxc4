@@ -1,14 +1,14 @@
-commit f2239fb81a9d3464408afc1738ee554a85d39258
+commit 958e661aa4dca4b92161212904e7fc99c6bf9c18
 Author: Reto Gantenbein <reto.gantenbein@linuxmonk.ch>
-Date:   Sun Aug 6 18:18:43 2023 +0200
+Date:   Sun Aug 27 19:17:57 2023 +0200
 
     doc: Remove downloads from sphinx build
 
 diff --git a/doc/conf.py b/doc/conf.py
-index 0a7ec239a..34c993277 100644
+index c57fa7718..8a88bd6be 100644
 --- a/doc/conf.py
 +++ b/doc/conf.py
-@@ -2,31 +2,6 @@ import datetime
+@@ -2,21 +2,6 @@ import datetime
  import os
  import sys
  import yaml
@@ -27,16 +27,6 @@ index 0a7ec239a..34c993277 100644
 -    os.symlink('../../deps/swagger-ui/dist/swagger-ui-standalone-preset.js', '.sphinx/_static/swagger-ui/swagger-ui-standalone-preset.js')
 -if not os.path.islink('.sphinx/_static/swagger-ui/swagger-ui.css'):
 -    os.symlink('../../deps/swagger-ui/dist/swagger-ui.css', '.sphinx/_static/swagger-ui/swagger-ui.css')
--
--# Download and link images
--os.makedirs('.sphinx/_static/download/', exist_ok=True)
--
--if not os.path.isfile('.sphinx/_static/download/favicon.ico'):
--    wget.download("https://linuxcontainers.org/static/img/favicon.ico", ".sphinx/_static/download/favicon.ico")
--if not os.path.isfile('.sphinx/_static/download/containers.png'):
--    wget.download("https://linuxcontainers.org/static/img/containers.png", ".sphinx/_static/download/containers.png")
--if not os.path.isfile('doc/.sphinx/_static/download/containers.small.png'):
--    wget.download("https://linuxcontainers.org/static/img/containers.small.png", ".sphinx/_static/download/containers.small.png")
  
  # Project config.
  project = "LXD"

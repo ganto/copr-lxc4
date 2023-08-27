@@ -11,9 +11,9 @@
 %global debug_package %{nil}
 %endif
 
-# https://github.com/lxc/lxd
-%global goipath github.com/lxc/lxd
-Version:        5.15
+# https://github.com/canonical/lxd
+%global goipath github.com/canonical/lxd
+Version:        5.16
 
 %gometa
 
@@ -38,33 +38,20 @@ Source7:        lxd.sysctl
 Source8:        lxd.profile
 Source9:        lxd-agent.service
 Source10:       lxd-agent-setup
-Source11:       favicon.ico
-Source12:       containers.png
-Source13:       containers.small.png
-Source14:       swagger-ui-bundle.js
-Source15:       swagger-ui-standalone-preset.js
-Source16:       swagger-ui.css
+# Latest downloads from https://github.com/swagger-api/swagger-ui/tree/master/dist
+Source11:       swagger-ui-bundle.js
+Source12:       swagger-ui-standalone-preset.js
+Source13:       swagger-ui.css
 # Upstream bug fixes merged to master for next release
-# https://github.com/canonical/lxd/issues/11877
-Patch0:         lxd-5.15-lxc-rebuild-Dont-stop-all-instances-on-force.patch
-# https://github.com/canonical/lxd/issues/11888
-Patch1:         lxd-5.15-VM-Ignore-container-config-keys.patch
-# https://github.com/canonical/lxd/issues/11901
-Patch2:         lxd-5.15-instancewriter-Use-right-header-key-for-tar-ACL.patch
-# https://github.com/canonical/lxd/issues/11943
-Patch3:         lxd-5.15-Cluster-Remove-obsolete-group-delete-create-for-PUT-endpoint.patch
-# https://github.com/canonical/lxd/issues/11947
-Patch4:         lxd-5.15-Add-instance-type-to-instances-of-offline-cluster-members.patch
-# https://github.com/canonical/lxd/issues/11958
-Patch5:         lxd-5.15-lxd-Check-project-permissions-when-importing-from-backup.patch
 # https://github.com/canonical/lxd/issues/12065
-Patch6:         lxd-5.15-Update-instance-name-in-backup-file-when-importing-new-instance.patch
-# Fix link to Grafana dashboard
-Patch7:         lxd-5.15-docs-metrics-update-link-to-Grafana-dashboard.patch
+Patch0:         lxd-5.16-Update-instance-name-in-backup-file-when-importing-new-instance.patch
+# https://github.com/canonical/lxd/issues/12122
+Patch1:         lxd-5.16-lxd-network-fix-bgp-ipv-nexthop-keys-threated-as-unknown.patch
+# https://github.com/canonical/lxd/issues/12136
+Patch2:         lxd-5.16-lxd-instance-drivers-update-instance-config-if-rebuild-as-empty.patch
 # Allow offline builds
-Patch8:         lxd-5.15-doc-Remove-downloads-from-sphinx-build.patch
-Patch9:         lxd-5.15-doc-Enhance-related-links-definitions-for-offline-build.patch
-Patch10:        lxd-5.15-doc-Disable-version-lookup-and-switching.patch
+Patch3:         lxd-5.16-doc-Remove-downloads-from-sphinx-build.patch
+Patch4:         lxd-5.16-doc-Enhance-related-links-definitions-for-offline-build.patch
 
 BuildRequires:  gettext
 BuildRequires:  help2man
@@ -181,6 +168,7 @@ BuildRequires:  python3-lxd-sphinx-extensions
 BuildRequires:  python3-myst-parser
 BuildRequires:  python3-sphinx
 BuildRequires:  python3-sphinx-copybutton
+BuildRequires:  python3-sphinx-notfound-page
 BuildRequires:  python3-sphinx-reredirects
 BuildRequires:  python3-sphinx-tabs
 BuildRequires:  python3-sphinxcontrib-applehelp
@@ -205,12 +193,6 @@ This package contains user documentation.
 %patch2 -p1
 %patch3 -p1
 %patch4 -p1
-%patch5 -p1
-%patch6 -p1
-%patch7 -p1
-%patch8 -p1
-%patch9 -p1
-%patch10 -p1
 
 %build
 export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
@@ -228,13 +210,9 @@ pushd lxd/config/generate
 popd
 unset CGO_ENABLED
 %{gobuilddir}/lxd-doc ./lxd -y ./doc/config_options.yaml -t ./doc/config_options.txt
-mkdir -p doc/.sphinx/_static/download
-cp %{SOURCE11} %{SOURCE12} %{SOURCE13} doc/.sphinx/_static/download
 mkdir -p doc/.sphinx/_static/swagger-ui
-cp %{SOURCE14} %{SOURCE15} %{SOURCE16} doc/.sphinx/_static/swagger-ui
-ls -l doc/.sphinx/_static/download
+cp %{SOURCE11} %{SOURCE12} %{SOURCE13} doc/.sphinx/_static/swagger-ui
 sphinx-build -c doc/ -b dirhtml doc/ doc/html/
-ls -l doc/.sphinx/_static/download
 rm -rf doc/html/{.buildinfo,.doctrees}
 
 # build translations

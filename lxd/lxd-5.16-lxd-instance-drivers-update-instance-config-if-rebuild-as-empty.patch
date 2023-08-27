@@ -1,0 +1,52 @@
+From 7692fecda9cdb1cbcced61f29a45d5e6492bfc70 Mon Sep 17 00:00:00 2001
+From: Gabriel Mougard <gabriel.mougard@canonical.com>
+Date: Thu, 10 Aug 2023 17:57:32 +0200
+Subject: [PATCH] lxd/instance/drivers: update instance config if rebuild as
+ empty
+
+Signed-off-by: Gabriel Mougard <gabriel.mougard@canonical.com>
+---
+ lxd/instance/drivers/driver_common.go | 23 ++++++++++++++---------
+ 1 file changed, 14 insertions(+), 9 deletions(-)
+
+diff --git a/lxd/instance/drivers/driver_common.go b/lxd/instance/drivers/driver_common.go
+index 087d76784da8..f9b933e3ac01 100644
+--- a/lxd/instance/drivers/driver_common.go
++++ b/lxd/instance/drivers/driver_common.go
+@@ -631,12 +631,15 @@ func (d *common) rebuildCommon(inst instance.Instance, img *api.Image, op *opera
+ 
+ 	// Rebuild as empty if there is no image provided.
+ 	if img == nil {
+-		return pool.CreateInstance(inst, nil)
+-	}
+-
+-	err = pool.CreateInstanceFromImage(inst, img.Fingerprint, op)
+-	if err != nil {
+-		return err
++		err = pool.CreateInstance(inst, nil)
++		if err != nil {
++			return err
++		}
++	} else {
++		err = pool.CreateInstanceFromImage(inst, img.Fingerprint, op)
++		if err != nil {
++			return err
++		}
+ 	}
+ 
+ 	err = d.state.DB.Cluster.Transaction(context.TODO(), func(ctx context.Context, tx *db.ClusterTx) error {
+@@ -645,9 +648,11 @@ func (d *common) rebuildCommon(inst instance.Instance, img *api.Image, op *opera
+ 			return err
+ 		}
+ 
+-		err = tx.UpdateImageLastUseDate(ctx, inst.Project().Name, img.Fingerprint, time.Now().UTC())
+-		if err != nil {
+-			return err
++		if img != nil {
++			err = tx.UpdateImageLastUseDate(ctx, inst.Project().Name, img.Fingerprint, time.Now().UTC())
++			if err != nil {
++				return err
++			}
+ 		}
+ 
+ 		return nil
