@@ -49,6 +49,9 @@ Summary:        %{summary}
 
 
 %changelog
+* Sat Sep 09 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.0.12-0.1
+- Update to 0.0.12
+
 * Sat Sep 02 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.0.11-0.1
 - Update to 0.0.11
 
