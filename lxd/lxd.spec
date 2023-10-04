@@ -368,6 +368,10 @@ getent group %{name} > /dev/null || groupadd -r %{name}
 %doc doc/html
 
 %changelog
+* Wed Oct 04 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 5.17-0.1
+- Update to 5.17.
+- Update swagger-ui to v5.9.0
+
 * Sun Aug 27 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 5.16-0.1
 - Update to 5.16.
 - Update swagger-ui to v5.4.2
