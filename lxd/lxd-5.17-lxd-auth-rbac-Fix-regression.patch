@@ -1,0 +1,38 @@
+From eff325a387a7c5aa3569c26922bf8c8a1822de14 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?St=C3=A9phane=20Graber?= <stgraber@stgraber.org>
+Date: Fri, 25 Aug 2023 13:59:03 -0400
+Subject: [PATCH] lxd/auth/rbac: Fix regression
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+This actually initializes the struct like it used to be, fixing LXD from
+panicing on every request.
+
+Closes #12181
+
+Signed-off-by: Stéphane Graber <stgraber@stgraber.org>
+---
+ lxd/auth/authorization.go | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/lxd/auth/authorization.go b/lxd/auth/authorization.go
+index 38ddb6fca1d2..4e1a5eb502da 100644
+--- a/lxd/auth/authorization.go
++++ b/lxd/auth/authorization.go
+@@ -11,8 +11,13 @@ import (
+ var ErrUnknownDriver = fmt.Errorf("Unknown driver")
+ 
+ var authorizers = map[string]func() authorizer{
+-	"tls":  func() authorizer { return &tls{} },
+-	"rbac": func() authorizer { return &rbac{} },
++	"tls": func() authorizer { return &tls{} },
++	"rbac": func() authorizer {
++		return &rbac{
++			resources:   map[string]string{},
++			permissions: map[string]map[string][]string{},
++		}
++	},
+ }
+ 
+ type authorizer interface {

@@ -1,16 +1,16 @@
-commit 958e661aa4dca4b92161212904e7fc99c6bf9c18
+commit 1cb5b84d65128dc55f27edd8fc64141aca76fe75
 Author: Reto Gantenbein <reto.gantenbein@linuxmonk.ch>
 Date:   Sun Aug 27 19:17:57 2023 +0200
 
     doc: Remove downloads from sphinx build
 
 diff --git a/doc/conf.py b/doc/conf.py
-index c57fa7718..8a88bd6be 100644
+index dceb3b49d..b72aa902b 100644
 --- a/doc/conf.py
 +++ b/doc/conf.py
-@@ -2,21 +2,6 @@ import datetime
- import os
+@@ -5,21 +5,6 @@ import subprocess
  import sys
+ import tempfile
  import yaml
 -from git import Repo
 -import wget

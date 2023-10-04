@@ -1,11 +1,11 @@
-commit 4e0c30e8441b8b1aa44767c35103d64d334f22d1
+commit 5e5ea18691341eb72aef2a5aeabedf0b71132020
 Author: Reto Gantenbein <reto.gantenbein@linuxmonk.ch>
 Date:   Sun Aug 27 19:32:52 2023 +0200
 
     doc: Enhance related-links definitions for offline build
 
 diff --git a/doc/authentication.md b/doc/authentication.md
-index b572ee1f6..3a79c10dd 100644
+index 3e9b235ff..0d7177c26 100644
 --- a/doc/authentication.md
 +++ b/doc/authentication.md
 @@ -1,6 +1,6 @@
@@ -16,7 +16,7 @@ index b572ee1f6..3a79c10dd 100644
  ---
  
  (authentication)=
-@@ -20,6 +20,7 @@ The following authentication methods are supported:
+@@ -21,6 +21,7 @@ The following authentication methods are supported:
  ## TLS client certificates
  
  ```{youtube} https://www.youtube.com/watch?v=4iNpiL-lrXU
@@ -24,7 +24,7 @@ index b572ee1f6..3a79c10dd 100644
  ```
  
  When using {abbr}`TLS (Transport Layer Security)` client certificates for authentication, both the client and the server will generate a key pair the first time they're launched.
-@@ -158,6 +159,7 @@ The LXD client then retrieves and stores the access and refresh tokens and provi
+@@ -159,6 +160,7 @@ The LXD client then retrieves and stores the access and refresh tokens and provi
  ## Candid-based authentication
  
  ```{youtube} https://www.youtube.com/watch?v=FebTipM1jJk
@@ -32,7 +32,7 @@ index b572ee1f6..3a79c10dd 100644
  ```
  
  You can configure LXD to use [Candid](https://github.com/canonical/candid) authentication by setting the [`candid.*`](server-options-candid-rbac) server configuration options.
-@@ -177,6 +179,7 @@ For instructions on how to set up Candid-based authentication, see the [Candid a
+@@ -178,6 +180,7 @@ For instructions on how to set up Candid-based authentication, see the [Candid a
  ## Role Based Access Control (RBAC)
  
  ```{youtube} https://www.youtube.com/watch?v=VE60AbJHT6E
@@ -40,6 +40,18 @@ index b572ee1f6..3a79c10dd 100644
  ```
  
  LXD supports integrating with the Canonical RBAC service, which is included in the [Ubuntu Pro](https://ubuntu.com/pro) subscription.
+diff --git a/doc/backup.md b/doc/backup.md
+index f5608bea8..0ba247e22 100644
+--- a/doc/backup.md
++++ b/doc/backup.md
+@@ -2,6 +2,7 @@
+ # How to back up a LXD server
+ 
+ ```{youtube} https://www.youtube.com/watch?v=IFOZpAxckPo
++:title: LXD backup and disaster recovery - Youtube
+ ```
+ 
+ In a production setup, you should always back up the contents of your LXD server.
 diff --git a/doc/cloud-init.md b/doc/cloud-init.md
 index bbaead9c6..9eae2bee1 100644
 --- a/doc/cloud-init.md
@@ -60,7 +72,7 @@ index bbaead9c6..9eae2bee1 100644
  
  [`cloud-init`](https://cloud-init.io/) is a tool for automatically initializing and customizing an instance of a Linux distribution.
 diff --git a/doc/contributing.md b/doc/contributing.md
-index 07f472fd5..aed6815cd 100644
+index b8249af71..2655d60ae 100644
 --- a/doc/contributing.md
 +++ b/doc/contributing.md
 @@ -1,5 +1,5 @@
@@ -69,9 +81,9 @@ index 07f472fd5..aed6815cd 100644
 +relatedlinks: "[LXD's&#32;development&#32;process&#32;-&#32;Youtube](https://www.youtube.com/watch?v=pqV0Z1qwbkg)"
  ---
  
- % Include content from [../CONTRIBUTING.md](../CONTRIBUTING.md)
+ # How to contribute to LXD
 diff --git a/doc/database.md b/doc/database.md
-index a3529ab95..3addf0237 100644
+index 6b5065728..6cf975b57 100644
 --- a/doc/database.md
 +++ b/doc/database.md
 @@ -1,5 +1,5 @@
@@ -82,10 +94,10 @@ index a3529ab95..3addf0237 100644
  
  (database)=
 diff --git a/doc/dev-lxd.md b/doc/dev-lxd.md
-index d0c5e315b..02fc95cf9 100644
+index 8fe6ddeed..5d7ad7b25 100644
 --- a/doc/dev-lxd.md
 +++ b/doc/dev-lxd.md
-@@ -1,6 +1,7 @@
+@@ -2,6 +2,7 @@
  # Communication between instance and host
  
  ```{youtube} https://www.youtube.com/watch?v=xZSnqqWykmo
@@ -94,7 +106,7 @@ index d0c5e315b..02fc95cf9 100644
  
  Communication between the hosted workload (instance) and its host while
 diff --git a/doc/explanation/clustering.md b/doc/explanation/clustering.md
-index 47208cd99..9f1c37408 100644
+index ea694ee6f..9e1835e11 100644
 --- a/doc/explanation/clustering.md
 +++ b/doc/explanation/clustering.md
 @@ -6,6 +6,7 @@ discourse: 15728
@@ -106,7 +118,7 @@ index 47208cd99..9f1c37408 100644
  
  To spread the total workload over several servers, LXD can be run in clustering mode.
 diff --git a/doc/explanation/instances.md b/doc/explanation/instances.md
-index ef489b2a5..5e10037aa 100644
+index 72ad8da26..c48d9167f 100644
 --- a/doc/explanation/instances.md
 +++ b/doc/explanation/instances.md
 @@ -1,6 +1,6 @@
@@ -118,7 +130,7 @@ index ef489b2a5..5e10037aa 100644
  
  (expl-instances)=
 diff --git a/doc/explanation/performance_tuning.md b/doc/explanation/performance_tuning.md
-index 4478ef51d..18a061e46 100644
+index c8d80f74a..d76fb6eeb 100644
 --- a/doc/explanation/performance_tuning.md
 +++ b/doc/explanation/performance_tuning.md
 @@ -1,5 +1,5 @@
@@ -129,7 +141,7 @@ index 4478ef51d..18a061e46 100644
  
  (performance-tuning)=
 diff --git a/doc/explanation/projects.md b/doc/explanation/projects.md
-index e8fb2e538..055ce80db 100644
+index 00ce01556..7af3a3643 100644
 --- a/doc/explanation/projects.md
 +++ b/doc/explanation/projects.md
 @@ -2,6 +2,7 @@
@@ -141,10 +153,10 @@ index e8fb2e538..055ce80db 100644
  
  You can use projects to keep your LXD server clean by grouping related instances together.
 diff --git a/doc/explanation/security.md b/doc/explanation/security.md
-index 21294764a..52d0317c3 100644
+index c4f606905..4b3ce6da6 100644
 --- a/doc/explanation/security.md
 +++ b/doc/explanation/security.md
-@@ -2,6 +2,7 @@
+@@ -3,6 +3,7 @@
  # About security
  
  ```{youtube} https://www.youtube.com/watch?v=cOOzKdYHkus
@@ -153,7 +165,7 @@ index 21294764a..52d0317c3 100644
  
  % Include content from [../../README.md](../../README.md)
 diff --git a/doc/explanation/storage.md b/doc/explanation/storage.md
-index f80092eaf..4d15ddd5a 100644
+index d9f2e6be9..f95d556b6 100644
 --- a/doc/explanation/storage.md
 +++ b/doc/explanation/storage.md
 @@ -100,6 +100,7 @@ In the default profile, this pool is set to the storage pool that was created du
@@ -185,7 +197,7 @@ index 216e05f93..4262b1c0a 100644
  
  To run Docker inside a LXD container, set the [`security.nesting`](instance-options-security) property of the container to `true`:
 diff --git a/doc/getting_started.md b/doc/getting_started.md
-index 31a5d560b..ff3fe20b2 100644
+index 000dcdd34..a21e22dfa 100644
 --- a/doc/getting_started.md
 +++ b/doc/getting_started.md
 @@ -1,5 +1,5 @@
@@ -194,7 +206,7 @@ index 31a5d560b..ff3fe20b2 100644
 +relatedlinks: "[Running&#32;LXD&#32;in&#32;production&#32;-&#32;Youtube](https://www.youtube.com/watch?v=QyXOOE_4cm0)"
  ---
  
- # Getting started
+ (getting-started)=
 diff --git a/doc/howto/access_ui.md b/doc/howto/access_ui.md
 index d71237231..a9d94f4ae 100644
 --- a/doc/howto/access_ui.md
@@ -220,14 +232,14 @@ index 5c1a2da2e..68b184610 100644
  
  The performance of your LXD server or cluster depends on a lot of different factors, ranging from the hardware, the server configuration, the selected storage driver and the network bandwidth to the overall usage patterns.
 diff --git a/doc/howto/cluster_form.md b/doc/howto/cluster_form.md
-index 91a14464a..7bc68ed74 100644
+index 97032c007..9dfc188f2 100644
 --- a/doc/howto/cluster_form.md
 +++ b/doc/howto/cluster_form.md
-@@ -378,6 +378,7 @@ opyQ1VRpAg2sV2C4W8irbNqeUsTeZZxhLqp4vNOXXBBrSqUCdPu1JXADV0kavg1l
+@@ -400,6 +400,7 @@ opyQ1VRpAg2sV2C4W8irbNqeUsTeZZxhLqp4vNOXXBBrSqUCdPu1JXADV0kavg1l
  ## Use MicroCloud
  
  ```{youtube} https://www.youtube.com/watch?v=iWZYUU8lX5A
-+:title: MicroCloud, now with OVN!
++:title: MicroCloud, now with OVN! - Youtube
  ```
  
  Instead of setting up your LXD cluster manually, you can use [MicroCloud](https://microcloud.is/) to get a fully highly available LXD cluster with OVN and with Ceph storage up and running.
@@ -243,8 +255,20 @@ index 455479636..18c084943 100644
  ```
  
  Cluster members can be assigned to {ref}`cluster-groups`.
+diff --git a/doc/howto/disaster_recovery.md b/doc/howto/disaster_recovery.md
+index 49a07eca8..091c56669 100644
+--- a/doc/howto/disaster_recovery.md
++++ b/doc/howto/disaster_recovery.md
+@@ -6,6 +6,7 @@ discourse: 11296
+ # How to recover instances in case of disaster
+ 
+ ```{youtube} https://youtu.be/IFOZpAxckPo?t=796
++:title: LXD backup and disaster recovery - Youtube
+ ```
+ 
+ LXD provides a tool for disaster recovery in case the {ref}`LXD database <database>` is corrupted or otherwise lost.
 diff --git a/doc/howto/import_machines_to_instances.md b/doc/howto/import_machines_to_instances.md
-index b00dcc105..49463d6c4 100644
+index 0e5a07c54..5b0e7a05c 100644
 --- a/doc/howto/import_machines_to_instances.md
 +++ b/doc/howto/import_machines_to_instances.md
 @@ -6,6 +6,7 @@ discourse: 14345
@@ -328,7 +352,7 @@ index ea719a9fc..dc79163b0 100644
  
  Complete the following steps to set up a LXD cluster that uses an OVN network.
 diff --git a/doc/howto/network_zones.md b/doc/howto/network_zones.md
-index 4db8fb09b..d4ca4069f 100644
+index 7ce07fa6b..2c45dd84a 100644
 --- a/doc/howto/network_zones.md
 +++ b/doc/howto/network_zones.md
 @@ -10,6 +10,7 @@ Network zones are available for the {ref}`network-ovn` and the {ref}`network-bri
@@ -392,7 +416,7 @@ index 65fce55e4..82c534206 100644
  
  See the following sections for instructions on how to create, configure, view and resize {ref}`storage-volumes`.
 diff --git a/doc/image-handling.md b/doc/image-handling.md
-index d87a54932..d34df62b8 100644
+index 33b152c29..bc09644c6 100644
 --- a/doc/image-handling.md
 +++ b/doc/image-handling.md
 @@ -2,6 +2,7 @@
@@ -404,7 +428,7 @@ index d87a54932..d34df62b8 100644
  
  LXD uses an image-based workflow.
 diff --git a/doc/index.md b/doc/index.md
-index 0060c555d..576560b13 100644
+index fe02978ac..5af626596 100644
 --- a/doc/index.md
 +++ b/doc/index.md
 @@ -1,5 +1,5 @@
@@ -414,6 +438,17 @@ index 0060c555d..576560b13 100644
  ---
  
  # LXD
+diff --git a/doc/index_topical.md b/doc/index_topical.md
+index e7731019e..8039a3bbe 100644
+--- a/doc/index_topical.md
++++ b/doc/index_topical.md
+@@ -1,5 +1,5 @@
+ ---
+-relatedlinks: https://ubuntu.com/lxd, https://ubuntu.com/blog/open-source-for-beginners-dev-environment-with-lxd
++relatedlinks: "[Run&#32;system&#32;containers&#32;with&#32;LXD&#32;|&#32;Ubuntu](https://ubuntu.com/lxd)", "[Open&#32;source&#32;for&#32;beginners:&#32;setting&#32;up&#32;your&#32;dev&#32;environment&#32;with&#32;LXD&#32;|&#32;Ubuntu](https://ubuntu.com/blog/open-source-for-beginners-dev-environment-with-lxd)"
+ ---
+ 
+ (index)=
 diff --git a/doc/metrics.md b/doc/metrics.md
 index ecd61f129..301365d9c 100644
 --- a/doc/metrics.md
@@ -434,7 +469,7 @@ index ecd61f129..301365d9c 100644
  
  <!-- Include start metrics intro -->
 diff --git a/doc/migration.md b/doc/migration.md
-index e13379c4d..390e927e3 100644
+index ba72f8a1f..969d070cc 100644
 --- a/doc/migration.md
 +++ b/doc/migration.md
 @@ -2,6 +2,7 @@
@@ -446,7 +481,7 @@ index e13379c4d..390e927e3 100644
  
  LXD provides tools and functionality to migrate instances in different contexts.
 diff --git a/doc/projects.md b/doc/projects.md
-index f9f5dbb1d..9afdf22b4 100644
+index 15ed5c2e7..e9a98df0c 100644
 --- a/doc/projects.md
 +++ b/doc/projects.md
 @@ -1,5 +1,5 @@
@@ -505,7 +540,7 @@ index 4f747339c..dfcca8fcd 100644
  
  ```{note}
 diff --git a/doc/reference/remote_image_servers.md b/doc/reference/remote_image_servers.md
-index 622a1ea27..5d8326501 100644
+index 0a3facee9..f205ac7fb 100644
 --- a/doc/reference/remote_image_servers.md
 +++ b/doc/reference/remote_image_servers.md
 @@ -1,6 +1,6 @@
@@ -565,7 +600,7 @@ index 2988c25dd..2a0ae6f26 100644
  
  (storage-cephobject)=
 diff --git a/doc/reference/storage_dir.md b/doc/reference/storage_dir.md
-index b24210bf5..eb708db24 100644
+index a7e387690..cbdef9e97 100644
 --- a/doc/reference/storage_dir.md
 +++ b/doc/reference/storage_dir.md
 @@ -2,6 +2,7 @@
@@ -577,7 +612,7 @@ index b24210bf5..eb708db24 100644
  
  The directory storage driver is a basic backend that stores its data in a standard file and directory structure.
 diff --git a/doc/reference/storage_drivers.md b/doc/reference/storage_drivers.md
-index 34f255131..e38d97083 100644
+index 2c8aacf1a..c6c4ff3aa 100644
 --- a/doc/reference/storage_drivers.md
 +++ b/doc/reference/storage_drivers.md
 @@ -1,5 +1,5 @@
@@ -600,7 +635,7 @@ index 9fcfaab72..56f0e23c3 100644
  
  {abbr}`LVM (Logical Volume Manager)` is a storage management framework rather than a file system.
 diff --git a/doc/reference/storage_zfs.md b/doc/reference/storage_zfs.md
-index 6eaed949f..c9807d0d6 100644
+index 40db05ed7..865e54e1f 100644
 --- a/doc/reference/storage_zfs.md
 +++ b/doc/reference/storage_zfs.md
 @@ -6,6 +6,7 @@ discourse: 15872
@@ -624,7 +659,7 @@ index 2fb744c70..33959d076 100644
  
  All communication between LXD and its clients happens using a RESTful API over HTTP.
 diff --git a/doc/restapi_landing.md b/doc/restapi_landing.md
-index 974d8e3ae..861f92a9b 100644
+index f67da6e87..f335e9d44 100644
 --- a/doc/restapi_landing.md
 +++ b/doc/restapi_landing.md
 @@ -1,5 +1,5 @@
@@ -633,4 +668,4 @@ index 974d8e3ae..861f92a9b 100644
 +relatedlinks: "[Directly&#32;interacting&#32;with&#32;the&#32;LXD&#32;API&#32;|&#32;Ubuntu](https://ubuntu.com/blog/directly-interacting-with-the-lxd-api)"
  ---
  
- # REST API
+ (restapi)=

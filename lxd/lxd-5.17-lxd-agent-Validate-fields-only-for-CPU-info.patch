@@ -1,0 +1,43 @@
+From a2ad473547162b64a87f702dbcacfea1049e2f44 Mon Sep 17 00:00:00 2001
+From: Thomas Hipp <thomas.hipp@canonical.com>
+Date: Fri, 15 Sep 2023 08:13:59 +0200
+Subject: [PATCH] lxd-agent: Validate fields only for CPU info
+
+This fixes a bug where lines with less than 9 fields in /proc/stat would
+return an error. However, /proc/stat doesn't only contain CPU
+information. Therefore, the field validation should only be done for CPU
+related lines.
+
+Fixes #12255
+
+Signed-off-by: Thomas Hipp <thomas.hipp@canonical.com>
+---
+ lxd-agent/metrics.go | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/lxd-agent/metrics.go b/lxd-agent/metrics.go
+index 70a54db55ac1..9ea288dca308 100644
+--- a/lxd-agent/metrics.go
++++ b/lxd-agent/metrics.go
+@@ -88,9 +88,6 @@ func getCPUMetrics(d *Daemon) (map[string]metrics.CPUMetrics, error) {
+ 	for scanner.Scan() {
+ 		line := scanner.Text()
+ 		fields := strings.Fields(line)
+-		if len(fields) < 9 {
+-			return nil, fmt.Errorf("Invalid /proc/stat content: %q", line)
+-		}
+ 
+ 		// Only consider CPU info, skip everything else. Skip aggregated CPU stats since there will
+ 		// be stats for each individual CPU.
+@@ -98,6 +95,11 @@ func getCPUMetrics(d *Daemon) (map[string]metrics.CPUMetrics, error) {
+ 			continue
+ 		}
+ 
++		// Validate the number of fields only for lines starting with "cpu".
++		if len(fields) < 9 {
++			return nil, fmt.Errorf("Invalid /proc/stat content: %q", line)
++		}
++
+ 		stats := metrics.CPUMetrics{}
+ 
+ 		stats.SecondsUser, err = strconv.ParseFloat(fields[1], 64)

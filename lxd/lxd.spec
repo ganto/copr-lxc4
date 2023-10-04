@@ -13,7 +13,7 @@
 
 # https://github.com/canonical/lxd
 %global goipath github.com/canonical/lxd
-Version:        5.16
+Version:        5.17
 
 %gometa
 
@@ -43,15 +43,17 @@ Source11:       swagger-ui-bundle.js
 Source12:       swagger-ui-standalone-preset.js
 Source13:       swagger-ui.css
 # Upstream bug fixes merged to master for next release
-# https://github.com/canonical/lxd/issues/12065
-Patch0:         lxd-5.16-Update-instance-name-in-backup-file-when-importing-new-instance.patch
-# https://github.com/canonical/lxd/issues/12122
-Patch1:         lxd-5.16-lxd-network-fix-bgp-ipv-nexthop-keys-threated-as-unknown.patch
-# https://github.com/canonical/lxd/issues/12136
-Patch2:         lxd-5.16-lxd-instance-drivers-update-instance-config-if-rebuild-as-empty.patch
+# https://github.com/canonical/lxd/issues/12181
+Patch0:         lxd-5.17-lxd-auth-rbac-Fix-regression.patch
+# https://github.com/canonical/lxd/issues/12189
+Patch1:         lxd-5.17-lxd-Use-instance-lock-when-updating-instances.patch
+# https://github.com/canonical/lxd/issues/12206
+Patch2:         lxd-5.17-simplestreams-Adds-support-for-incus-tar-xz-items.patch
+# https://github.com/canonical/lxd/issues/12255
+Patch3:         lxd-5.17-lxd-agent-Validate-fields-only-for-CPU-info.patch
 # Allow offline builds
-Patch3:         lxd-5.16-doc-Remove-downloads-from-sphinx-build.patch
-Patch4:         lxd-5.16-doc-Enhance-related-links-definitions-for-offline-build.patch
+Patch4:         lxd-5.17-doc-Remove-downloads-from-sphinx-build.patch
+Patch5:         lxd-5.17-doc-Enhance-related-links-definitions-for-offline-build.patch
 
 BuildRequires:  gettext
 BuildRequires:  help2man
@@ -168,6 +170,7 @@ BuildRequires:  python3-lxd-sphinx-extensions
 BuildRequires:  python3-myst-parser
 BuildRequires:  python3-sphinx
 BuildRequires:  python3-sphinx-copybutton
+BuildRequires:  python3-sphinx-design
 BuildRequires:  python3-sphinx-notfound-page
 BuildRequires:  python3-sphinx-reredirects
 BuildRequires:  python3-sphinx-tabs
@@ -193,6 +196,7 @@ This package contains user documentation.
 %patch2 -p1
 %patch3 -p1
 %patch4 -p1
+%patch5 -p1
 
 %build
 export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
@@ -203,13 +207,11 @@ done
 export CGO_ENABLED=0
 BUILDTAGS="netgo" %gobuild -o %{gobuilddir}/bin/lxd-migrate %{goipath}/lxd-migrate
 BUILDTAGS="agent netgo" %gobuild -o %{gobuilddir}/bin/lxd-agent %{goipath}/lxd-agent
+BUILDTAGS="lxd-metadata" %gobuild -o %{gobuilddir}/lxd-metadata ./lxd/lxd-metadata
+unset CGO_ENABLED
 
 # build documentation
-pushd lxd/config/generate
-%gobuild -o %{gobuilddir}/lxd-doc
-popd
-unset CGO_ENABLED
-%{gobuilddir}/lxd-doc ./lxd -y ./doc/config_options.yaml -t ./doc/config_options.txt
+%{gobuilddir}/lxd-metadata . -y ./doc/config_options.yaml -t ./doc/config_options.txt
 mkdir -p doc/.sphinx/_static/swagger-ui
 cp %{SOURCE11} %{SOURCE12} %{SOURCE13} doc/.sphinx/_static/swagger-ui
 sphinx-build -c doc/ -b dirhtml doc/ doc/html/

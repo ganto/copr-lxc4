@@ -1,0 +1,112 @@
+From c65cf36ae295a667e1d35c6079ed3be2dc11d674 Mon Sep 17 00:00:00 2001
+From: Thomas Hipp <thomas.hipp@canonical.com>
+Date: Wed, 30 Aug 2023 12:43:06 +0200
+Subject: [PATCH] lxd: Use instance lock when updating instance
+
+This adds an instance lock when updating instances so that an instance
+cannot be updated concurrently.
+
+When trying to change the instance config concurrently, only one call
+will succeed, the others will return an etag missmatch error.
+
+Fixes #12189
+
+Signed-off-by: Thomas Hipp <thomas.hipp@canonical.com>
+---
+ lxd/instance.go       | 10 ++++++++++
+ lxd/instance_patch.go |  3 +++
+ lxd/instance_put.go   | 14 ++++++++++++++
+ 3 files changed, 27 insertions(+)
+
+diff --git a/lxd/instance.go b/lxd/instance.go
+index ee58e762af2d..9199e06aa9ee 100644
+--- a/lxd/instance.go
++++ b/lxd/instance.go
+@@ -17,6 +17,7 @@ import (
+ 	"github.com/canonical/lxd/lxd/instance"
+ 	"github.com/canonical/lxd/lxd/instance/instancetype"
+ 	"github.com/canonical/lxd/lxd/instance/operationlock"
++	"github.com/canonical/lxd/lxd/locking"
+ 	"github.com/canonical/lxd/lxd/operations"
+ 	"github.com/canonical/lxd/lxd/project"
+ 	"github.com/canonical/lxd/lxd/revert"
+@@ -730,3 +731,12 @@ func getSourceImageFromInstanceSource(ctx context.Context, s *state.State, tx *d
+ 
+ 	return sourceImage, nil
+ }
++
++// instanceOperationLock acquires a lock for operating on an instance and returns the unlock function.
++func instanceOperationLock(ctx context.Context, projectName string, instanceName string) locking.UnlockFunc {
++	l := logger.AddContext(logger.Ctx{"project": projectName, "instance": instanceName})
++	l.Debug("Acquiring lock for instance")
++	defer l.Debug("Lock acquired for instance")
++
++	return locking.Lock(ctx, fmt.Sprintf("InstanceOperation_%s", project.Instance(projectName, instanceName)))
++}
+diff --git a/lxd/instance_patch.go b/lxd/instance_patch.go
+index 97488b89efd9..b8107e5225b3 100644
+--- a/lxd/instance_patch.go
++++ b/lxd/instance_patch.go
+@@ -87,6 +87,9 @@ func instancePatch(d *Daemon, r *http.Request) response.Response {
+ 		return resp
+ 	}
+ 
++	unlock := instanceOperationLock(s.ShutdownCtx, projectName, name)
++	defer unlock()
++
+ 	c, err := instance.LoadByProjectAndName(s, projectName, name)
+ 	if err != nil {
+ 		return response.SmartError(err)
+diff --git a/lxd/instance_put.go b/lxd/instance_put.go
+index cc8e9e1857c0..7845cd228f7c 100644
+--- a/lxd/instance_put.go
++++ b/lxd/instance_put.go
+@@ -19,6 +19,7 @@ import (
+ 	"github.com/canonical/lxd/lxd/operations"
+ 	projecthelpers "github.com/canonical/lxd/lxd/project"
+ 	"github.com/canonical/lxd/lxd/response"
++	"github.com/canonical/lxd/lxd/revert"
+ 	"github.com/canonical/lxd/lxd/state"
+ 	"github.com/canonical/lxd/lxd/util"
+ 	"github.com/canonical/lxd/shared"
+@@ -91,6 +92,14 @@ func instancePut(d *Daemon, r *http.Request) response.Response {
+ 		return resp
+ 	}
+ 
++	revert := revert.New()
++	defer revert.Fail()
++
++	unlock := instanceOperationLock(s.ShutdownCtx, projectName, name)
++	revert.Add(func() {
++		unlock()
++	})
++
+ 	inst, err := instance.LoadByProjectAndName(s, projectName, name)
+ 	if err != nil {
+ 		return response.SmartError(err)
+@@ -142,6 +151,8 @@ func instancePut(d *Daemon, r *http.Request) response.Response {
+ 
+ 		// Update container configuration
+ 		do = func(op *operations.Operation) error {
++			defer unlock()
++
+ 			args := db.InstanceArgs{
+ 				Architecture: architecture,
+ 				Config:       configRaw.Config,
+@@ -164,6 +175,8 @@ func instancePut(d *Daemon, r *http.Request) response.Response {
+ 	} else {
+ 		// Snapshot Restore
+ 		do = func(op *operations.Operation) error {
++			defer unlock()
++
+ 			return instanceSnapRestore(s, projectName, name, configRaw.Restore, configRaw.Stateful)
+ 		}
+ 
+@@ -182,6 +195,7 @@ func instancePut(d *Daemon, r *http.Request) response.Response {
+ 		return response.InternalError(err)
+ 	}
+ 
++	revert.Success()
+ 	return operations.OperationResponse(op)
+ }
+ 
