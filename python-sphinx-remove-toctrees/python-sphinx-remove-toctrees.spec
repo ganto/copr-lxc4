@@ -41,3 +41,6 @@ Summary:        %{summary}
 %doc README.md
 
 %changelog
+* Wed Oct 11 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.0.3-0.1
+- Initial release
+
