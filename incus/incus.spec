@@ -1,3 +1,4 @@
+%define incuslibdir %{_prefix}/lib/incus
 %bcond_without  check
 
 # enable debug for non-go code
@@ -21,7 +22,7 @@ Version:        0.1
 %global golicenses  COPYING
 
 Name:           incus
-Release:        0.1%{?dist}
+Release:        0.2%{?dist}
 Summary:        Powerful system container and virtual machine manager
 
 # Upstream license specification: Apache-2.0
@@ -261,9 +262,9 @@ install -d -m 0755 %{buildroot}/lib/systemd
 install -p -m 0755 %{SOURCE9} %{buildroot}/lib/systemd/
 
 # install lib
-install -d -m 0755 %{buildroot}%{_libdir}/%{name}
-install -m 0755 -vp %{gobuilddir}/lib/* %{buildroot}%{_libdir}/%{name}/
-install -m 0755 -p %{SOURCE6} %{buildroot}%{_libdir}/%{name}
+install -d -m 0755 %{buildroot}%{incuslibdir}
+install -m 0755 -vp %{gobuilddir}/lib/* %{buildroot}%{incuslibdir}/
+install -m 0755 -p %{SOURCE6} %{buildroot}%{incuslibdir}/
 
 # install manpages
 install -d %{buildroot}%{_mandir}/man1
@@ -330,8 +331,8 @@ getent group %{name}-admin > /dev/null || groupadd -r %{name}-admin
 %{_unitdir}/%{name}-instances.service
 %{_unitdir}/%{name}-user.socket
 %{_unitdir}/%{name}-user.service
-%dir %{_libdir}/%{name}
-%{_libdir}/%{name}/*
+%dir %{incuslibdir}
+%{incuslibdir}/*
 %{_mandir}/man1/incusd*.1.*
 %dir %{_localstatedir}/log/%{name}
 %defattr(-, root, root, 0711)
