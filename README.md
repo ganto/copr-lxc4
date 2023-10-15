@@ -1,8 +1,7 @@
-# lxc/lxd 4.x RPM spec files
+# LXC/Incus/LXD RPM spec files
 
-Contains spec files to build the latest stable [LXC](https://github.com/lxc/lxc)/[LXD](https://github.com/lxc/lxd)
-RPMs and associated packages in [Copr](https://copr.fedorainfracloud.org/coprs/ganto/lxc4)
-using tito and git-annex.
+Contains spec files to build the latest stable [LXC](https://github.com/lxc/lxc)/[Incus](https://github.com/lxc/incus)/[LXD](https://github.com/canonical/lxd)
+RPMs and related packages for [Fedora COPR](https://copr.fedorainfracloud.org/coprs/ganto/lxc4).
 
 | Spec File                | Copr Build Status                  |
 | ------------------------ | ---------------------------------- | 
