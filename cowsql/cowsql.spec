@@ -56,3 +56,6 @@ rm -f %{buildroot}%{_libdir}/libcowsql.la
 %{_includedir}/%{name}.h
 
 %changelog
+* Sun Oct 15 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0-20230921.a1d49d0.0.1
+- Initial package
+
