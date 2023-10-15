@@ -377,6 +377,9 @@ getent group %{name}-admin > /dev/null || groupadd -r %{name}-admin
 %doc doc/html
 
 %changelog
+* Sun Oct 15 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.1-0.2
+- Fix libdir path
+
 * Sun Oct 15 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.1-0.1
 - Initial package
 
