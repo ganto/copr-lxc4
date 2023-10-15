@@ -1,0 +1,7 @@
+#!/usr/bin/sh
+
+if ! systemctl -q is-active incus.service; then
+    exit 0
+fi
+
+exec /usr/lib/incus/incusd shutdown

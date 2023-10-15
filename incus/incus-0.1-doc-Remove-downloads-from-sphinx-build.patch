@@ -1,0 +1,33 @@
+commit a753dc50be87eb25603728a29b778b9ec45fa139
+Author: Reto Gantenbein <reto.gantenbein@linuxmonk.ch>
+Date:   Mon Oct 9 23:22:25 2023 +0200
+
+    doc: Remove downloads from sphinx build
+
+diff --git a/doc/conf.py b/doc/conf.py
+index f3bada8d5..e40734449 100644
+--- a/doc/conf.py
++++ b/doc/conf.py
+@@ -5,22 +5,8 @@ import stat
+ import subprocess
+ import tempfile
+ import yaml
+-from git import Repo
+ import filecmp
+ 
+-# Download and link swagger-ui files
+-if not os.path.isdir('.sphinx/deps/swagger-ui'):
+-    Repo.clone_from('https://github.com/swagger-api/swagger-ui', '.sphinx/deps/swagger-ui', depth=1)
+-
+-os.makedirs('.sphinx/_static/swagger-ui/', exist_ok=True)
+-
+-if not os.path.islink('.sphinx/_static/swagger-ui/swagger-ui-bundle.js'):
+-    os.symlink('../../deps/swagger-ui/dist/swagger-ui-bundle.js', '.sphinx/_static/swagger-ui/swagger-ui-bundle.js')
+-if not os.path.islink('.sphinx/_static/swagger-ui/swagger-ui-standalone-preset.js'):
+-    os.symlink('../../deps/swagger-ui/dist/swagger-ui-standalone-preset.js', '.sphinx/_static/swagger-ui/swagger-ui-standalone-preset.js')
+-if not os.path.islink('.sphinx/_static/swagger-ui/swagger-ui.css'):
+-    os.symlink('../../deps/swagger-ui/dist/swagger-ui.css', '.sphinx/_static/swagger-ui/swagger-ui.css')
+-
+ ### MAN PAGES ###
+ # Find path to incus client (different for local builds and on RTD)
+ if ("LOCAL_SPHINX_BUILD" in os.environ and

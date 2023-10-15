@@ -1,0 +1,43 @@
+From 0ff29439248c721ac055052f1f74f7a47cf570e7 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?St=C3=A9phane=20Graber?= <stgraber@stgraber.org>
+Date: Sun, 8 Oct 2023 23:59:04 -0400
+Subject: [PATCH] incus-user: Fix bad path
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Signed-off-by: Stéphane Graber <stgraber@stgraber.org>
+---
+ cmd/incus-user/server.go | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/cmd/incus-user/server.go b/cmd/incus-user/server.go
+index 1222db7c01..d7078e049d 100644
+--- a/cmd/incus-user/server.go
++++ b/cmd/incus-user/server.go
+@@ -4,6 +4,7 @@ import (
+ 	"encoding/base64"
+ 	"fmt"
+ 	"os"
++	"path/filepath"
+ 	"strings"
+ 
+ 	"github.com/lxc/incus/client"
+@@ -168,7 +169,7 @@ func serverSetupUser(uid uint32) error {
+ 	revert.Add(func() { _ = os.RemoveAll(userPath) })
+ 
+ 	// Generate certificate.
+-	err = localtls.FindOrGenCert(internalUtil.VarPath("users", userPath, "client.crt"), internalUtil.VarPath("users", userPath, "client.key"), true, false)
++	err = localtls.FindOrGenCert(filepath.Join(userPath, "client.crt"), filepath.Join(userPath, "client.key"), true, false)
+ 	if err != nil {
+ 		return fmt.Errorf("Failed to generate user certificate: %w", err)
+ 	}
+@@ -219,7 +220,7 @@ func serverSetupUser(uid uint32) error {
+ 	}
+ 
+ 	// Parse the certificate.
+-	x509Cert, err := localtls.ReadCert(internalUtil.VarPath("users", userPath, "client.crt"))
++	x509Cert, err := localtls.ReadCert(filepath.Join(userPath, "client.crt"))
+ 	if err != nil {
+ 		return fmt.Errorf("Unable to read user certificate: %w", err)
+ 	}

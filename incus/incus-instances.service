@@ -1,0 +1,16 @@
+[Unit]
+Description=Incus - Instance startup
+Documentation=man:incusd(1)
+After=incus.socket incus.service
+Requires=incus.socket
+
+[Service]
+Type=oneshot
+ExecStart=/usr/lib/incus/incusd activateifneeded
+ExecStop=/usr/lib/incus/shutdown
+TimeoutStartSec=600s
+TimeoutStopSec=600s
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

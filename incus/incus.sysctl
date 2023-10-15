@@ -1,0 +1,3 @@
+# Increase the user inotify instance limit to allow for about
+# 100 containers to run before the limit is hit again
+fs.inotify.max_user_instances = 1024
