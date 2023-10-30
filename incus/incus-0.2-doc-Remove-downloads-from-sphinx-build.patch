@@ -1,11 +1,11 @@
-commit a753dc50be87eb25603728a29b778b9ec45fa139
+commit 2900cdecd34ce65f047bf1740e17e8954472b1de
 Author: Reto Gantenbein <reto.gantenbein@linuxmonk.ch>
 Date:   Mon Oct 9 23:22:25 2023 +0200
 
     doc: Remove downloads from sphinx build
 
 diff --git a/doc/conf.py b/doc/conf.py
-index f3bada8d5..e40734449 100644
+index 6196d68b0..86b8988e2 100644
 --- a/doc/conf.py
 +++ b/doc/conf.py
 @@ -5,22 +5,8 @@ import stat
@@ -29,5 +29,5 @@ index f3bada8d5..e40734449 100644
 -    os.symlink('../../deps/swagger-ui/dist/swagger-ui.css', '.sphinx/_static/swagger-ui/swagger-ui.css')
 -
  ### MAN PAGES ###
- # Find path to incus client (different for local builds and on RTD)
- if ("LOCAL_SPHINX_BUILD" in os.environ and
+ # Find the path to the incus binary
+ path = str(subprocess.check_output(['go', 'env', 'GOPATH'], encoding="utf-8").strip())
