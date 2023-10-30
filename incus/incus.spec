@@ -363,6 +363,10 @@ getent group %{name}-admin > /dev/null || groupadd -r %{name}-admin
 %doc doc/html
 
 %changelog
+* Mon Oct 30 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.2-0.1
+- Update to 0.2
+- Update swagger-ui to v5.9.1
+
 * Sun Oct 15 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.1-0.2
 - Fix libdir path
 
