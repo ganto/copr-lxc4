@@ -1,15 +1,11 @@
-%global commitdate      20230921
-%global commit          a1d49d0d3e40b32ba655fffe14b7669c2aa1bcec
-%global shortcommit     %(c=%{commit}; echo ${c:0:7})
-
 Name:           cowsql
-Version:        0
-Release:        %{commitdate}.%{shortcommit}.0.1%{?dist}
+Version:        1.15.3
+Release:        0.1%{?dist}
 Summary:        Embeddable, replicated and fault tolerant SQL engine
 
 License:        LGPL-3.0-only WITH LGPL-3.0-linking-exception
 URL:            https://github.com/cowsql/cowsql
-Source0:        %{URL}/archive/%{commit}.tar.gz#/%{name}-%{shortcommit}.tar.gz
+Source0:        %{URL}/archive/v%{version}.tar.gz#/%{name}-%{version}.tar.gz
 
 BuildRequires:  autoconf libtool
 BuildRequires:  gcc
@@ -29,7 +25,7 @@ Requires:       %{name}%{?_isa} = %{version}-%{release}
 Development headers and library for cowsql.
 
 %prep
-%autosetup -n %{name}-%{commit}
+%autosetup -n %{name}-%{version}
 
 %build
 autoreconf -i
