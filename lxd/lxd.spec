@@ -13,7 +13,7 @@
 
 # https://github.com/canonical/lxd
 %global goipath github.com/canonical/lxd
-Version:        5.17
+Version:        5.18
 
 %gometa
 
@@ -43,17 +43,19 @@ Source11:       swagger-ui-bundle.js
 Source12:       swagger-ui-standalone-preset.js
 Source13:       swagger-ui.css
 # Upstream bug fixes merged to master for next release
-# https://github.com/canonical/lxd/issues/12181
-Patch0:         lxd-5.17-lxd-auth-rbac-Fix-regression.patch
-# https://github.com/canonical/lxd/issues/12189
-Patch1:         lxd-5.17-lxd-Use-instance-lock-when-updating-instances.patch
-# https://github.com/canonical/lxd/issues/12206
-Patch2:         lxd-5.17-simplestreams-Adds-support-for-incus-tar-xz-items.patch
-# https://github.com/canonical/lxd/issues/12255
-Patch3:         lxd-5.17-lxd-agent-Validate-fields-only-for-CPU-info.patch
+# https://github.com/canonical/lxd/issues/12295
+Patch0:         lxd-5.18-simplestreams-Fix-regression-in-lxd_combined-tar-gz-handling.patch
+# https://github.com/canonical/lxd/issues/12335
+Patch1:         lxd-5.18-Fix-duplicate-used-by-entry-in-storage-pool.patch
+# https://github.com/canonical/lxd/issues/12343
+Patch2:         lxd-5.18-lxd-instance-drivers-Check-running-status-with-InitPID-for-cgroups.patch
+# https://github.com/canonical/lxd/issues/12368
+Patch3:         lxd-5.18-network-Dont-consider-an-IP-parse-failure-of-a-proxy-listen-address-an-error.patch
+# https://github.com/canonical/lxd/issues/12401
+Patch4:         lxd-5.18-Fix-multiple-ephemeral-delete.patch
 # Allow offline builds
-Patch4:         lxd-5.17-doc-Remove-downloads-from-sphinx-build.patch
-Patch5:         lxd-5.17-doc-Enhance-related-links-definitions-for-offline-build.patch
+Patch5:         lxd-5.18-doc-Remove-downloads-from-sphinx-build.patch
+Patch6:         lxd-5.18-doc-Enhance-related-links-definitions-for-offline-build.patch
 
 BuildRequires:  gettext
 BuildRequires:  help2man
@@ -69,7 +71,7 @@ BuildRequires:  pkgconfig(sqlite3)
 Requires: acl
 Requires: attr
 Requires: dnsmasq
-Requires: (nftables or (ebtables and iptables))
+Requires: (nftables or (ebtables-legacy and iptables-legacy))
 Requires: lxd-client = %{version}-%{release}
 Requires: lxcfs
 Requires: rsync
@@ -85,19 +87,17 @@ Requires(pre): shadow-utils
 %if %{with check}
 BuildRequires:  btrfs-progs
 BuildRequires:  dnsmasq
-BuildRequires:  ebtables
-BuildRequires:  iptables
+BuildRequires:  ebtables-legacy
+BuildRequires:  iptables-legacy
 %endif
 
 Suggests: logrotate
 # Virtual machine support requires additional packages
 Suggests: edk2-ovmf
 Suggests: genisoimage
-%if 0%{?fedora} && 0%{?fedora} >= 34
 Suggests: qemu-char-spice
 Suggests: qemu-device-display-virtio-vga
 Suggests: qemu-device-display-virtio-gpu
-%endif
 Suggests: qemu-device-usb-redirect
 Suggests: qemu-img
 Suggests: qemu-system-x86-core
@@ -172,6 +172,7 @@ BuildRequires:  python3-sphinx
 BuildRequires:  python3-sphinx-copybutton
 BuildRequires:  python3-sphinx-design
 BuildRequires:  python3-sphinx-notfound-page
+BuildRequires:  python3-sphinx-remove-toctrees
 BuildRequires:  python3-sphinx-reredirects
 BuildRequires:  python3-sphinx-tabs
 BuildRequires:  python3-sphinxcontrib-applehelp
@@ -197,6 +198,7 @@ This package contains user documentation.
 %patch3 -p1
 %patch4 -p1
 %patch5 -p1
+%patch6 -p1
 
 %build
 export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
@@ -207,13 +209,12 @@ done
 export CGO_ENABLED=0
 BUILDTAGS="netgo" %gobuild -o %{gobuilddir}/bin/lxd-migrate %{goipath}/lxd-migrate
 BUILDTAGS="agent netgo" %gobuild -o %{gobuilddir}/bin/lxd-agent %{goipath}/lxd-agent
-BUILDTAGS="lxd-metadata" %gobuild -o %{gobuilddir}/lxd-metadata ./lxd/lxd-metadata
 unset CGO_ENABLED
 
 # build documentation
-%{gobuilddir}/lxd-metadata . -y ./doc/config_options.yaml -t ./doc/config_options.txt
 mkdir -p doc/.sphinx/_static/swagger-ui
 cp %{SOURCE11} %{SOURCE12} %{SOURCE13} doc/.sphinx/_static/swagger-ui
+sed -i 's|lxc.bin|_build/bin/lxc|' doc/conf.py
 sphinx-build -c doc/ -b dirhtml doc/ doc/html/
 rm -rf doc/html/{.buildinfo,.doctrees}
 
@@ -222,13 +223,14 @@ rm -f po/ber.po po/zh_Hans.po po/zh_Hant.po    # remove invalid locales
 make %{?_smp_mflags} build-mo
 
 # generate man-pages
-%{gobuilddir}/bin/lxd manpage .
-%{gobuilddir}/bin/lxc manpage .
-help2man %{gobuilddir}/bin/fuidshift -n "uid/gid shifter" --no-info --no-discard-stderr > fuidshift.1
-help2man %{gobuilddir}/bin/lxd-benchmark -n "The container lightervisor - benchmark" --no-info --no-discard-stderr > lxd-benchmark.1
-help2man %{gobuilddir}/bin/lxd-migrate -n "Physical to container migration tool" --no-info --no-discard-stderr > lxd-migrate.1
-help2man %{gobuilddir}/bin/lxc-to-lxd -n "Convert LXC containers to LXD" --no-info --no-discard-stderr > lxc-to-lxd.1
-help2man %{gobuilddir}/bin/lxd-agent -n "LXD virtual machine guest agent" --no-info --no-discard-stderr > lxd-agent.1
+mkdir %{gobuilddir}/man
+%{gobuilddir}/bin/lxd manpage %{gobuilddir}/man/
+%{gobuilddir}/bin/lxc manpage %{gobuilddir}/man/
+help2man %{gobuilddir}/bin/fuidshift -n "uid/gid shifter" --no-info --no-discard-stderr > %{gobuilddir}/man/fuidshift.1
+help2man %{gobuilddir}/bin/lxd-benchmark -n "The container lightervisor - benchmark" --no-info --no-discard-stderr > %{gobuilddir}/man/lxd-benchmark.1
+help2man %{gobuilddir}/bin/lxd-migrate -n "Physical to container migration tool" --no-info --no-discard-stderr > %{gobuilddir}/man/lxd-migrate.1
+help2man %{gobuilddir}/bin/lxc-to-lxd -n "Convert LXC containers to LXD" --no-info --no-discard-stderr > %{gobuilddir}/man/lxc-to-lxd.1
+help2man %{gobuilddir}/bin/lxd-agent -n "LXD virtual machine guest agent" --no-info --no-discard-stderr > %{gobuilddir}/man/lxd-agent.1
 
 %install
 %gopkginstall
@@ -261,13 +263,9 @@ install -p -m 0755 %{SOURCE6} %{buildroot}%{_libexecdir}/%{name}
 
 # install manpages
 install -d %{buildroot}%{_mandir}/man1
-cp -p lxd.1 %{buildroot}%{_mandir}/man1/
-cp -p lxc*.1 %{buildroot}%{_mandir}/man1/
-cp -p fuidshift.1 %{buildroot}%{_mandir}/man1/
-cp -p lxd-benchmark.1 %{buildroot}%{_mandir}/man1/
-cp -p lxd-migrate.1 %{buildroot}%{_mandir}/man1/
-cp -p lxc-to-lxd.1 %{buildroot}%{_mandir}/man1/
-cp -p lxd-agent.1 %{buildroot}%{_mandir}/man1/
+cp -p %{gobuilddir}/man/lxd*.1 %{buildroot}%{_mandir}/man1/
+cp -p %{gobuilddir}/man/lxc*.1 %{buildroot}%{_mandir}/man1/
+cp -p %{gobuilddir}/man/fuidshift.1 %{buildroot}%{_mandir}/man1/
 
 # cache and log directories
 install -d -m 0711 %{buildroot}%{_localstatedir}/lib/%{name}
@@ -329,7 +327,10 @@ getent group %{name} > /dev/null || groupadd -r %{name}
 %{_unitdir}/%{name}-containers.service
 %dir %{_libexecdir}/%{name}
 %{_libexecdir}/%{name}/*
-%{_mandir}/man1/%{name}.1.*
+%{_mandir}/man1/%{name}.*1.*
+%exclude %{_mandir}/man1/lxd-agent.1.*
+%exclude %{_mandir}/man1/lxd-benchmark.1.*
+%exclude %{_mandir}/man1/lxd-migrate.1.*
 %dir %{_localstatedir}/log/%{name}
 %defattr(-, root, root, 0711)
 %dir %{_localstatedir}/lib/%{name}
@@ -341,6 +342,7 @@ getent group %{name} > /dev/null || groupadd -r %{name}
 %{_bindir}/lxc
 %{_datadir}/bash-completion/completions/lxd-client
 %{_mandir}/man1/lxc.*1.*
+%exclude %{_mandir}/man1/lxc-to-lxd.1.*
 
 %files tools
 %license %{golicenses}

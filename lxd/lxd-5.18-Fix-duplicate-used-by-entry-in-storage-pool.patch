@@ -1,0 +1,23 @@
+From 1d5f840a76c58f823ead2c9b2ddac61d46ccb1d5 Mon Sep 17 00:00:00 2001
+From: Din Music <din.music@canonical.com>
+Date: Wed, 11 Oct 2023 14:42:53 +0200
+Subject: [PATCH] lxd/storage: Prevent duplicate usedBy profile device entries
+
+Signed-off-by: Din Music <din.music@canonical.com>
+---
+ lxd/storage/storage.go | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/lxd/storage/storage.go b/lxd/storage/storage.go
+index 1070a7fae287..20316bee7337 100644
+--- a/lxd/storage/storage.go
++++ b/lxd/storage/storage.go
+@@ -230,6 +230,8 @@ func UsedBy(ctx context.Context, s *state.State, pool Pool, firstOnly bool, memb
+ 				if firstOnly {
+ 					return nil
+ 				}
++
++				break
+ 			}
+ 		}
+ 

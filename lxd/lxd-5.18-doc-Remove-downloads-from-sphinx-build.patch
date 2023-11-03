@@ -1,20 +1,21 @@
-commit 1cb5b84d65128dc55f27edd8fc64141aca76fe75
+commit 0ff7ab0e299f033026e39c059b654d9698ac9396
 Author: Reto Gantenbein <reto.gantenbein@linuxmonk.ch>
 Date:   Sun Aug 27 19:17:57 2023 +0200
 
     doc: Remove downloads from sphinx build
 
 diff --git a/doc/conf.py b/doc/conf.py
-index dceb3b49d..b72aa902b 100644
+index 6707ddb81..939adc548 100644
 --- a/doc/conf.py
 +++ b/doc/conf.py
-@@ -5,21 +5,6 @@ import subprocess
- import sys
+@@ -5,23 +5,8 @@ import stat
+ import subprocess
  import tempfile
  import yaml
 -from git import Repo
 -import wget
--
+ import filecmp
+ 
 -# Download and link swagger-ui files
 -if not os.path.isdir('.sphinx/deps/swagger-ui'):
 -    Repo.clone_from('https://github.com/swagger-api/swagger-ui', '.sphinx/deps/swagger-ui', depth=1)
@@ -27,6 +28,7 @@ index dceb3b49d..b72aa902b 100644
 -    os.symlink('../../deps/swagger-ui/dist/swagger-ui-standalone-preset.js', '.sphinx/_static/swagger-ui/swagger-ui-standalone-preset.js')
 -if not os.path.islink('.sphinx/_static/swagger-ui/swagger-ui.css'):
 -    os.symlink('../../deps/swagger-ui/dist/swagger-ui.css', '.sphinx/_static/swagger-ui/swagger-ui.css')
+-
+ ### MAN PAGES ###
  
- # Project config.
- project = "LXD"
+ # Find path to lxc client (different for local builds and on RTD)

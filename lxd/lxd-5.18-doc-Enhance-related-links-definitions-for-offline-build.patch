@@ -1,11 +1,11 @@
-commit 5e5ea18691341eb72aef2a5aeabedf0b71132020
+commit e1230ca655f0a6ed44a31d445b32fd9ba1d89346
 Author: Reto Gantenbein <reto.gantenbein@linuxmonk.ch>
 Date:   Sun Aug 27 19:32:52 2023 +0200
 
     doc: Enhance related-links definitions for offline build
 
 diff --git a/doc/authentication.md b/doc/authentication.md
-index 3e9b235ff..0d7177c26 100644
+index 0ec7b0fd3..56aff1d18 100644
 --- a/doc/authentication.md
 +++ b/doc/authentication.md
 @@ -1,6 +1,6 @@
@@ -53,7 +53,7 @@ index f5608bea8..0ba247e22 100644
  
  In a production setup, you should always back up the contents of your LXD server.
 diff --git a/doc/cloud-init.md b/doc/cloud-init.md
-index bbaead9c6..9eae2bee1 100644
+index c5ee17b68..6636cc4ef 100644
 --- a/doc/cloud-init.md
 +++ b/doc/cloud-init.md
 @@ -1,12 +1,13 @@
@@ -72,7 +72,7 @@ index bbaead9c6..9eae2bee1 100644
  
  [`cloud-init`](https://cloud-init.io/) is a tool for automatically initializing and customizing an instance of a Linux distribution.
 diff --git a/doc/contributing.md b/doc/contributing.md
-index b8249af71..2655d60ae 100644
+index cf5adbda2..23546b9eb 100644
 --- a/doc/contributing.md
 +++ b/doc/contributing.md
 @@ -1,5 +1,5 @@
@@ -94,7 +94,7 @@ index 6b5065728..6cf975b57 100644
  
  (database)=
 diff --git a/doc/dev-lxd.md b/doc/dev-lxd.md
-index 8fe6ddeed..5d7ad7b25 100644
+index c2d5327b0..c136e0474 100644
 --- a/doc/dev-lxd.md
 +++ b/doc/dev-lxd.md
 @@ -2,6 +2,7 @@
@@ -106,7 +106,7 @@ index 8fe6ddeed..5d7ad7b25 100644
  
  Communication between the hosted workload (instance) and its host while
 diff --git a/doc/explanation/clustering.md b/doc/explanation/clustering.md
-index ea694ee6f..9e1835e11 100644
+index 8780ac619..06d616a84 100644
 --- a/doc/explanation/clustering.md
 +++ b/doc/explanation/clustering.md
 @@ -6,6 +6,7 @@ discourse: 15728
@@ -153,7 +153,7 @@ index 00ce01556..7af3a3643 100644
  
  You can use projects to keep your LXD server clean by grouping related instances together.
 diff --git a/doc/explanation/security.md b/doc/explanation/security.md
-index c4f606905..4b3ce6da6 100644
+index 757470671..7cccc0fb3 100644
 --- a/doc/explanation/security.md
 +++ b/doc/explanation/security.md
 @@ -3,6 +3,7 @@
@@ -165,7 +165,7 @@ index c4f606905..4b3ce6da6 100644
  
  % Include content from [../../README.md](../../README.md)
 diff --git a/doc/explanation/storage.md b/doc/explanation/storage.md
-index d9f2e6be9..f95d556b6 100644
+index 59fbafec1..e8ad367ce 100644
 --- a/doc/explanation/storage.md
 +++ b/doc/explanation/storage.md
 @@ -100,6 +100,7 @@ In the default profile, this pool is set to the storage pool that was created du
@@ -185,19 +185,19 @@ index d9f2e6be9..f95d556b6 100644
  
  Storage buckets provide object storage functionality via the S3 protocol.
 diff --git a/doc/faq.md b/doc/faq.md
-index 216e05f93..4262b1c0a 100644
+index 0bd1b463f..215de1bb4 100644
 --- a/doc/faq.md
 +++ b/doc/faq.md
-@@ -51,6 +51,7 @@ But that's also the cause of most of the security issues with such privileged co
+@@ -55,6 +55,7 @@ But that's also the cause of most of the security issues with such privileged co
  ## How can I run Docker inside a LXD container?
  
  ```{youtube} https://www.youtube.com/watch?v=_fCSSEyiGro
 +:title: Running Docker inside of a LXD container - Youtube
  ```
  
- To run Docker inside a LXD container, set the [`security.nesting`](instance-options-security) property of the container to `true`:
+ To run Docker inside a LXD container, set the {config:option}`instance-security:security.nesting` property of the container to `true`:
 diff --git a/doc/getting_started.md b/doc/getting_started.md
-index 000dcdd34..a21e22dfa 100644
+index 9b1dade60..687922f8d 100644
 --- a/doc/getting_started.md
 +++ b/doc/getting_started.md
 @@ -1,5 +1,5 @@
@@ -208,7 +208,7 @@ index 000dcdd34..a21e22dfa 100644
  
  (getting-started)=
 diff --git a/doc/howto/access_ui.md b/doc/howto/access_ui.md
-index d71237231..a9d94f4ae 100644
+index c7759d00b..ae4bb78d4 100644
 --- a/doc/howto/access_ui.md
 +++ b/doc/howto/access_ui.md
 @@ -10,6 +10,7 @@ See the [LXD-UI GitHub repository](https://github.com/canonical/lxd-ui) for the
@@ -232,7 +232,7 @@ index 5c1a2da2e..68b184610 100644
  
  The performance of your LXD server or cluster depends on a lot of different factors, ranging from the hardware, the server configuration, the selected storage driver and the network bandwidth to the overall usage patterns.
 diff --git a/doc/howto/cluster_form.md b/doc/howto/cluster_form.md
-index 97032c007..9dfc188f2 100644
+index 5c5fe548d..a4581c789 100644
 --- a/doc/howto/cluster_form.md
 +++ b/doc/howto/cluster_form.md
 @@ -400,6 +400,7 @@ opyQ1VRpAg2sV2C4W8irbNqeUsTeZZxhLqp4vNOXXBBrSqUCdPu1JXADV0kavg1l
@@ -244,7 +244,7 @@ index 97032c007..9dfc188f2 100644
  
  Instead of setting up your LXD cluster manually, you can use [MicroCloud](https://microcloud.is/) to get a fully highly available LXD cluster with OVN and with Ceph storage up and running.
 diff --git a/doc/howto/cluster_groups.md b/doc/howto/cluster_groups.md
-index 455479636..18c084943 100644
+index 82a11b7ba..96550ce03 100644
 --- a/doc/howto/cluster_groups.md
 +++ b/doc/howto/cluster_groups.md
 @@ -6,6 +6,7 @@ discourse: 12716
@@ -268,7 +268,7 @@ index 49a07eca8..091c56669 100644
  
  LXD provides a tool for disaster recovery in case the {ref}`LXD database <database>` is corrupted or otherwise lost.
 diff --git a/doc/howto/import_machines_to_instances.md b/doc/howto/import_machines_to_instances.md
-index 0e5a07c54..5b0e7a05c 100644
+index 46bc520af..ac6257c5d 100644
 --- a/doc/howto/import_machines_to_instances.md
 +++ b/doc/howto/import_machines_to_instances.md
 @@ -6,6 +6,7 @@ discourse: 14345
@@ -280,7 +280,7 @@ index 0e5a07c54..5b0e7a05c 100644
  
  LXD provides a tool (`lxd-migrate`) to create a LXD instance based on an existing disk or image.
 diff --git a/doc/howto/instances_console.md b/doc/howto/instances_console.md
-index 620b941f2..92b7e4c12 100644
+index 57aff47d3..e5019aca2 100644
 --- a/doc/howto/instances_console.md
 +++ b/doc/howto/instances_console.md
 @@ -24,6 +24,7 @@ You can also immediately attach to the console when you start your instance:
@@ -316,7 +316,7 @@ index 64e6fd197..8b3fe5c2c 100644
  
  Network {abbr}`ACLs (Access Control Lists)` define traffic rules that allow controlling network access between different instances connected to the same network, and access to and from other networks.
 diff --git a/doc/howto/network_bgp.md b/doc/howto/network_bgp.md
-index 38a22f520..de8094756 100644
+index 490d488d4..e840beef0 100644
 --- a/doc/howto/network_bgp.md
 +++ b/doc/howto/network_bgp.md
 @@ -10,6 +10,7 @@ The BGP server feature is available for the {ref}`network-bridge` and the {ref}`
@@ -340,7 +340,7 @@ index 474c7d5da..012b2a71f 100644
  
  Network forwards allow an external IP address (or specific ports on it) to be forwarded to an internal IP address (or specific ports on it) in the network that the forward belongs to.
 diff --git a/doc/howto/network_ovn_setup.md b/doc/howto/network_ovn_setup.md
-index ea719a9fc..dc79163b0 100644
+index a67612a57..4a0558823 100644
 --- a/doc/howto/network_ovn_setup.md
 +++ b/doc/howto/network_ovn_setup.md
 @@ -45,6 +45,7 @@ Complete the following steps to create a standalone OVN network that is connecte
@@ -352,7 +352,7 @@ index ea719a9fc..dc79163b0 100644
  
  Complete the following steps to set up a LXD cluster that uses an OVN network.
 diff --git a/doc/howto/network_zones.md b/doc/howto/network_zones.md
-index 7ce07fa6b..2c45dd84a 100644
+index e66cfd409..b6b6d5ae8 100644
 --- a/doc/howto/network_zones.md
 +++ b/doc/howto/network_zones.md
 @@ -10,6 +10,7 @@ Network zones are available for the {ref}`network-ovn` and the {ref}`network-bri
@@ -364,7 +364,7 @@ index 7ce07fa6b..2c45dd84a 100644
  
  Network zones can be used to serve DNS records for LXD networks.
 diff --git a/doc/howto/projects_confine.md b/doc/howto/projects_confine.md
-index 504a2568f..f1e6bf6ad 100644
+index 02b6a718f..647c14230 100644
 --- a/doc/howto/projects_confine.md
 +++ b/doc/howto/projects_confine.md
 @@ -9,6 +9,7 @@ How to confine a project to a specific user depends on the authentication method
@@ -392,7 +392,7 @@ index 504a2568f..f1e6bf6ad 100644
  
  If you use the [LXD snap](https://snapcraft.io/lxd), you can configure the multi-user LXD daemon contained in the snap to dynamically create projects for all users in a specific user group.
 diff --git a/doc/howto/storage_buckets.md b/doc/howto/storage_buckets.md
-index 54d0b428c..ec861fe56 100644
+index e9f4b2036..27269d276 100644
 --- a/doc/howto/storage_buckets.md
 +++ b/doc/howto/storage_buckets.md
 @@ -2,6 +2,7 @@
@@ -404,7 +404,7 @@ index 54d0b428c..ec861fe56 100644
  
  See the following sections for instructions on how to create, configure, view and resize {ref}`storage-buckets` and how to manage storage bucket keys.
 diff --git a/doc/howto/storage_volumes.md b/doc/howto/storage_volumes.md
-index 65fce55e4..82c534206 100644
+index d9310c036..f46e9739c 100644
 --- a/doc/howto/storage_volumes.md
 +++ b/doc/howto/storage_volumes.md
 @@ -2,6 +2,7 @@
@@ -416,7 +416,7 @@ index 65fce55e4..82c534206 100644
  
  See the following sections for instructions on how to create, configure, view and resize {ref}`storage-volumes`.
 diff --git a/doc/image-handling.md b/doc/image-handling.md
-index 33b152c29..bc09644c6 100644
+index 97758abc7..eb5958951 100644
 --- a/doc/image-handling.md
 +++ b/doc/image-handling.md
 @@ -2,6 +2,7 @@
@@ -450,7 +450,7 @@ index e7731019e..8039a3bbe 100644
  
  (index)=
 diff --git a/doc/metrics.md b/doc/metrics.md
-index ecd61f129..301365d9c 100644
+index 258096942..ae87c0339 100644
 --- a/doc/metrics.md
 +++ b/doc/metrics.md
 @@ -1,12 +1,13 @@
@@ -492,7 +492,7 @@ index 15ed5c2e7..e9a98df0c 100644
  
  (projects)=
 diff --git a/doc/reference/devices_disk.md b/doc/reference/devices_disk.md
-index 5fa76e81c..e9287c936 100644
+index 466c8535f..28897de7e 100644
 --- a/doc/reference/devices_disk.md
 +++ b/doc/reference/devices_disk.md
 @@ -2,6 +2,7 @@
@@ -504,7 +504,7 @@ index 5fa76e81c..e9287c936 100644
  
  ```{note}
 diff --git a/doc/reference/devices_gpu.md b/doc/reference/devices_gpu.md
-index 84f404842..8e439009a 100644
+index 351b3c869..fc95c31ab 100644
 --- a/doc/reference/devices_gpu.md
 +++ b/doc/reference/devices_gpu.md
 @@ -2,6 +2,7 @@
@@ -540,7 +540,7 @@ index 4f747339c..dfcca8fcd 100644
  
  ```{note}
 diff --git a/doc/reference/remote_image_servers.md b/doc/reference/remote_image_servers.md
-index 0a3facee9..f205ac7fb 100644
+index e33b68dce..90ced46f1 100644
 --- a/doc/reference/remote_image_servers.md
 +++ b/doc/reference/remote_image_servers.md
 @@ -1,6 +1,6 @@
@@ -552,7 +552,7 @@ index 0a3facee9..f205ac7fb 100644
  
  (remote-image-servers)=
 diff --git a/doc/reference/storage_btrfs.md b/doc/reference/storage_btrfs.md
-index b5b498558..96970a473 100644
+index c08b2028a..0ded015ae 100644
 --- a/doc/reference/storage_btrfs.md
 +++ b/doc/reference/storage_btrfs.md
 @@ -2,6 +2,7 @@
@@ -564,7 +564,7 @@ index b5b498558..96970a473 100644
  
  {abbr}`Btrfs (B-tree file system)` is a local file system based on the {abbr}`COW (copy-on-write)` principle.
 diff --git a/doc/reference/storage_ceph.md b/doc/reference/storage_ceph.md
-index 38d678495..68a040582 100644
+index 503a40234..13aebabe0 100644
 --- a/doc/reference/storage_ceph.md
 +++ b/doc/reference/storage_ceph.md
 @@ -6,6 +6,7 @@ discourse: 15457
@@ -600,7 +600,7 @@ index 2988c25dd..2a0ae6f26 100644
  
  (storage-cephobject)=
 diff --git a/doc/reference/storage_dir.md b/doc/reference/storage_dir.md
-index a7e387690..cbdef9e97 100644
+index 3af819b95..72f4e7a8b 100644
 --- a/doc/reference/storage_dir.md
 +++ b/doc/reference/storage_dir.md
 @@ -2,6 +2,7 @@
@@ -623,7 +623,7 @@ index 2c8aacf1a..c6c4ff3aa 100644
  
  (storage-drivers)=
 diff --git a/doc/reference/storage_lvm.md b/doc/reference/storage_lvm.md
-index 9fcfaab72..56f0e23c3 100644
+index 93b986c61..b7b72c68c 100644
 --- a/doc/reference/storage_lvm.md
 +++ b/doc/reference/storage_lvm.md
 @@ -2,6 +2,7 @@
@@ -635,7 +635,7 @@ index 9fcfaab72..56f0e23c3 100644
  
  {abbr}`LVM (Logical Volume Manager)` is a storage management framework rather than a file system.
 diff --git a/doc/reference/storage_zfs.md b/doc/reference/storage_zfs.md
-index 40db05ed7..865e54e1f 100644
+index d865d17f5..e809d822c 100644
 --- a/doc/reference/storage_zfs.md
 +++ b/doc/reference/storage_zfs.md
 @@ -6,6 +6,7 @@ discourse: 15872
@@ -647,7 +647,7 @@ index 40db05ed7..865e54e1f 100644
  
  {abbr}`ZFS (Zettabyte file system)` combines both physical volume management and a file system.
 diff --git a/doc/rest-api.md b/doc/rest-api.md
-index 2fb744c70..33959d076 100644
+index bdf5c521a..90466349c 100644
 --- a/doc/rest-api.md
 +++ b/doc/rest-api.md
 @@ -1,6 +1,7 @@

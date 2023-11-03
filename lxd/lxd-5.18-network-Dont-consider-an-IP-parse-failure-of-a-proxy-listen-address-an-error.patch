@@ -1,0 +1,26 @@
+From f4f0697751b2e6be04454a9a58ba43481433ea98 Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Wed, 18 Oct 2023 12:32:24 +0100
+Subject: [PATCH] lxd/network/driver/bridge: Don't consider an IP parse failure
+ of a proxy listen address an error
+
+Fixes #12368
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/network/driver_bridge.go | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lxd/network/driver_bridge.go b/lxd/network/driver_bridge.go
+index b8c58fca11df..e3c0c1e1e5be 100644
+--- a/lxd/network/driver_bridge.go
++++ b/lxd/network/driver_bridge.go
+@@ -2581,7 +2581,7 @@ func (n *bridge) getExternalSubnetInUse() ([]externalSubnetUsage, error) {
+ 
+ 			proxySubnet, err := ParseIPToNet(proxyListenAddr.Address)
+ 			if err != nil {
+-				return err
++				continue // If proxy listen isn't a valid IP it can't conflict.
+ 			}
+ 
+ 			externalSubnets = append(externalSubnets, externalSubnetUsage{
