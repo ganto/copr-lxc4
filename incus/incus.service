@@ -5,7 +5,8 @@ Requires=network-online.target lxcfs.service incus.socket
 Documentation=man:incusd(1)
 
 [Service]
-Environment=LXD_OVMF_PATH=/usr/share/edk2/ovmf
+Environment=INCUS_DOCUMENTATION=/usr/share/doc/incus-doc/html
+Environment=INCUS_OVMF_PATH=/usr/share/edk2/ovmf
 ExecStart=/usr/lib/incus/incusd --group incus --logfile=/var/log/incus/incusd.log
 ExecStartPost=/usr/lib/incus/incusd waitready --timeout=600
 KillMode=process

@@ -1,17 +1,6 @@
 %define incuslibdir %{_prefix}/lib/incus
 %bcond_without  check
 
-# enable debug for non-go code
-%global with_debug 1
-
-%if 0%{?with_debug}
-%global _find_debuginfo_dwz_opts %{nil}
-# https://bugzilla.redhat.com/show_bug.cgi?id=995136#c12
-%global _dwz_low_mem_die_limit 0
-%else
-%global debug_package %{nil}
-%endif
-
 # https://github.com/lxc/incus
 %global goipath github.com/lxc/incus
 Version:        0.2
@@ -22,7 +11,7 @@ Version:        0.2
 %global golicenses  COPYING
 
 Name:           incus
-Release:        0.1%{?dist}
+Release:        0.2%{?dist}
 Summary:        Powerful system container and virtual machine manager
 
 # Upstream license specification: Apache-2.0
