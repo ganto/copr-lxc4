@@ -352,6 +352,9 @@ getent group %{name}-admin > /dev/null || groupadd -r %{name}-admin
 %doc doc/html
 
 %changelog
+* Fri Nov 10 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.2-0.2
+- Fix envvar for OVMF and documentation
+
 * Mon Oct 30 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.2-0.1
 - Update to 0.2
 - Update swagger-ui to v5.9.1
