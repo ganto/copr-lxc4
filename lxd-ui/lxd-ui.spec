@@ -41,6 +41,9 @@ cp -a build/ui %{buildroot}%{_datadir}/%{name}
 %{_datadir}/%{name}
 
 %changelog
+* Sun Nov 12 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.3-0.2
+- Fix typo in doc file reference
+
 * Sun Nov 12 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.3-0.1
 - Initial package
 
