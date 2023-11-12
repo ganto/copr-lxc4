@@ -1,6 +1,6 @@
 Name:       lxd-ui
 Version:    0.3
-Release:    0.1%{?dist}
+Release:    0.2%{?dist}
 Summary:    A browser interface for LXD
 License:    GPLv3
 URL:        https://github.com/canonical/lxd-ui
@@ -37,7 +37,7 @@ cp -a build/ui %{buildroot}%{_datadir}/%{name}
 
 %files
 %license LICENSE
-%doc README.md ARCHITECTURE.md
+%doc README.md ARCHITECTURE.MD
 %{_datadir}/%{name}
 
 %changelog
