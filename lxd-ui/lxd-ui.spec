@@ -43,6 +43,9 @@ cp -a build/ui %{buildroot}%{_datadir}/%{name}
 %{_datadir}/%{name}
 
 %changelog
+* Thu Nov 16 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.3-0.3
+- Use vendored cache instead of node_modules to fix non-x86 builds
+
 * Sun Nov 12 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.3-0.2
 - Fix typo in doc file reference
 
