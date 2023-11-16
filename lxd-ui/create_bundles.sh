@@ -19,6 +19,7 @@ pushd "${SOURCE_DIR}"
 # Vendor Node.js dependencies
 export HUSKY=0
 yarn install --frozen-lockfile
+mv /usr/local/share/.cache .
 
 popd
 
@@ -29,4 +30,4 @@ XZ_OPT=-9 tar \
     --mtime="@${SOURCE_DATE_EPOCH}" --clamp-mtime \
     --owner=0 --group=0 --numeric-owner \
     -cJf "${VENDOR_TAR}" \
-    "${SOURCE_DIR}/node_modules"
+    "${SOURCE_DIR}/.cache"
