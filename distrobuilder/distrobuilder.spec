@@ -1,6 +1,6 @@
 # https://github.com/lxc/distrobuilder
 %global goipath github.com/lxc/distrobuilder
-Version:        2.1
+Version:        3.0
 %gometa
 
 %global godocs      AUTHORS CONTRIBUTING.md
@@ -8,7 +8,7 @@ Version:        2.1
 
 Name:           distrobuilder
 Release:        0.1%{?dist}
-Summary:        System container image builder for LXC and LXD
+Summary:        System container image builder for LXC and Incus
 
 License:        ASL 2.0
 URL:            %{gourl}
