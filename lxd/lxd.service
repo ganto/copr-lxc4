@@ -5,8 +5,10 @@ Requires=network-online.target lxcfs.service lxd.socket
 Documentation=man:lxd(1)
 
 [Service]
+Environment=LXD_DOCUMENTATION=/usr/share/doc/lxd-doc/html
 Environment=LXD_SOCKET=/run/lxd.socket
 Environment=LXD_OVMF_PATH=/usr/share/edk2/ovmf
+Environment=LXD_UI=/usr/share/lxd-ui/ui
 ExecStart=/usr/bin/lxd --group lxd --logfile=/var/log/lxd/lxd.log
 ExecStartPost=/usr/bin/lxd waitready --timeout=600
 KillMode=process

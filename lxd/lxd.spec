@@ -21,7 +21,7 @@ Version:        5.18
 %global golicenses  COPYING
 
 Name:           lxd
-Release:        0.1%{?dist}
+Release:        0.2%{?dist}
 Summary:        Container hypervisor based on LXC
 
 # Upstream license specification: Apache-2.0
@@ -91,16 +91,19 @@ BuildRequires:  ebtables-legacy
 BuildRequires:  iptables-legacy
 %endif
 
-Suggests: logrotate
+Recommends: logrotate
+Recommends: lxd-ui
+Suggests:   lxd-doc
 # Virtual machine support requires additional packages
-Suggests: edk2-ovmf
-Suggests: genisoimage
-Suggests: qemu-char-spice
-Suggests: qemu-device-display-virtio-vga
-Suggests: qemu-device-display-virtio-gpu
-Suggests: qemu-device-usb-redirect
-Suggests: qemu-img
-Suggests: qemu-system-x86-core
+Recommends: lxd-agent
+Recommends: edk2-ovmf
+Recommends: genisoimage
+Recommends: qemu-char-spice
+Recommends: qemu-device-display-virtio-vga
+Recommends: qemu-device-display-virtio-gpu
+Recommends: qemu-device-usb-redirect
+Recommends: qemu-img
+Recommends: qemu-system-x86-core
 
 %description
 Container hypervisor based on LXC
