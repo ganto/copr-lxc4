@@ -1,6 +1,6 @@
 Name:           lxc
 Version:        5.0.3
-Release:        0.1%{?dist}
+Release:        0.2%{?dist}
 Summary:        Linux Resource Containers
 License:        LGPLv2+ and GPLv2
 URL:            https://linuxcontainers.org/lxc
