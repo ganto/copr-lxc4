@@ -245,6 +245,9 @@ cp -a %{SOURCE1} %{buildroot}%{_sysconfdir}/sysconfig/%{name}-net
 
 
 %changelog
+* Fri Nov 24 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 5.0.3-0.2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_39_Mass_Rebuild
+
 * Sun Aug 06 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 5.0.3-0.1
 - Update to 5.0.3.
 
