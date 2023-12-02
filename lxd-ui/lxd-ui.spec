@@ -1,6 +1,6 @@
 Name:       lxd-ui
-Version:    0.3
-Release:    0.3%{?dist}
+Version:    0.5
+Release:    0.1%{?dist}
 Summary:    A browser interface for LXD
 License:    GPLv3
 URL:        https://github.com/canonical/lxd-ui
@@ -11,7 +11,7 @@ Source0:    https://github.com/canonical/%{name}/archive/%{version}/%{name}-%{ve
 # Source1 contains the bundled Node.js dependencies
 # Note: In case there were no changes to this tarball, the NVR of this tarball
 # lags behind the NVR of this package.
-Source1:    lxd-ui-vendor-%{version}-3.tar.xz
+Source1:    lxd-ui-vendor-%{version}-1.tar.xz
 
 BuildArch:  noarch
 
