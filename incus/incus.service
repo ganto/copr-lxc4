@@ -7,6 +7,8 @@ Documentation=man:incusd(1)
 [Service]
 Environment=INCUS_DOCUMENTATION=/usr/share/doc/incus-doc/html
 Environment=INCUS_OVMF_PATH=/usr/share/edk2/ovmf
+ExecStartPre=-/usr/bin/mkdir -p /var/lib/incus
+ExecStartPre=-/usr/bin/mkdir -p /var/log/incus
 ExecStart=/usr/lib/incus/incusd --group incus-admin --logfile=/var/log/incus/incusd.log
 ExecStartPost=/usr/lib/incus/incusd waitready --timeout=600
 KillMode=process
