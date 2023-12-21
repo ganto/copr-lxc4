@@ -1,20 +1,19 @@
 Name:           raft
-Version:        0.17.1
-Release:        0.2%{?dist}
+Version:        0.18.3
+Release:        0.1%{?dist}
 Summary:        C implementation of the Raft consensus protocol
 
 License:        LGPL-3.0-only WITH LGPL-3.0-linking-exception
-URL:            https://github.com/canonical/raft
+URL:            https://github.com/cowsql/raft
 Source0:        %{URL}/archive/v%{version}.tar.gz
-# https://github.com/canonical/raft/issues/263
-Patch0:         0.11.3-Revert-test-runner-Define-order-of-constructors.patch
 
 BuildRequires:  autoconf libtool
 BuildRequires:  gcc
 BuildRequires:  pkgconfig(liblz4)
 BuildRequires:  pkgconfig(libuv)
 # Breaking header change
-Conflicts:      dqlite < 1.14.0
+Conflicts:      dqlite < 1.16.0
+Conflicts:      cowsql < 1.15.4
 
 %description
 Fully asynchronous C implementation of the Raft consensus protocol. It consists
@@ -45,7 +44,6 @@ This package contains the C-Raft documentation in HTML format.
 
 %prep
 %setup -q -n %{name}-%{version}
-%patch0 -p1
 
 %build
 autoreconf -i
@@ -69,7 +67,7 @@ rm -f %{buildroot}%{_libdir}/libraft.la
 
 %files benchmark
 %license LICENSE
-%{_bindir}/os-disk-write
+%{_bindir}/raft-benchmark
 
 %files devel
 %{_libdir}/libraft.so
