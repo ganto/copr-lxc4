@@ -3,7 +3,7 @@
 
 # https://github.com/lxc/incus
 %global goipath github.com/lxc/incus
-Version:        0.2
+Version:        0.4
 
 %gometa
 
@@ -11,7 +11,7 @@ Version:        0.2
 %global golicenses  COPYING
 
 Name:           incus
-Release:        0.2%{?dist}
+Release:        0.1%{?dist}
 Summary:        Powerful system container and virtual machine manager
 
 # Upstream license specification: Apache-2.0
@@ -139,8 +139,6 @@ to automatically have their isolated Incus project.
 Summary:        Container hypervisor based on LXC - Documentation
 BuildArch:      noarch
 
-BuildRequires:  golang(gopkg.in/yaml.v3)
-BuildRequires:  golang(github.com/spf13/cobra)
 BuildRequires:  python3-furo
 BuildRequires:  python3-linkify-it-py
 BuildRequires:  python3-lxd-sphinx-extensions
@@ -266,7 +264,7 @@ export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
 # Add libsqlite3 tag to go test
 %define gotestflags -buildmode pie -compiler gc -v -tags libsqlite3
 
-%gocheck -v \
+%gocheck -v -t %{goipath}/test \
     -d %{goipath}/cmd/lxc-to-incus  # lxc-to-incus test fails, see ganto/copr-lxc4#23
 
 %endif
