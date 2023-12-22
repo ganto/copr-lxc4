@@ -1,6 +1,6 @@
 Name:           raft
 Version:        0.18.3
-Release:        0.1%{?dist}
+Release:        0.2%{?dist}
 Summary:        C implementation of the Raft consensus protocol
 
 License:        LGPL-3.0-only WITH LGPL-3.0-linking-exception
@@ -12,7 +12,7 @@ BuildRequires:  gcc
 BuildRequires:  pkgconfig(liblz4)
 BuildRequires:  pkgconfig(libuv)
 # Breaking header change
-Conflicts:      dqlite < 1.16.0
+Conflicts:      dqlite < 1.16.0-0.2
 Conflicts:      cowsql < 1.15.4
 
 %description
