@@ -80,6 +80,9 @@ rm -f %{buildroot}%{_libdir}/libraft.la
 %doc docs/_build/html/
 
 %changelog
+* Fri Dec 22 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.18.3-0.2
+- Correctly indicate broken upgrade paths
+
 * Thu Dec 21 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.18.3-0.1
 - Switch upstream to https://github.com/cowsql/raft
 - Update to 0.18.3
