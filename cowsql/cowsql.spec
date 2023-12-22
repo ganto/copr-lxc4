@@ -1,5 +1,5 @@
 Name:           cowsql
-Version:        1.15.3
+Version:        1.15.4
 Release:        0.1%{?dist}
 Summary:        Embeddable, replicated and fault tolerant SQL engine
 
@@ -10,7 +10,7 @@ Source0:        %{URL}/archive/v%{version}.tar.gz#/%{name}-%{version}.tar.gz
 BuildRequires:  autoconf libtool
 BuildRequires:  gcc
 BuildRequires:  pkgconfig(libuv)
-BuildRequires:  pkgconfig(raft) >= 0.17.1
+BuildRequires:  pkgconfig(raft) >= 0.18.2
 BuildRequires:  pkgconfig(sqlite3)
 
 %description
