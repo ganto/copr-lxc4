@@ -1,4 +1,3 @@
-%define incuslibdir %{_prefix}/lib/incus
 %bcond_without  check
 
 # https://github.com/lxc/incus
@@ -7,38 +6,53 @@ Version:        0.4
 
 %gometa
 
-%global godocs      AUTHORS
-%global golicenses  COPYING
+%global godocs AUTHORS CODE_OF_CONDUCT.md CONTRIBUTING.md README.md SECURITY.md
+%global golicenses COPYING
 
 Name:           incus
-Release:        0.1%{?dist}
+Release:        0.2%{?dist}
 Summary:        Powerful system container and virtual machine manager
-
-# Upstream license specification: Apache-2.0
-License:        ASL 2.0
+License:        Apache-2.0
 URL:            https://linuxcontainers.org/incus
 Source0:        https://linuxcontainers.org/downloads/%{name}/%{name}-%{version}.tar.xz
-Source1:        incus.socket
-Source2:        incus.service
-Source3:        incus-startup.service
-Source4:        incus.dnsmasq
-Source5:        incus.logrotate
-Source6:        shutdown
-Source7:        incus.sysctl
-Source8:        incus-agent.service
-Source9:        incus-agent-setup
-Source10:       incus-user.socket
-Source11:       incus-user.service
+
+# Systemd units
+Source101:      incus.socket
+Source102:      incus.service
+Source103:      incus-startup.service
+Source104:      incus-user.socket
+Source105:      incus-user.service
+
+# Ensure Incus groups exist
+Source106:      incus-sysusers.conf
+
+# Ensure state directories (/var/lib/incus, /var/cache/incus, /var/log/incus) exist
+Source107:      incus-tmpfiles.conf
+
+# Ensure system dnsmasq ignores Incus network bridge
+Source108:      incus-dnsmasq.conf
+
+# Raise number of inotify user instances
+Source109:      incus-sysctl.conf
+
+# Helper script for incusd shutdown
+Source110:      shutdown
+
+# Web scripts shipped with API documentation
 # Latest downloads from https://github.com/swagger-api/swagger-ui/tree/master/dist
-Source12:       swagger-ui-bundle.js
-Source13:       swagger-ui-standalone-preset.js
-Source14:       swagger-ui.css
-# Upstream bug fixes merged to master for next release
+Source201:      swagger-ui-bundle.js
+Source202:      swagger-ui-standalone-preset.js
+Source203:      swagger-ui.css
+
 # Allow offline builds
 Patch0:         incus-0.2-doc-Remove-downloads-from-sphinx-build.patch
 
+%global incuslibdir %{_prefix}/lib/incus
+%global bashcompletiondir %(pkg-config --variable=completionsdir bash-completion 2>/dev/null || :)
+
 BuildRequires:  gettext
 BuildRequires:  help2man
+BuildRequires:  pkgconfig(bash-completion)
 BuildRequires:  pkgconfig(cowsql)
 BuildRequires:  pkgconfig(libacl)
 BuildRequires:  pkgconfig(libcap)
@@ -47,40 +61,30 @@ BuildRequires:  pkgconfig(libudev)
 BuildRequires:  pkgconfig(lxc)
 BuildRequires:  pkgconfig(raft)
 BuildRequires:  pkgconfig(sqlite3)
+BuildRequires:  systemd-rpm-macros
+%{?sysusers_requires_compat}
 
-Requires: acl
-Requires: attr
-Requires: dnsmasq
-Requires: (nftables or (ebtables-legacy and iptables-legacy))
-Requires: incus-client = %{version}-%{release}
-Requires: lxcfs
-Requires: rsync
-Requires: shadow-utils
-Requires: squashfs-tools
-Requires: tar
-Requires: xdelta
-Requires: xz
+Requires:       incus-client = %{version}-%{release}
+Requires:       attr
+Requires:       dnsmasq
+Requires:       iptables, ebtables
+Requires:       (nftables if iptables-nft)
+Requires:       lxcfs
+Requires:       rsync
+Requires:       shadow-utils
+Requires:       squashfs-tools
+Requires:       tar
+Requires:       xdelta
+Requires:       xz
 %{?systemd_requires}
-Requires(pre): container-selinux
-Requires(pre): shadow-utils
 
 %if %{with check}
 BuildRequires:  btrfs-progs
 BuildRequires:  dnsmasq
-BuildRequires:  ebtables-legacy
-BuildRequires:  iptables-legacy
+BuildRequires:  nftables
 %endif
 
-Suggests: logrotate
-# Virtual machine support requires additional packages
-Suggests: edk2-ovmf
-Suggests: genisoimage
-Suggests: qemu-char-spice
-Suggests: qemu-device-display-virtio-vga
-Suggests: qemu-device-display-virtio-gpu
-Suggests: qemu-device-usb-redirect
-Suggests: qemu-img
-Suggests: qemu-system-x86-core
+Recommends:     incus-agent = %{version}-%{release}
 
 %description
 Container hypervisor based on LXC
@@ -93,6 +97,7 @@ This package contains the Incus daemon.
 
 %package client
 Summary:        Container hypervisor based on LXC - Client
+License:        Apache-2.0
 
 Requires:       gettext
 
@@ -104,9 +109,9 @@ This package contains the command line client.
 
 %package tools
 Summary:        Container hypervisor based on LXC - Extra Tools
+License:        Apache-2.0
 
-Suggests:       rsync
-#Suggests:       netcat
+Requires:       incus%{?_isa} = %{version}-%{release}
 
 %description tools
 Incus offers a REST API to remotely manage containers over the network,
@@ -121,6 +126,18 @@ This package contains extra tools provided with Incus.
 
 %package agent
 Summary:        Incus guest agent
+License:        Apache-2.0
+
+Requires:       incus%{?_isa} = %{version}-%{release}
+# Virtual machine support requires additional packages
+Recommends:     edk2-ovmf
+Recommends:     genisoimage
+Recommends:     qemu-char-spice
+Recommends:     qemu-device-display-virtio-vga
+Recommends:     qemu-device-display-virtio-gpu
+Recommends:     qemu-device-usb-redirect
+Recommends:     qemu-img
+Recommends:     qemu-kvm-core
 
 %description agent
 This packages provides an agent to run inside Incus virtual machine guests.
@@ -128,15 +145,22 @@ This packages provides an agent to run inside Incus virtual machine guests.
 It has to be installed on the Incus host if you want to allow agent
 injection capability when creating a virtual machine.
 
-%package user                                                                                                                                                                                                                                                                                                                 
-Summary:        Incus user daemon
-
-%description user
-This packages provides an Incus daemon proxy to allow lower privileged users
-to automatically have their isolated Incus project.
-
 %package doc
 Summary:        Container hypervisor based on LXC - Documentation
+# This project is Apache-2.0. Other files bundled with the documentation have the
+# following licenses:
+# - _static/basic.css: BSD-2-Clause
+# - _static/clipboard.min.js: MIT
+# - _static/copy*: MIT
+# - _static/doctools.js: BSD-2-Clause
+# - _static/*/furo*: MIT
+# - _static/jquery*.js: MIT
+# - _static/language_data.js: BSD-2-Clause
+# - _static/pygments.css: BSD-2-Clause
+# - _static/searchtools.js: BSD-2-Clause
+# - _static/swagger-ui/*: Apache-2.0
+# - _static/underscore*.js: MIT
+License:        Apache-2.0 AND BSD-2-Clause AND MIT
 BuildArch:      noarch
 
 BuildRequires:  python3-furo
@@ -167,7 +191,7 @@ This package contains user documentation.
 
 %prep
 %goprep -k
-%patch0 -p1
+%autopatch -v -p1
 
 %build
 export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
@@ -190,10 +214,12 @@ popd
 
 # build documentation
 mkdir -p doc/.sphinx/_static/swagger-ui
-cp %{SOURCE12} %{SOURCE13} %{SOURCE14} doc/.sphinx/_static/swagger-ui
+cp %{SOURCE201} %{SOURCE202} %{SOURCE203} doc/.sphinx/_static/swagger-ui
 sed -i 's|^path.*$|path = "%{gobuilddir}"|' doc/conf.py
 sphinx-build -c doc/ -b dirhtml doc/ doc/html/
-rm -rf doc/html/{.buildinfo,.doctrees}
+rm -vrf doc/html/{.buildinfo,.doctrees}
+# remove duplicate files
+rm -vrf doc/html/{_sources,_sphinx_design_static}
 
 # build translations
 rm -f po/zh_Hans.po po/zh_Hant.po    # remove invalid locales
@@ -214,45 +240,43 @@ help2man %{gobuilddir}/bin/incus-agent -n "Incus virtual machine guest agent" --
 %gopkginstall
 
 # install binaries
-install -m 0755 -vd                     %{buildroot}%{_bindir}
-install -m 0755 -vp %{gobuilddir}/bin/* %{buildroot}%{_bindir}/
-
-# extra configs
-install -Dpm 0644 %{SOURCE4} %{buildroot}%{_sysconfdir}/dnsmasq.d/incus
-install -Dpm 0644 %{SOURCE5} %{buildroot}%{_sysconfdir}/logrotate.d/incus
-install -Dpm 0644 %{SOURCE7} %{buildroot}%{_sysconfdir}/sysctl.d/10-incus-inotify.conf
-
-# install bash completion
-install -Dpm 0644 scripts/bash/incus %{buildroot}%{_datadir}/bash-completion/completions/incus
+install -d %{buildroot}%{_bindir}
+install -m0755 -vp %{gobuilddir}/bin/* %{buildroot}%{_bindir}/
 
 # install systemd units
-install -d -m 0755 %{buildroot}%{_unitdir}
-install -p -m 0644 %{SOURCE1} %{buildroot}%{_unitdir}/
-install -p -m 0644 %{SOURCE2} %{buildroot}%{_unitdir}/
-install -p -m 0644 %{SOURCE3} %{buildroot}%{_unitdir}/
-install -p -m 0644 %{SOURCE8} %{buildroot}%{_unitdir}/
-install -p -m 0644 %{SOURCE10} %{buildroot}%{_unitdir}/
-install -p -m 0644 %{SOURCE11} %{buildroot}%{_unitdir}/
-install -d -m 0755 %{buildroot}/lib/systemd
-install -p -m 0755 %{SOURCE9} %{buildroot}/lib/systemd/
+install -d %{buildroot}%{_unitdir}
+install -m0644 -vp %{SOURCE101} %{buildroot}%{_unitdir}/
+install -m0644 -vp %{SOURCE102} %{buildroot}%{_unitdir}/
+install -m0644 -vp %{SOURCE103} %{buildroot}%{_unitdir}/
+install -m0644 -vp %{SOURCE104} %{buildroot}%{_unitdir}/
+install -m0644 -vp %{SOURCE105} %{buildroot}%{_unitdir}/
+install -D -m0644 -vp %{SOURCE106} %{buildroot}%{_sysusersdir}/%{name}.conf
+install -D -m0644 -vp %{SOURCE107} %{buildroot}%{_tmpfilesdir}/%{name}.conf
 
-# install lib
-install -d -m 0755 %{buildroot}%{incuslibdir}
-install -m 0755 -vp %{gobuilddir}/lib/* %{buildroot}%{incuslibdir}/
-install -m 0755 -p %{SOURCE6} %{buildroot}%{incuslibdir}/
+# extra configs
+install -D -m0644 -vp %{SOURCE108} %{buildroot}%{_sysconfdir}/dnsmasq.d/%{name}.conf
+install -D -m0644 -vp %{SOURCE109} %{buildroot}%{_sysconfdir}/sysctl.d/10-incus-inotify.conf
+
+# install helper libs
+install -d %{buildroot}%{incuslibdir}
+install -m0755 -vp %{SOURCE110} %{buildroot}%{incuslibdir}/
+install -m0755 -vp %{gobuilddir}/lib/* %{buildroot}%{incuslibdir}/
 
 # install manpages
 install -d %{buildroot}%{_mandir}/man1
 cp -p %{gobuilddir}/man/*.1 %{buildroot}%{_mandir}/man1/
 
+# install bash completion
+install -D -m0644 -vp scripts/bash/incus %{buildroot}%{bashcompletiondir}/%{name}
+
 # cache and log directories
-install -d -m 0711 %{buildroot}%{_localstatedir}/lib/%{name}
-install -d -m 0755 %{buildroot}%{_localstatedir}/log/%{name}
+install -d -m0700 %{buildroot}%{_localstatedir}/cache/%{name}
+install -d -m0700 %{buildroot}%{_localstatedir}/log/%{name}
+install -d -m0711 %{buildroot}%{_localstatedir}/lib/%{name}
 
 # language files
-install -dm 0755 %{buildroot}%{_datadir}/locale
 for mofile in po/*.mo ; do
-install -Dpm 0644 ${mofile} %{buildroot}%{_datadir}/locale/$(basename ${mofile%%.mo})/LC_MESSAGES/%{name}.mo
+    install -D -m0644 -vp ${mofile} %{buildroot}%{_datadir}/locale/$(basename ${mofile%%.mo})/LC_MESSAGES/%{name}.mo
 done
 %find_lang incus
 
@@ -266,23 +290,19 @@ export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
 
 %gocheck -v -t %{goipath}/test \
     -d %{goipath}/cmd/lxc-to-incus  # lxc-to-incus test fails, see ganto/copr-lxc4#23
-
 %endif
 
 %pre
-# check for existence of incus-admin group, create it if not found
-getent group %{name} > /dev/null || groupadd -r %{name}
-getent group %{name}-admin > /dev/null || groupadd -r %{name}-admin
+%sysusers_create_package %{name} %{SOURCE106}
+%tmpfiles_create_package %{name} %{SOURCE107}
 
 %post
+%sysctl_apply 10-incus-inotify.conf
 %systemd_post %{name}.socket
 %systemd_post %{name}.service
 %systemd_post %{name}-startup.service
 %systemd_post %{name}-user.socket
 %systemd_post %{name}-user.service
-
-%post agent
-%systemd_post %{name}-agent.service
 
 %preun
 %systemd_preun %{name}.socket
@@ -291,13 +311,15 @@ getent group %{name}-admin > /dev/null || groupadd -r %{name}-admin
 %systemd_preun %{name}-user.socket
 %systemd_preun %{name}-user.service
 
-%preun agent
-%systemd_preun %{name}-agent.service
+%postun
+%systemd_postun_with_restart %{name}.socket
+%systemd_postun_with_restart %{name}.service
+%systemd_postun_with_restart %{name}-user.socket
+%systemd_postun_with_restart %{name}-user.service
 
 %files
 %license %{golicenses}
-%config(noreplace) %{_sysconfdir}/dnsmasq.d/incus
-%config(noreplace) %{_sysconfdir}/logrotate.d/incus
+%config(noreplace) %{_sysconfdir}/dnsmasq.d/%{name}.conf
 %config(noreplace) %{_sysconfdir}/sysctl.d/10-incus-inotify.conf
 %{_unitdir}/%{name}.socket
 %{_unitdir}/%{name}.service
@@ -306,17 +328,19 @@ getent group %{name}-admin > /dev/null || groupadd -r %{name}-admin
 %{_unitdir}/%{name}-user.service
 %dir %{incuslibdir}
 %{incuslibdir}/*
+%{_sysusersdir}/%{name}.conf
+%{_tmpfilesdir}/%{name}.conf
 %{_mandir}/man1/incusd*.1.*
-%dir %{_localstatedir}/log/%{name}
-%defattr(-, root, root, 0711)
-%dir %{_localstatedir}/lib/%{name}
-
+%attr(700,root,root) %dir %{_localstatedir}/cache/%{name}
+%attr(700,root,root) %dir %{_localstatedir}/log/%{name}
+%attr(711,root,root) %dir %{_localstatedir}/lib/%{name}
 %gopkgfiles
 
 %files client -f incus.lang
 %license %{golicenses}
 %{_bindir}/%{name}
-%{_datadir}/bash-completion/completions/%{name}
+%dir %{bashcompletiondir}
+%{bashcompletiondir}/%{name}
 %{_mandir}/man1/%{name}*.1.*
 %exclude %{_mandir}/man1/incusd*.1.*
 %exclude %{_mandir}/man1/incus-agent.1.*
@@ -341,8 +365,6 @@ getent group %{name}-admin > /dev/null || groupadd -r %{name}-admin
 %files agent
 %license %{golicenses}
 %{_bindir}/incus-agent
-%{_unitdir}/%{name}-agent.service
-/lib/systemd/%{name}-agent-setup
 %{_mandir}/man1/incus-agent.1.*
 
 %files doc

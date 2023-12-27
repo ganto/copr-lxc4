@@ -7,7 +7,7 @@ Documentation=man:incusd(1)
 [Service]
 Environment=INCUS_DOCUMENTATION=/usr/share/doc/incus-doc/html
 Environment=INCUS_OVMF_PATH=/usr/share/edk2/ovmf
-ExecStart=/usr/lib/incus/incusd --group incus-admin --logfile=/var/log/incus/incusd.log
+ExecStart=/usr/lib/incus/incusd --group incus-admin
 ExecStartPost=/usr/lib/incus/incusd waitready --timeout=600
 KillMode=process
 TimeoutStartSec=600s
@@ -19,4 +19,4 @@ LimitNPROC=infinity
 TasksMax=infinity
 
 [Install]
-Also=incus-instances.service incus.socket
+Also=incus-startup.service incus.socket

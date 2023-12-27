@@ -1,0 +1,17 @@
+# Incus sources (including vendored sources) have duplicate files
+addFilter("incus-debugsource.*: E: files-duplicated-waste")
+
+# permissions are required like this by Incus
+# https://discuss.linuxcontainers.org/t/incus-log-file-and-directory-permissions/18520/4
+addFilter("incus.*: E: non-standard-dir-perm /var/cache/incus 700")
+addFilter("incus.*: E: non-standard-dir-perm /var/log/incus 700")
+addFilter("incus.*: E: non-standard-dir-perm /var/lib/incus 711")
+
+# already using new macro '%tmpfiles_create_package' in %pre
+addFilter("incus.*: W: post-without-tmpfile-creation /usr/lib/tmpfiles.d/incus.conf")
+
+# this is expected for golang packages
+addFilter("golang-github-lxc-incus-devel.noarch: W: hidden-file-or-dir /usr/share/gocode/src/github.com/lxc/incus/.goipath")
+
+# can happen, nothing to worry about
+addFilter("golang-github-lxc-incus-devel.noarch: W: files-duplicate *")
