@@ -372,6 +372,11 @@ export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
 %doc doc/html
 
 %changelog
+* Wed Dec 27 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.4-0.2
+- Use systemd sysusers/tmpfiles
+- Update dependencies to use 'Recommends'
+- Remove unneeded incus-agent script and systemd unit
+
 * Thu Dec 21 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.4-0.1
 - Update to 0.4
 - Update swagger-ui to v5.10.5
