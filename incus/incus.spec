@@ -372,6 +372,9 @@ export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
 %doc doc/html
 
 %changelog
+* Thu Dec 28 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.4-0.3
+- Fix typo in tmpfiles config
+
 * Wed Dec 27 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.4-0.2
 - Use systemd sysusers/tmpfiles
 - Update dependencies to use 'Recommends'
