@@ -10,7 +10,7 @@ Version:        0.4
 %global golicenses COPYING
 
 Name:           incus
-Release:        0.2%{?dist}
+Release:        0.3%{?dist}
 Summary:        Powerful system container and virtual machine manager
 License:        Apache-2.0
 URL:            https://linuxcontainers.org/incus
