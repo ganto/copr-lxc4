@@ -384,6 +384,13 @@ export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
 %doc doc/html
 
 %changelog
+* Fri Dec 29 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 5.19-0.1
+- Update to 5.19
+- Update swagger-ui to v5.10.5
+- Use systemd sysusers/tmpfiles
+- Update dependencies to use 'Recommends'
+- Remove unneeded lxd-agent script and systemd unit
+
 * Sun Nov 19 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 5.18-0.2
 - Add VM dependencies and UI as suggests
 
