@@ -1,0 +1,31 @@
+From 065a2503e9aa8fdca20bbe0a094c6184bd36eb3e Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Julian=20Peliz=C3=A4us?= <julian.pelizaeus@canonical.com>
+Date: Thu, 9 Nov 2023 13:43:36 +0200
+Subject: [PATCH] lxc: Use volume copy when moving to target project
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+This fixes a regression introduced in https://github.com/canonical/lxd/pull/12348.
+When the target project flag is set don't use the function for renaming volumes.
+
+Signed-off-by: Julian Pelizäus <julian.pelizaeus@canonical.com>
+---
+ lxc/storage_volume.go | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/lxc/storage_volume.go b/lxc/storage_volume.go
+index fb4346e848e9..27fa3589191f 100644
+--- a/lxc/storage_volume.go
++++ b/lxc/storage_volume.go
+@@ -1662,8 +1662,8 @@ func (c *cmdStorageVolumeMove) Run(cmd *cobra.Command, args []string) error {
+ 	}
+ 
+ 	// Rename volume if both remotes and pools of source and target are equal
+-	// and no destination cluster member name is set.
+-	if srcRemote == dstRemote && srcVolPool == dstVolPool && c.storageVolume.flagDestinationTarget == "" {
++	// and neither destination cluster member name nor target project are set.
++	if srcRemote == dstRemote && srcVolPool == dstVolPool && c.storageVolume.flagDestinationTarget == "" && c.storageVolumeCopy.flagTargetProject == "" {
+ 		var args []string
+ 
+ 		if srcRemote != "" {

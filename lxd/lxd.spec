@@ -1,64 +1,73 @@
 %bcond_without  check
 
-# enable debug for non-go code
-%global with_debug 1
-
-%if 0%{?with_debug}
-%global _find_debuginfo_dwz_opts %{nil}
-# https://bugzilla.redhat.com/show_bug.cgi?id=995136#c12
-%global _dwz_low_mem_die_limit 0
-%else
-%global debug_package %{nil}
-%endif
-
 # https://github.com/canonical/lxd
 %global goipath github.com/canonical/lxd
-Version:        5.18
+Version:        5.19
 
 %gometa
 
-%global godocs      AUTHORS
-%global golicenses  COPYING
+%global godocs AUTHORS CODE_OF_CONDUCT.md CONTRIBUTING.md README.md SECURITY.md
+%global golicenses COPYING
 
 Name:           lxd
-Release:        0.2%{?dist}
+Release:        0.1%{?dist}
 Summary:        Container hypervisor based on LXC
-
-# Upstream license specification: Apache-2.0
-License:        ASL 2.0
+License:        Apache-2.0
 URL:            https://ubuntu.com/lxd
 Source0:        https://github.com/canonical/lxd/releases/download/%{name}-%{version}/%{name}-%{version}.tar.gz
-Source1:        %{name}.socket
-Source2:        %{name}.service
-Source3:        lxd-containers.service
-Source4:        lxd.dnsmasq
-Source5:        lxd.logrotate
-Source6:        shutdown
-Source7:        lxd.sysctl
-Source8:        lxd.profile
-Source9:        lxd-agent.service
-Source10:       lxd-agent-setup
+
+# Systemd units
+Source101:      %{name}.socket
+Source102:      %{name}.service
+Source103:      %{name}-containers.service
+
+# Ensure lxd group exists
+Source104:      %{name}-sysusers.conf
+
+# Ensure state directories (/var/lib/lxd, /var/cache/lxd, /var/log/lxd) exists
+Source105:      %{name}-tmpfiles.conf
+
+# Ensure system dnsmasq ignores lxd network bridge
+Source106:      %{name}-dnsmasq.conf
+
+# Raise number of inotify user instances
+Source107:      %{name}-sysctl.conf
+
+# Helper script for lxd shutdown
+Source108:      shutdown
+
+# Web scripts shipped with API documentation
 # Latest downloads from https://github.com/swagger-api/swagger-ui/tree/master/dist
-Source11:       swagger-ui-bundle.js
-Source12:       swagger-ui-standalone-preset.js
-Source13:       swagger-ui.css
+Source201:      swagger-ui-bundle.js
+Source202:      swagger-ui-standalone-preset.js
+Source203:      swagger-ui.css
+
 # Upstream bug fixes merged to master for next release
-# https://github.com/canonical/lxd/issues/12295
-Patch0:         lxd-5.18-simplestreams-Fix-regression-in-lxd_combined-tar-gz-handling.patch
-# https://github.com/canonical/lxd/issues/12335
-Patch1:         lxd-5.18-Fix-duplicate-used-by-entry-in-storage-pool.patch
-# https://github.com/canonical/lxd/issues/12343
-Patch2:         lxd-5.18-lxd-instance-drivers-Check-running-status-with-InitPID-for-cgroups.patch
-# https://github.com/canonical/lxd/issues/12368
-Patch3:         lxd-5.18-network-Dont-consider-an-IP-parse-failure-of-a-proxy-listen-address-an-error.patch
-# https://github.com/canonical/lxd/issues/12401
-Patch4:         lxd-5.18-Fix-multiple-ephemeral-delete.patch
+
+# https://github.com/canonical/lxd/issues/12431
+Patch0:         lxd-5.19-Fix-missing-etag-when-retrieving-storage-pool.patch
+# https://github.com/canonical/lxd/issues/12459
+Patch1:         lxd-5.19-lxd-cluster-config-Add-missing-bool-default-values.patch
+# https://github.com/canonical/lxd/issues/12465
+Patch2:         lxd-5.19-zfs-Support-zfs-pools-containing-slash-in-the-path.patch
+# https://github.com/canonical/lxd/issues/12511
+Patch3:         lxd-5.19-lxd-instance-drivers-qemu_cmd-Return-clean-EOF-error.patch
+# https://github.com/canonical/lxd/issues/12518
+Patch4:         lxd-5.19-lxc-Use-volume-copy-when-moving-to-target-project.patch
+# https://github.com/canonical/lxd/issues/12583
+Patch5:         lxd-5.19-Fix-missing-defaults.patch
+# https://github.com/canonical/lxd/issues/12629
+Patch6:         lxd-5.19-Prevent-panic-when-devlxd-server-is-stopped.patch
+
 # Allow offline builds
-Patch5:         lxd-5.18-doc-Remove-downloads-from-sphinx-build.patch
-Patch6:         lxd-5.18-doc-Enhance-related-links-definitions-for-offline-build.patch
+Patch7:         lxd-5.19-doc-Remove-downloads-from-sphinx-build.patch
+Patch8:         lxd-5.19-doc-Enhance-related-links-definitions-for-offline-build.patch
+
+%global bashcompletiondir %(pkg-config --variable=completionsdir bash-completion 2>/dev/null || :)
 
 BuildRequires:  gettext
 BuildRequires:  help2man
+BuildRequires:  pkgconfig(bash-completion)
 BuildRequires:  pkgconfig(dqlite)
 BuildRequires:  pkgconfig(libacl)
 BuildRequires:  pkgconfig(libcap)
@@ -67,43 +76,32 @@ BuildRequires:  pkgconfig(libudev)
 BuildRequires:  pkgconfig(lxc)
 BuildRequires:  pkgconfig(raft)
 BuildRequires:  pkgconfig(sqlite3)
+BuildRequires:  systemd-rpm-macros
+%{?sysusers_requires_compat}
 
-Requires: acl
-Requires: attr
-Requires: dnsmasq
-Requires: (nftables or (ebtables-legacy and iptables-legacy))
-Requires: lxd-client = %{version}-%{release}
-Requires: lxcfs
-Requires: rsync
-Requires: shadow-utils >= 4.1.5
-Requires: squashfs-tools
-Requires: tar
-Requires: xdelta
-Requires: xz
+Requires:       lxd-client = %{version}-%{release}
+Requires:       attr
+Requires:       dnsmasq
+Requires:       iptables, ebtables
+Requires:       (nftables if iptables-nft)
+Requires:       lxcfs
+Requires:       rsync
+Requires:       shadow-utils >= 4.1.5
+Requires:       squashfs-tools
+Requires:       tar
+Requires:       xdelta
+Requires:       xz
 %{?systemd_requires}
-Requires(pre): container-selinux >= 2:2.38
-Requires(pre): shadow-utils
 
 %if %{with check}
 BuildRequires:  btrfs-progs
 BuildRequires:  dnsmasq
-BuildRequires:  ebtables-legacy
-BuildRequires:  iptables-legacy
+BuildRequires:  nftables
 %endif
 
-Recommends: logrotate
-Recommends: lxd-ui
-Suggests:   lxd-doc
-# Virtual machine support requires additional packages
-Recommends: lxd-agent
-Recommends: edk2-ovmf
-Recommends: genisoimage
-Recommends: qemu-char-spice
-Recommends: qemu-device-display-virtio-vga
-Recommends: qemu-device-display-virtio-gpu
-Recommends: qemu-device-usb-redirect
-Recommends: qemu-img
-Recommends: qemu-system-x86-core
+Recommends:     lxd-agent = %{version}-%{release}
+Recommends:     lxd-ui
+Suggests:       lxd-doc
 
 %description
 Container hypervisor based on LXC
@@ -116,6 +114,7 @@ This package contains the LXD daemon.
 
 %package client
 Summary:        Container hypervisor based on LXC - Client
+License:        Apache-2.0
 
 Requires:       gettext
 
@@ -127,6 +126,11 @@ This package contains the command line client.
 
 %package tools
 Summary:        Container hypervisor based on LXC - Extra Tools
+License:        Apache-2.0
+
+Requires:       lxd%{?_isa} = %{version}-%{release}
+# fuidshift is also shipped with incus
+Conflicts:      incus-tools
 
 %description tools
 LXD offers a REST API to remotely manage containers over the network,
@@ -139,7 +143,8 @@ This package contains extra tools provided with LXD.
 
 %package migrate
 Summary:        A physical to container migration tool
-#Requires:       netcat
+License:        Apache-2.0
+
 Requires:       rsync
 
 %description migrate
@@ -154,6 +159,18 @@ API to create a new container from it.
 
 %package agent
 Summary:        LXD guest agent
+License:        Apache-2.0
+
+Requires:       lxd%{?_isa} = %{version}-%{release}
+# Virtual machine support requires additional packages
+Recommends:     edk2-ovmf
+Recommends:     genisoimage
+Recommends:     qemu-char-spice
+Recommends:     qemu-device-display-virtio-vga
+Recommends:     qemu-device-display-virtio-gpu
+Recommends:     qemu-device-usb-redirect
+Recommends:     qemu-img
+Recommends:     qemu-kvm-core
 
 %description agent
 This packages provides an agent to run inside LXD virtual machine guests.
@@ -163,10 +180,22 @@ injection capability when creating a virtual machine.
 
 %package doc
 Summary:        Container hypervisor based on LXC - Documentation
+# This project is Apache-2.0. Other files bundled with the documentation have the
+# following licenses:
+# - _static/basic.css: BSD-2-Clause
+# - _static/clipboard.min.js: MIT
+# - _static/copy*: MIT
+# - _static/doctools.js: BSD-2-Clause
+# - _static/*/furo*: MIT
+# - _static/jquery*.js: MIT
+# - _static/language_data.js: BSD-2-Clause
+# - _static/pygments.css: BSD-2-Clause
+# - _static/searchtools.js: BSD-2-Clause
+# - _static/swagger-ui/*: Apache-2.0
+# - _static/underscore*.js: MIT
+License:        Apache-2.0 AND BSD-2-Clause AND MIT
 BuildArch:      noarch
 
-BuildRequires:  golang(gopkg.in/yaml.v3)
-BuildRequires:  golang(github.com/spf13/cobra)
 BuildRequires:  python3-furo
 BuildRequires:  python3-linkify-it-py
 BuildRequires:  python3-lxd-sphinx-extensions
@@ -195,13 +224,7 @@ This package contains user documentation.
 
 %prep
 %goprep -k
-%patch0 -p1
-%patch1 -p1
-%patch2 -p1
-%patch3 -p1
-%patch4 -p1
-%patch5 -p1
-%patch6 -p1
+%autopatch -v -p1
 
 %build
 export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
@@ -216,10 +239,12 @@ unset CGO_ENABLED
 
 # build documentation
 mkdir -p doc/.sphinx/_static/swagger-ui
-cp %{SOURCE11} %{SOURCE12} %{SOURCE13} doc/.sphinx/_static/swagger-ui
-sed -i 's|lxc.bin|_build/bin/lxc|' doc/conf.py
+cp %{SOURCE201} %{SOURCE202} %{SOURCE203} doc/.sphinx/_static/swagger-ui
+sed -i 's|lxc.bin|_build/bin/lxc|' doc/myconf.py doc/custom_conf.py
 sphinx-build -c doc/ -b dirhtml doc/ doc/html/
-rm -rf doc/html/{.buildinfo,.doctrees}
+rm -vrf doc/html/{.buildinfo,.doctrees}
+# remove duplicate files
+rm -vrf doc/html/{_sources,_sphinx_design_static}
 
 # build translations
 rm -f po/ber.po po/zh_Hans.po po/zh_Hant.po    # remove invalid locales
@@ -239,45 +264,39 @@ help2man %{gobuilddir}/bin/lxd-agent -n "LXD virtual machine guest agent" --no-i
 %gopkginstall
 
 # install binaries
-install -m 0755 -vd                     %{buildroot}%{_bindir}
-install -m 0755 -vp %{gobuilddir}/bin/* %{buildroot}%{_bindir}/
-
-# extra configs
-install -Dpm 0644 %{SOURCE4} %{buildroot}%{_sysconfdir}/dnsmasq.d/lxd
-install -Dpm 0644 %{SOURCE5} %{buildroot}%{_sysconfdir}/logrotate.d/lxd
-install -Dpm 0644 %{SOURCE7} %{buildroot}%{_sysconfdir}/sysctl.d/10-lxd-inotify.conf
-install -Dpm 0644 %{SOURCE8} %{buildroot}%{_sysconfdir}/profile.d/lxd.sh
-
-# install bash completion
-install -Dpm 0644 scripts/bash/lxd-client %{buildroot}%{_datadir}/bash-completion/completions/lxd-client
+install -d %{buildroot}%{_bindir}
+install -m0755 -vp %{gobuilddir}/bin/* %{buildroot}%{_bindir}/
 
 # install systemd units
-install -d -m 0755 %{buildroot}%{_unitdir}
-install -p -m 0644 %{SOURCE1} %{buildroot}%{_unitdir}/
-install -p -m 0644 %{SOURCE2} %{buildroot}%{_unitdir}/
-install -p -m 0644 %{SOURCE3} %{buildroot}%{_unitdir}/
-install -p -m 0644 %{SOURCE9} %{buildroot}%{_unitdir}/
-install -d -m 0755 %{buildroot}/lib/systemd
-install -p -m 0755 %{SOURCE10} %{buildroot}/lib/systemd/
+install -d %{buildroot}%{_unitdir}
+install -m0644 -vp %{SOURCE101} %{buildroot}%{_unitdir}/
+install -m0644 -vp %{SOURCE102} %{buildroot}%{_unitdir}/
+install -m0644 -vp %{SOURCE103} %{buildroot}%{_unitdir}/
+install -D -m0644 -vp %{SOURCE104} %{buildroot}%{_sysusersdir}/%{name}.conf
+install -D -m0644 -vp %{SOURCE105} %{buildroot}%{_tmpfilesdir}/%{name}.conf
+
+# extra configs
+install -D -m0644 -vp %{SOURCE106} %{buildroot}%{_sysconfdir}/dnsmasq.d/%{name}.conf
+install -D -m0644 -vp %{SOURCE107} %{buildroot}%{_sysconfdir}/sysctl.d/10-lxd-inotify.conf
 
 # install shutdown wrapper
-install -d -m 0755 %{buildroot}%{_libexecdir}/%{name}
-install -p -m 0755 %{SOURCE6} %{buildroot}%{_libexecdir}/%{name}
+install -D -m0755 -vp %{SOURCE108} %{buildroot}%{_libexecdir}/%{name}/shutdown
 
 # install manpages
 install -d %{buildroot}%{_mandir}/man1
-cp -p %{gobuilddir}/man/lxd*.1 %{buildroot}%{_mandir}/man1/
-cp -p %{gobuilddir}/man/lxc*.1 %{buildroot}%{_mandir}/man1/
-cp -p %{gobuilddir}/man/fuidshift.1 %{buildroot}%{_mandir}/man1/
+cp -p %{gobuilddir}/man/*.1 %{buildroot}%{_mandir}/man1/
+
+# install bash completion
+install -D -m0644 -vp scripts/bash/lxd-client %{buildroot}%{bashcompletiondir}/lxd-client
 
 # cache and log directories
-install -d -m 0711 %{buildroot}%{_localstatedir}/lib/%{name}
-install -d -m 0755 %{buildroot}%{_localstatedir}/log/%{name}
+install -d -m0700 %{buildroot}%{_localstatedir}/cache/%{name}
+install -d -m0700 %{buildroot}%{_localstatedir}/log/%{name}
+install -d -m0711 %{buildroot}%{_localstatedir}/lib/%{name}
 
 # language files
-install -dm 0755 %{buildroot}%{_datadir}/locale
 for mofile in po/*.mo ; do
-install -Dpm 0644 ${mofile} %{buildroot}%{_datadir}/locale/$(basename ${mofile%%.mo})/LC_MESSAGES/%{name}.mo
+    install -D -m0644 -vp ${mofile} %{buildroot}%{_datadir}/locale/$(basename ${mofile%%.mo})/LC_MESSAGES/%{name}.mo
 done
 %find_lang lxd
 
@@ -287,63 +306,57 @@ export GOPATH=%{buildroot}/%{gopath}:%{gopath}
 
 # Add libsqlite3 tag to go test
 %define gotestflags -buildmode pie -compiler gc -v -tags libsqlite3
-
-# Tests must ignore potential LXD_SOCKET from environment
-unset LXD_SOCKET
-
 export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
 
 %gocheck -v \
     -d %{goipath}/lxc-to-lxd  # lxc-to-lxd test fails, see ganto/copr-lxc3#10
-
 %endif
 
 %pre
-# check for existence of lxd group, create it if not found
-getent group %{name} > /dev/null || groupadd -r %{name}
+%sysusers_create_package %{name} %{SOURCE104}
+%tmpfiles_create_package %{name} %{SOURCE105}
 
 %post
+%sysctl_apply 10-lxd-inotify.conf
 %systemd_post %{name}.socket
 %systemd_post %{name}.service
 %systemd_post %{name}-containers.service
-
-%post agent
-%systemd_post %{name}-agent.service
 
 %preun
 %systemd_preun %{name}.socket
 %systemd_preun %{name}.service
 %systemd_preun %{name}-containers.service
 
-%preun agent
-%systemd_preun %{name}-agent.service
+%postun
+%systemd_postun_with_restart %{name}.socket
+%systemd_postun_with_restart %{name}.service
 
 %files
 %license %{golicenses}
-%config(noreplace) %{_sysconfdir}/dnsmasq.d/lxd
-%config(noreplace) %{_sysconfdir}/logrotate.d/lxd
+%config(noreplace) %{_sysconfdir}/dnsmasq.d/%{name}.conf
 %config(noreplace) %{_sysconfdir}/sysctl.d/10-lxd-inotify.conf
-%config(noreplace) %{_sysconfdir}/profile.d/lxd.sh
 %{_bindir}/%{name}
 %{_unitdir}/%{name}.socket
 %{_unitdir}/%{name}.service
 %{_unitdir}/%{name}-containers.service
 %dir %{_libexecdir}/%{name}
 %{_libexecdir}/%{name}/*
+%{_sysusersdir}/%{name}.conf
+%{_tmpfilesdir}/%{name}.conf
 %{_mandir}/man1/%{name}.*1.*
 %exclude %{_mandir}/man1/lxd-agent.1.*
 %exclude %{_mandir}/man1/lxd-benchmark.1.*
 %exclude %{_mandir}/man1/lxd-migrate.1.*
-%dir %{_localstatedir}/log/%{name}
-%defattr(-, root, root, 0711)
-%dir %{_localstatedir}/lib/%{name}
-
+%attr(700,root,root) %dir %{_localstatedir}/cache/%{name}
+%attr(700,root,root) %dir %{_localstatedir}/log/%{name}
+%attr(711,root,root) %dir %{_localstatedir}/lib/%{name}
 %gopkgfiles
 
 %files client -f lxd.lang
 %license %{golicenses}
 %{_bindir}/lxc
-%{_datadir}/bash-completion/completions/lxd-client
+%dir %{bashcompletiondir}
+%{bashcompletiondir}/lxd-client
 %{_mandir}/man1/lxc.*1.*
 %exclude %{_mandir}/man1/lxc-to-lxd.1.*
 
@@ -364,8 +377,6 @@ getent group %{name} > /dev/null || groupadd -r %{name}
 %files agent
 %license %{golicenses}
 %{_bindir}/lxd-agent
-%{_unitdir}/%{name}-agent.service
-/lib/systemd/%{name}-agent-setup
 %{_mandir}/man1/lxd-agent.1.*
 
 %files doc

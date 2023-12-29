@@ -1,0 +1,32 @@
+From 7e2091edb621363520de7cc95b2521931f528ed5 Mon Sep 17 00:00:00 2001
+From: Din Music <din.music@canonical.com>
+Date: Fri, 20 Oct 2023 13:48:32 +0200
+Subject: [PATCH] lxd/storage_pools: Fix etag when retrieving storage pool
+
+Signed-off-by: Din Music <din.music@canonical.com>
+---
+ lxd/storage_pools.go | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/lxd/storage_pools.go b/lxd/storage_pools.go
+index a39755e47fd0..8082d3da372d 100644
+--- a/lxd/storage_pools.go
++++ b/lxd/storage_pools.go
+@@ -624,7 +624,7 @@ func storagePoolGet(d *Daemon, r *http.Request) response.Response {
+ 		poolAPI.Status = pool.LocalStatus()
+ 	}
+ 
+-	etag := []any{pool.Name, pool.Driver, poolAPI.Config}
++	etag := []any{pool.Name(), pool.Driver().Info().Name, pool.Description(), poolAPI.Config}
+ 
+ 	return response.SyncResponseETag(true, &poolAPI, etag)
+ }
+@@ -711,7 +711,7 @@ func storagePoolPut(d *Daemon, r *http.Request) response.Response {
+ 	}
+ 
+ 	// Validate the ETag.
+-	etag := []any{pool.Name(), pool.Driver().Info().Name, etagConfig}
++	etag := []any{pool.Name(), pool.Driver().Info().Name, pool.Description(), etagConfig}
+ 
+ 	err = util.EtagCheck(r, etag)
+ 	if err != nil {

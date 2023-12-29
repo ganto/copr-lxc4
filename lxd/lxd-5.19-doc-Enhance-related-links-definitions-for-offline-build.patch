@@ -1,6 +1,6 @@
-commit e1230ca655f0a6ed44a31d445b32fd9ba1d89346
+commit 19f5642013be88efaf59fb4cff05749c88d01470
 Author: Reto Gantenbein <reto.gantenbein@linuxmonk.ch>
-Date:   Sun Aug 27 19:32:52 2023 +0200
+Date:   Thu Dec 28 13:51:44 2023 +0100
 
     doc: Enhance related-links definitions for offline build
 
@@ -105,6 +105,19 @@ index c2d5327b0..c136e0474 100644
  ```
  
  Communication between the hosted workload (instance) and its host while
+diff --git a/doc/doc-cheat-sheet.md b/doc/doc-cheat-sheet.md
+index a4b588745..5ecd273a7 100644
+--- a/doc/doc-cheat-sheet.md
++++ b/doc/doc-cheat-sheet.md
+@@ -692,7 +692,7 @@ The documentation uses some custom extensions.
+ 
+ You can add links to related websites to the sidebar by adding the following field at the top of the page:
+ 
+-    relatedlinks: https://github.com/canonical/lxd-sphinx-extensions, [RTFM](https://www.google.com)
++    relatedlinks: "[canonical/canonical-sphinx-extensions&#32;Sphinx&#32;extensions&#32;used&#32;by&#32;LXD](https://github.com/canonical/lxd-sphinx-extensions)", "[RTFM](https://www.google.com)"
+ 
+ To override the title, use Markdown syntax. Note that spaces are ignored; if you need spaces in the title, replace them with `&#32;`, and include the value in quotes if Sphinx complains about the metadata value because it starts with `[`.
+ 
 diff --git a/doc/explanation/clustering.md b/doc/explanation/clustering.md
 index 8780ac619..06d616a84 100644
 --- a/doc/explanation/clustering.md
@@ -141,7 +154,7 @@ index c8d80f74a..d76fb6eeb 100644
  
  (performance-tuning)=
 diff --git a/doc/explanation/projects.md b/doc/explanation/projects.md
-index 00ce01556..7af3a3643 100644
+index 475376025..292195d58 100644
 --- a/doc/explanation/projects.md
 +++ b/doc/explanation/projects.md
 @@ -2,6 +2,7 @@
@@ -197,7 +210,7 @@ index 0bd1b463f..215de1bb4 100644
  
  To run Docker inside a LXD container, set the {config:option}`instance-security:security.nesting` property of the container to `true`:
 diff --git a/doc/getting_started.md b/doc/getting_started.md
-index 9b1dade60..687922f8d 100644
+index 1fdd682bf..28041250c 100644
 --- a/doc/getting_started.md
 +++ b/doc/getting_started.md
 @@ -1,5 +1,5 @@
@@ -267,6 +280,17 @@ index 49a07eca8..091c56669 100644
  ```
  
  LXD provides a tool for disaster recovery in case the {ref}`LXD database <database>` is corrupted or otherwise lost.
+diff --git a/doc/howto/images_create.md b/doc/howto/images_create.md
+index 798027cb7..a2d384d69 100644
+--- a/doc/howto/images_create.md
++++ b/doc/howto/images_create.md
+@@ -1,5 +1,5 @@
+ ---
+-relatedlinks: https://ubuntu.com/tutorials/how-to-install-a-windows-11-vm-using-lxd
++relatedlinks: "[How&#32;to&#32;install&#32;a&#32;Windows&#32;11&#32;VM&#32;using&#32;LXD&#32;|&#32;Ubuntu](https://ubuntu.com/tutorials/how-to-install-a-windows-11-vm-using-lxd)"
+ ---
+ 
+ (images-create)=
 diff --git a/doc/howto/import_machines_to_instances.md b/doc/howto/import_machines_to_instances.md
 index 46bc520af..ac6257c5d 100644
 --- a/doc/howto/import_machines_to_instances.md
@@ -328,7 +352,7 @@ index 490d488d4..e840beef0 100644
  
  {abbr}`BGP (Border Gateway Protocol)` is a protocol that allows exchanging routing information between autonomous systems.
 diff --git a/doc/howto/network_forwards.md b/doc/howto/network_forwards.md
-index 474c7d5da..012b2a71f 100644
+index dfb3f9303..7bb41d124 100644
 --- a/doc/howto/network_forwards.md
 +++ b/doc/howto/network_forwards.md
 @@ -10,6 +10,7 @@ Network forwards are available for the {ref}`network-ovn` and the {ref}`network-
@@ -340,7 +364,7 @@ index 474c7d5da..012b2a71f 100644
  
  Network forwards allow an external IP address (or specific ports on it) to be forwarded to an internal IP address (or specific ports on it) in the network that the forward belongs to.
 diff --git a/doc/howto/network_ovn_setup.md b/doc/howto/network_ovn_setup.md
-index a67612a57..4a0558823 100644
+index d26619d5b..1c9ce548c 100644
 --- a/doc/howto/network_ovn_setup.md
 +++ b/doc/howto/network_ovn_setup.md
 @@ -45,6 +45,7 @@ Complete the following steps to create a standalone OVN network that is connecte
@@ -352,7 +376,7 @@ index a67612a57..4a0558823 100644
  
  Complete the following steps to set up a LXD cluster that uses an OVN network.
 diff --git a/doc/howto/network_zones.md b/doc/howto/network_zones.md
-index e66cfd409..b6b6d5ae8 100644
+index 63d30fb7d..f966eb885 100644
 --- a/doc/howto/network_zones.md
 +++ b/doc/howto/network_zones.md
 @@ -10,6 +10,7 @@ Network zones are available for the {ref}`network-ovn` and the {ref}`network-bri
@@ -364,7 +388,7 @@ index e66cfd409..b6b6d5ae8 100644
  
  Network zones can be used to serve DNS records for LXD networks.
 diff --git a/doc/howto/projects_confine.md b/doc/howto/projects_confine.md
-index 02b6a718f..647c14230 100644
+index 0fef86932..e9ca7a159 100644
 --- a/doc/howto/projects_confine.md
 +++ b/doc/howto/projects_confine.md
 @@ -9,6 +9,7 @@ How to confine a project to a specific user depends on the authentication method
@@ -383,7 +407,7 @@ index 02b6a718f..647c14230 100644
  ```
  
  If you are using the Canonical RBAC service, the RBAC roles define what operations a user with that role can carry out.
-@@ -61,6 +63,7 @@ To use RBAC to confine a project, go to the respective project in the RBAC inter
+@@ -62,6 +64,7 @@ To use RBAC to confine a project, go to the respective project in the RBAC inter
  ## Confine projects to specific LXD users
  
  ```{youtube} https://www.youtube.com/watch?v=6O0q3rSWr8A
@@ -428,7 +452,7 @@ index 97758abc7..eb5958951 100644
  
  LXD uses an image-based workflow.
 diff --git a/doc/index.md b/doc/index.md
-index fe02978ac..5af626596 100644
+index 0db78f0f3..80f89d67d 100644
 --- a/doc/index.md
 +++ b/doc/index.md
 @@ -1,5 +1,5 @@
@@ -438,17 +462,17 @@ index fe02978ac..5af626596 100644
  ---
  
  # LXD
-diff --git a/doc/index_topical.md b/doc/index_topical.md
-index e7731019e..8039a3bbe 100644
---- a/doc/index_topical.md
-+++ b/doc/index_topical.md
+diff --git a/doc/instances.md b/doc/instances.md
+index b8a8e8880..cc09b308f 100644
+--- a/doc/instances.md
++++ b/doc/instances.md
 @@ -1,5 +1,5 @@
  ---
--relatedlinks: https://ubuntu.com/lxd, https://ubuntu.com/blog/open-source-for-beginners-dev-environment-with-lxd
-+relatedlinks: "[Run&#32;system&#32;containers&#32;with&#32;LXD&#32;|&#32;Ubuntu](https://ubuntu.com/lxd)", "[Open&#32;source&#32;for&#32;beginners:&#32;setting&#32;up&#32;your&#32;dev&#32;environment&#32;with&#32;LXD&#32;|&#32;Ubuntu](https://ubuntu.com/blog/open-source-for-beginners-dev-environment-with-lxd)"
+-relatedlinks: https://ubuntu.com/tutorials/how-to-install-a-windows-11-vm-using-lxd
++relatedlinks: "[How&#32;to&#32;install&#32;a&#32;Windows&#32;11&#32;VM&#32;using&#32;LXD&#32;|&#32;Ubuntu](https://ubuntu.com/tutorials/how-to-install-a-windows-11-vm-using-lxd)"
  ---
  
- (index)=
+ (instances)=
 diff --git a/doc/metrics.md b/doc/metrics.md
 index 258096942..ae87c0339 100644
 --- a/doc/metrics.md
@@ -469,7 +493,7 @@ index 258096942..ae87c0339 100644
  
  <!-- Include start metrics intro -->
 diff --git a/doc/migration.md b/doc/migration.md
-index ba72f8a1f..969d070cc 100644
+index 67c3f7ebb..1cd0c2659 100644
 --- a/doc/migration.md
 +++ b/doc/migration.md
 @@ -2,6 +2,7 @@
@@ -481,7 +505,7 @@ index ba72f8a1f..969d070cc 100644
  
  LXD provides tools and functionality to migrate instances in different contexts.
 diff --git a/doc/projects.md b/doc/projects.md
-index 15ed5c2e7..e9a98df0c 100644
+index 4edd37b49..c06a5e621 100644
 --- a/doc/projects.md
 +++ b/doc/projects.md
 @@ -1,5 +1,5 @@
@@ -492,7 +516,7 @@ index 15ed5c2e7..e9a98df0c 100644
  
  (projects)=
 diff --git a/doc/reference/devices_disk.md b/doc/reference/devices_disk.md
-index 466c8535f..28897de7e 100644
+index 9638f9b51..21112b499 100644
 --- a/doc/reference/devices_disk.md
 +++ b/doc/reference/devices_disk.md
 @@ -2,6 +2,7 @@

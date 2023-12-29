@@ -1,0 +1,13 @@
+# LXD sources (including vendored sources) have duplicate files
+addFilter("lxd-debugsource.x86_64: E: files-duplicated-waste")
+
+# permissions are required like this by lxd
+addFilter("lxd.*: E: non-standard-dir-perm /var/cache/lxd 700")
+addFilter("lxd.*: E: non-standard-dir-perm /var/log/lxd 700")
+addFilter("lxd.*: E: non-standard-dir-perm /var/lib/lxd 711")
+
+# already using new macro '%tmpfiles_create_package' in %pre
+addFilter("lxd.*: W: post-without-tmpfile-creation /usr/lib/tmpfiles.d/lxd.conf")
+
+# this is expected for golang packages
+addFilter("golang-github-canonical-lxd-devel.noarch: W: hidden-file-or-dir /usr/share/gocode/src/github.com/canonical/lxd/.goipath")

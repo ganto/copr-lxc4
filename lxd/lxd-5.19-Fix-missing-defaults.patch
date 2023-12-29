@@ -1,0 +1,128 @@
+From 779396a99c7915b3879439b71ff930abdf11f2c0 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Julian=20Peliz=C3=A4us?= <julian.pelizaeus@canonical.com>
+Date: Wed, 6 Dec 2023 10:32:12 +0100
+Subject: [PATCH] lxd/cluster/config: Add missing description default values
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Signed-off-by: Julian Pelizäus <julian.pelizaeus@canonical.com>
+---
+ lxd/cluster/config/config.go | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/lxd/cluster/config/config.go b/lxd/cluster/config/config.go
+index 3fd8449f542e..881e964f3fcb 100644
+--- a/lxd/cluster/config/config.go
++++ b/lxd/cluster/config/config.go
+@@ -455,6 +455,7 @@ var ConfigSchema = config.Schema{
+ 	// ---
+ 	//  type: bool
+ 	//  scope: global
++	//  defaultdesc: `false`
+ 	//  shortdesc: Whether to set `Access-Control-Allow-Credentials`
+ 	"core.https_allowed_credentials": {Type: config.Bool, Default: "false"},
+ 
+@@ -523,6 +524,7 @@ var ConfigSchema = config.Schema{
+ 	// ---
+ 	//  type: bool
+ 	//  scope: global
++	//  defaultdesc: `false`
+ 	//  shortdesc: Whether to automatically trust clients signed by the CA
+ 	"core.trust_ca_certificates": {Type: config.Bool, Default: "false"},
+ 
+From b061ef9a43889e60b315bb6b003452f1f18c7b92 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Julian=20Peliz=C3=A4us?= <julian.pelizaeus@canonical.com>
+Date: Wed, 6 Dec 2023 10:32:35 +0100
+Subject: [PATCH] lxd/node: Add missing description default values
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Signed-off-by: Julian Pelizäus <julian.pelizaeus@canonical.com>
+---
+ lxd/node/config.go | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/lxd/node/config.go b/lxd/node/config.go
+index 767dfa155ebd..95ba1e728a5f 100644
+--- a/lxd/node/config.go
++++ b/lxd/node/config.go
+@@ -247,6 +247,7 @@ var ConfigSchema = config.Schema{
+ 	// ---
+ 	//  type: bool
+ 	//  scope: local
++	//  defaultdesc: `false`
+ 	//  shortdesc: Whether to enable the syslog unixgram socket listener
+ 	"core.syslog_socket": {Validator: validate.Optional(validate.IsBool), Type: config.Bool},
+ 
+From b15fa003059122d57bc3a45b8bf3aaf2ebc2bae9 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Julian=20Peliz=C3=A4us?= <julian.pelizaeus@canonical.com>
+Date: Wed, 6 Dec 2023 10:32:58 +0100
+Subject: [PATCH] Update metadata
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Signed-off-by: Julian Pelizäus <julian.pelizaeus@canonical.com>
+---
+ doc/config_options.txt          | 3 +++
+ lxd/metadata/configuration.json | 3 +++
+ 2 files changed, 6 insertions(+)
+
+diff --git a/doc/config_options.txt b/doc/config_options.txt
+index 440a5183c956..405feba1341f 100644
+--- a/doc/config_options.txt
++++ b/doc/config_options.txt
+@@ -1513,6 +1513,7 @@ See {ref}`server-expose`.
+ ```
+ 
+ ```{config:option} core.https_allowed_credentials server-core
++:defaultdesc: "`false`"
+ :scope: "global"
+ :shortdesc: "Whether to set `Access-Control-Allow-Credentials`"
+ :type: "bool"
+@@ -1609,6 +1610,7 @@ See {ref}`howto-storage-buckets`.
+ ```
+ 
+ ```{config:option} core.syslog_socket server-core
++:defaultdesc: "`false`"
+ :scope: "local"
+ :shortdesc: "Whether to enable the syslog unixgram socket listener"
+ :type: "bool"
+@@ -1616,6 +1618,7 @@ Set this option to `true` to enable the syslog unixgram socket to receive log me
+ ```
+ 
+ ```{config:option} core.trust_ca_certificates server-core
++:defaultdesc: "`false`"
+ :scope: "global"
+ :shortdesc: "Whether to automatically trust clients signed by the CA"
+ :type: "bool"
+diff --git a/lxd/metadata/configuration.json b/lxd/metadata/configuration.json
+index b5cb84c457bc..288eaec3e101 100644
+--- a/lxd/metadata/configuration.json
++++ b/lxd/metadata/configuration.json
+@@ -1649,6 +1649,7 @@
+ 					},
+ 					{
+ 						"core.https_allowed_credentials": {
++							"defaultdesc": "`false`",
+ 							"longdesc": "If enabled, the `Access-Control-Allow-Credentials` HTTP header value is set to `true`.",
+ 							"scope": "global",
+ 							"shortdesc": "Whether to set `Access-Control-Allow-Credentials`",
+@@ -1756,6 +1757,7 @@
+ 					},
+ 					{
+ 						"core.syslog_socket": {
++							"defaultdesc": "`false`",
+ 							"longdesc": "Set this option to `true` to enable the syslog unixgram socket to receive log messages from external processes.",
+ 							"scope": "local",
+ 							"shortdesc": "Whether to enable the syslog unixgram socket listener",
+@@ -1764,6 +1766,7 @@
+ 					},
+ 					{
+ 						"core.trust_ca_certificates": {
++							"defaultdesc": "`false`",
+ 							"longdesc": "",
+ 							"scope": "global",
+ 							"shortdesc": "Whether to automatically trust clients signed by the CA",

@@ -1,0 +1,27 @@
+From cc6ca7b88467f33ebc43e044f8786b39edc6ac8b Mon Sep 17 00:00:00 2001
+From: Din Music <din.music@canonical.com>
+Date: Thu, 7 Dec 2023 14:25:33 +0100
+Subject: [PATCH] lxd-agent: Prevent panic when devlxd server is stopped
+
+Signed-off-by: Din Music <din.music@canonical.com>
+---
+ lxd-agent/api_1.0.go | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/lxd-agent/api_1.0.go b/lxd-agent/api_1.0.go
+index ab3bdf3e7735..42cabbfec9df 100644
+--- a/lxd-agent/api_1.0.go
++++ b/lxd-agent/api_1.0.go
+@@ -169,7 +169,11 @@ func stopDevlxdServer(d *Daemon) error {
+ 	d.devlxdRunning = false
+ 	d.devlxdMu.Unlock()
+ 
+-	return servers["devlxd"].Close()
++	if servers["devlxd"] != nil {
++		return servers["devlxd"].Close()
++	}
++
++	return nil
+ }
+ 
+ func getClient(CID uint32, port int, serverCertificate string) (*http.Client, error) {
