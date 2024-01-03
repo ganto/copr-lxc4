@@ -10,33 +10,36 @@ Version:        0.4
 %global golicenses COPYING
 
 Name:           incus
-Release:        0.3%{?dist}
+Release:        0.4%{?dist}
 Summary:        Powerful system container and virtual machine manager
 License:        Apache-2.0
 URL:            https://linuxcontainers.org/incus
 Source0:        https://linuxcontainers.org/downloads/%{name}/%{name}-%{version}.tar.xz
 
 # Systemd units
-Source101:      incus.socket
-Source102:      incus.service
-Source103:      incus-startup.service
-Source104:      incus-user.socket
-Source105:      incus-user.service
+Source101:      %{name}.socket
+Source102:      %{name}.service
+Source103:      %{name}-startup.service
+Source104:      %{name}-user.socket
+Source105:      %{name}-user.service
 
 # Ensure Incus groups exist
-Source106:      incus-sysusers.conf
+Source106:      %{name}-sysusers.conf
 
 # Ensure state directories (/var/lib/incus, /var/cache/incus, /var/log/incus) exist
-Source107:      incus-tmpfiles.conf
+Source107:      %{name}-tmpfiles.conf
 
 # Ensure system dnsmasq ignores Incus network bridge
-Source108:      incus-dnsmasq.conf
+Source108:      %{name}-dnsmasq.conf
 
 # Raise number of inotify user instances
-Source109:      incus-sysctl.conf
+Source109:      %{name}-sysctl.conf
 
 # Helper script for incusd shutdown
 Source110:      shutdown
+
+# SELinux file labels
+Source111:      %{name}.fc
 
 # Web scripts shipped with API documentation
 # Latest downloads from https://github.com/swagger-api/swagger-ui/tree/master/dist
@@ -49,6 +52,7 @@ Patch0:         incus-0.2-doc-Remove-downloads-from-sphinx-build.patch
 
 %global incuslibdir %{_prefix}/lib/incus
 %global bashcompletiondir %(pkg-config --variable=completionsdir bash-completion 2>/dev/null || :)
+%global selinuxtype targeted
 
 BuildRequires:  gettext
 BuildRequires:  help2man
@@ -64,7 +68,8 @@ BuildRequires:  pkgconfig(sqlite3)
 BuildRequires:  systemd-rpm-macros
 %{?sysusers_requires_compat}
 
-Requires:       incus-client = %{version}-%{release}
+Requires:       %{name}-client = %{version}-%{release}
+Requires:       (%{name}-selinux = %{version}-%{release} if selinux-policy-%{selinuxtype})
 Requires:       attr
 Requires:       dnsmasq
 Requires:       iptables, ebtables
@@ -84,7 +89,8 @@ BuildRequires:  dnsmasq
 BuildRequires:  nftables
 %endif
 
-Recommends:     incus-agent = %{version}-%{release}
+Recommends:     %{name}-agent = %{version}-%{release}
+Suggests:       %{name}-doc
 
 %description
 Container hypervisor based on LXC
@@ -94,6 +100,21 @@ using an image based work-flow and with support for live migration.
 This package contains the Incus daemon.
 
 %godevelpkg
+
+%package selinux
+Summary:        Container hypervisor based on LXC - SELinux policy
+BuildArch:      noarch
+
+Requires:       container-selinux
+Requires(post): container-selinux
+BuildRequires:  selinux-policy-devel
+%{?selinux_requires}
+
+%description selinux
+Incus offers a REST API to remotely manage containers over the network,
+using an image based work-flow and with support for live migration.
+
+This package contains the SELinux policy.
 
 %package client
 Summary:        Container hypervisor based on LXC - Client
@@ -112,6 +133,8 @@ Summary:        Container hypervisor based on LXC - Extra Tools
 License:        Apache-2.0
 
 Requires:       incus%{?_isa} = %{version}-%{release}
+# fuidshift is also shipped with lxd
+Conflicts:      lxd-tools
 
 %description tools
 Incus offers a REST API to remotely manage containers over the network,
@@ -236,6 +259,16 @@ help2man %{gobuilddir}/bin/lxc-to-incus -n "Convert LXC containers to Incus" --n
 help2man %{gobuilddir}/bin/lxd-to-incus -n "LXD to Incus migration tool" --no-info --no-discard-stderr > %{gobuilddir}/man/lxd-to-incus.1
 help2man %{gobuilddir}/bin/incus-agent -n "Incus virtual machine guest agent" --no-info --no-discard-stderr > %{gobuilddir}/man/incus-agent.1
 
+# SELinux policy
+mkdir selinux
+cp -p %{SOURCE111} selinux/
+pushd selinux
+# generate the type enforcement file as it has no other content
+echo 'policy_module(%{name},1.0)' >%{name}.te
+%{__make} NAME=%{selinuxtype} -f %{_datadir}/selinux/devel/Makefile %{name}.pp
+bzip2 -9 %{name}.pp
+popd
+
 %install
 %gopkginstall
 
@@ -256,6 +289,9 @@ install -D -m0644 -vp %{SOURCE107} %{buildroot}%{_tmpfilesdir}/%{name}.conf
 # extra configs
 install -D -m0644 -vp %{SOURCE108} %{buildroot}%{_sysconfdir}/dnsmasq.d/%{name}.conf
 install -D -m0644 -vp %{SOURCE109} %{buildroot}%{_sysconfdir}/sysctl.d/10-incus-inotify.conf
+
+# selinux policy
+install -D -m0644 -vp selinux/%{name}.pp.bz2 %{buildroot}%{_datadir}/selinux/packages/%{selinuxtype}/%{name}.pp.bz2
 
 # install helper libs
 install -d %{buildroot}%{incuslibdir}
@@ -296,6 +332,9 @@ export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
 %sysusers_create_package %{name} %{SOURCE106}
 %tmpfiles_create_package %{name} %{SOURCE107}
 
+%pre selinux
+%selinux_relabel_pre -s %{selinuxtype}
+
 %post
 %sysctl_apply 10-incus-inotify.conf
 %systemd_post %{name}.socket
@@ -303,6 +342,10 @@ export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
 %systemd_post %{name}-startup.service
 %systemd_post %{name}-user.socket
 %systemd_post %{name}-user.service
+
+%post selinux
+%selinux_modules_install -s %{selinuxtype} %{_datadir}/selinux/packages/%{selinuxtype}/%{name}.pp.bz2
+%selinux_relabel_post -s %{selinuxtype}
 
 %preun
 %systemd_preun %{name}.socket
@@ -316,6 +359,15 @@ export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
 %systemd_postun_with_restart %{name}.service
 %systemd_postun_with_restart %{name}-user.socket
 %systemd_postun_with_restart %{name}-user.service
+
+%postun selinux
+if [ $1 -eq 0 ]; then
+    %selinux_modules_uninstall -s %{selinuxtype} %{name}
+    %selinux_relabel_post -s %{selinuxtype}
+fi
+
+%posttrans selinux
+%selinux_relabel_post -s %{selinuxtype}
 
 %files
 %license %{golicenses}
@@ -335,6 +387,10 @@ export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
 %attr(700,root,root) %dir %{_localstatedir}/log/%{name}
 %attr(711,root,root) %dir %{_localstatedir}/lib/%{name}
 %gopkgfiles
+
+%files selinux
+%{_datadir}/selinux/packages/%{selinuxtype}/%{name}.pp.*
+%ghost %verify(not md5 size mtime) %{_sharedstatedir}/selinux/%{selinuxtype}/active/modules/200/%{name}
 
 %files client -f incus.lang
 %license %{golicenses}
