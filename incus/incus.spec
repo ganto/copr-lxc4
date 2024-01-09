@@ -428,6 +428,9 @@ fi
 %doc doc/html
 
 %changelog
+* Wed Jan 10 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.4-0.4
+- Add incus-selinux sub package
+
 * Thu Dec 28 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.4-0.3
 - Fix typo in tmpfiles config
 
