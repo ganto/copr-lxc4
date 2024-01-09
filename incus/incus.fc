@@ -1,0 +1,8 @@
+/usr/s?bin/incus                    gen_context(system_u:object_r:container_runtime_exec_t,s0)
+/usr/s?bin/incus-.*                 gen_context(system_u:object_r:container_runtime_exec_t,s0)
+/usr/lib/incus(/.*)?                gen_context(system_u:object_r:container_runtime_exec_t,s0)
+/usr/lib/systemd/system/incus.*     gen_context(system_u:object_r:container_unit_file_t,s0)
+/var/cache/incus(/.*)?              gen_context(system_u:object_r:container_var_lib_t,s0)
+/var/lib/incus/unix.socket(.*)?  -s gen_context(system_u:object_r:container_var_run_t,s0)
+/var/lib/incus(/.*)?                gen_context(system_u:object_r:container_var_lib_t,s0)
+/var/log/incus(/.*)?                gen_context(system_u:object_r:container_log_t,s0)
