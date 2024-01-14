@@ -58,6 +58,9 @@ via JavaScript.
 
 
 %changelog
+* Sun Jan 14 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 1.0.1-0.23
+- Rebuild orphaned package from Fedora
+
 * Fri Jul 21 2023 Fedora Release Engineering <releng@fedoraproject.org> - 1.0.1-22
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_39_Mass_Rebuild
 
