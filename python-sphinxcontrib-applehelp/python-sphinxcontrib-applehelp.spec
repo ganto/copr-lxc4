@@ -68,6 +68,9 @@ popd
 
 
 %changelog
+* Sun Jan 14 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 1.0.7-0.2
+- Rebuild orphaned package from Fedora
+
 * Thu Nov 16 2023 Miro Hrončok <mhroncok@redhat.com> - 1.0.7-2
 - Remove a patch to drop the runtime dependency on Sphinx
 - It is no longer needed, python3-sphinx-7.2.6-2+ no longer Requires this
