@@ -2,7 +2,7 @@
 
 # https://github.com/lxc/incus
 %global goipath github.com/lxc/incus
-Version:        0.4
+Version:        0.5
 
 %gometa
 
@@ -10,7 +10,7 @@ Version:        0.4
 %global golicenses COPYING
 
 Name:           incus
-Release:        0.4%{?dist}
+Release:        0.1%{?dist}
 Summary:        Powerful system container and virtual machine manager
 License:        Apache-2.0
 URL:            https://linuxcontainers.org/incus
@@ -221,7 +221,7 @@ export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
 for cmd in incusd incus-user; do
     BUILDTAGS="libsqlite3" %gobuild -o %{gobuilddir}/lib/$cmd %{goipath}/cmd/$cmd
 done
-for cmd in incus fuidshift incus-benchmark lxc-to-incus; do
+for cmd in incus fuidshift incus-benchmark lxc-to-incus lxd-to-incus; do
     BUILDTAGS="libsqlite3" %gobuild -o %{gobuilddir}/bin/$cmd %{goipath}/cmd/$cmd
 done
 
@@ -229,11 +229,6 @@ export CGO_ENABLED=0
 BUILDTAGS="netgo" %gobuild -o %{gobuilddir}/bin/incus-migrate %{goipath}/cmd/incus-migrate
 BUILDTAGS="agent netgo" %gobuild -o %{gobuilddir}/bin/incus-agent %{goipath}/cmd/incus-agent
 unset CGO_ENABLED
-
-pushd cmd/lxd-to-incus
-ln -s vendor src
-GOPATH=${GOPATH}$(pwd) %gobuild -o %{gobuilddir}/bin/lxd-to-incus ./
-popd
 
 # build documentation
 mkdir -p doc/.sphinx/_static/swagger-ui
