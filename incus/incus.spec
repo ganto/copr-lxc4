@@ -2,7 +2,7 @@
 
 # https://github.com/lxc/incus
 %global goipath github.com/lxc/incus
-Version:        0.5
+Version:        0.5.1
 
 %gometa
 
@@ -47,8 +47,13 @@ Source201:      swagger-ui-bundle.js
 Source202:      swagger-ui-standalone-preset.js
 Source203:      swagger-ui.css
 
+# Upstream bug fixes merged to master for next release
+
+# https://github.com/lxc/incus/pull/455
+Patch0:         incus-0.5.1-incusd-instance-qemu-agent-loader-Handle-legacy-lxd-agent-loader.patch
+
 # Allow offline builds
-Patch0:         incus-0.2-doc-Remove-downloads-from-sphinx-build.patch
+Patch1:         incus-0.2-doc-Remove-downloads-from-sphinx-build.patch
 
 %global incuslibdir %{_prefix}/lib/incus
 %global bashcompletiondir %(pkg-config --variable=completionsdir bash-completion 2>/dev/null || :)
@@ -224,6 +229,9 @@ done
 for cmd in incus fuidshift incus-benchmark lxc-to-incus lxd-to-incus; do
     BUILDTAGS="libsqlite3" %gobuild -o %{gobuilddir}/bin/$cmd %{goipath}/cmd/$cmd
 done
+
+# upstream %gobuildflags contain '-linkmode=external' which conflicts with CGO_ENABLED=0
+%global gobuildflags -tags="${BUILDTAGS:-}" -ldflags "${LDFLAGS:-} -B 0x$(head -c20 /dev/urandom|od -An -tx1|tr -d ' \\n')" -a -v -x
 
 export CGO_ENABLED=0
 BUILDTAGS="netgo" %gobuild -o %{gobuilddir}/bin/incus-migrate %{goipath}/cmd/incus-migrate
