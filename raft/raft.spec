@@ -1,10 +1,10 @@
 Name:           raft
-Version:        0.18.3
-Release:        0.2%{?dist}
+Version:        0.22.0
+Release:        0.1%{?dist}
 Summary:        C implementation of the Raft consensus protocol
 
 License:        LGPL-3.0-only WITH LGPL-3.0-linking-exception
-URL:            https://github.com/cowsql/raft
+URL:            https://raft.readthedocs.io/
 Source0:        %{URL}/archive/v%{version}.tar.gz
 
 BuildRequires:  autoconf libtool
@@ -43,19 +43,22 @@ BuildRequires:  python-sphinx
 This package contains the C-Raft documentation in HTML format.
 
 %prep
-%setup -q -n %{name}-%{version}
+%autosetup -p1 -n %{name}-%{version}
 
 %build
 autoreconf -i
 %configure --disable-static --enable-benchmark
 %make_build
 sphinx-build -b html -d docs/_build/doctrees docs docs/_build/html
+rm -vf docs/_build/html/.buildinfo
 
 %install
 %make_install
 rm -f %{buildroot}%{_libdir}/libraft.la
 
 %check
+# parallel testing is broken: https://github.com/ganto/copr-lxc4/issues/35
+%global _smp_mflags -j1
 %make_build check
 
 %ldconfig_scriptlets
