@@ -437,6 +437,10 @@ fi
 %doc doc/html
 
 %changelog
+* Thu Feb 29 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch>
+- Update to 0.6
+- Update swagger-ui to v5.11.8
+
 * Thu Feb 08 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.5.1-0.1
 - Update to 0.5.1
 - Update swagger-ui to v5.11.3
