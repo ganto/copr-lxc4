@@ -41,6 +41,9 @@ Summary:        %{summary}
 %doc README.md
 
 %changelog
+* Wed Mar 06 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.0.3-0.2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_40_Mass_Rebuild
+
 * Wed Oct 11 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.0.3-0.1
 - Initial release
 
