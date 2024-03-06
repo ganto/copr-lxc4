@@ -1,6 +1,6 @@
 Name:           python-sphinx-remove-toctrees
 Version:        0.0.3
-Release:        0.1%{?dist}
+Release:        0.2%{?dist}
 Summary:        Speed up Sphinx builds by selectively removing toctrees from some pages
 
 License:        MIT
