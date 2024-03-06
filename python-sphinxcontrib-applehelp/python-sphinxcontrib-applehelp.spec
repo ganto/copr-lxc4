@@ -68,6 +68,9 @@ popd
 
 
 %changelog
+* Wed Mar 06 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 1.0.7-0.3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_40_Mass_Rebuild
+
 * Sun Jan 14 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 1.0.7-0.2
 - Rebuild orphaned package from Fedora
 
