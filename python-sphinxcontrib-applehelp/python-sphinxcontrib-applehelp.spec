@@ -1,6 +1,6 @@
 Name:           python-sphinxcontrib-applehelp
 Version:        1.0.7
-Release:        0.2%{?dist}
+Release:        0.3%{?dist}
 Summary:        Sphinx extension for Apple help books
 License:        BSD-2-Clause
 URL:            http://sphinx-doc.org/
