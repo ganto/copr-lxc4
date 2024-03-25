@@ -54,6 +54,9 @@ rm -f %{buildroot}%{_libdir}/libdqlite.la
 %{_includedir}/%{name}.h
 
 %changelog
+* Mon Mar 25 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 1.16.4-0.1
+- Update to 1.16.4.
+
 * Fri Dec 22 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 1.16.0-0.2
 - Rebuild due to raft ABI change
 
