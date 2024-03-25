@@ -1,0 +1,45 @@
+From bea9e6f72c6a6aff628a3362cdc8dc6fabbb11c0 Mon Sep 17 00:00:00 2001
+From: Free Ekanayaka <free@ekanayaka.io>
+Date: Fri, 1 Mar 2024 09:36:09 -0500
+Subject: [PATCH] raft/uv: Drop AI_V4MAPPED | AI_ADDRCONFIG from getaddrinfo
+
+Since we're currently only supporting IPv4 and since we're setting
+ai_family to AF_INET, the AI_ADDRCONFIG flag is not really making any
+difference as getaddrinfo returns only IPv4 addresses.
+
+This makes the test suite pass also if there isn't a non-loopback
+network interface on the system configured with IPv4.
+
+Signed-off-by: Free Ekanayaka <free@ekanayaka.io>
+Signed-off-by: Cole Miller <cole.miller@canonical.com>
+---
+ src/raft/uv_ip.c          | 2 +-
+ src/raft/uv_tcp_connect.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/raft/uv_ip.c b/src/raft/uv_ip.c
+index 4e4ff9f3f..ffc0ba44f 100644
+--- a/src/raft/uv_ip.c
++++ b/src/raft/uv_ip.c
+@@ -58,7 +58,7 @@ int uvIpAddrSplit(const char *address,
+ int uvIpResolveBindAddresses(const char *address, struct addrinfo **ai_result)
+ {
+ 	static struct addrinfo hints = {
+-	    .ai_flags = AI_ADDRCONFIG | AI_PASSIVE | AI_NUMERICSERV,
++	    .ai_flags = AI_PASSIVE | AI_NUMERICSERV,
+ 	    .ai_family = AF_INET,
+ 	    .ai_socktype = SOCK_STREAM,
+ 	    .ai_protocol = 0};
+diff --git a/src/raft/uv_tcp_connect.c b/src/raft/uv_tcp_connect.c
+index e493d14a8..a13c68531 100644
+--- a/src/raft/uv_tcp_connect.c
++++ b/src/raft/uv_tcp_connect.c
+@@ -261,7 +261,7 @@ static void uvGetAddrInfoCb(uv_getaddrinfo_t *req,
+ /* Create a new TCP handle and submit a connection request to the event loop. */
+ static int uvTcpConnectStart(struct uvTcpConnect *r, const char *address)
+ {
+-	static struct addrinfo hints = {.ai_flags = AI_V4MAPPED | AI_ADDRCONFIG,
++	static struct addrinfo hints = {.ai_flags = 0,
+ 					.ai_family = AF_INET,
+ 					.ai_socktype = SOCK_STREAM,
+ 					.ai_protocol = 0};
