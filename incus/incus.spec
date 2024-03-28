@@ -2,7 +2,7 @@
 
 # https://github.com/lxc/incus
 %global goipath github.com/lxc/incus
-Version:        0.6
+Version:        0.7
 
 %gometa
 
@@ -47,19 +47,8 @@ Source201:      swagger-ui-bundle.js
 Source202:      swagger-ui-standalone-preset.js
 Source203:      swagger-ui.css
 
-# Upstream bug fixes merged to master for next release
-
-# https://github.com/lxc/incus/issues/507
-Patch0:         incus-0.6-incus-instance-qemu-Fix-RecordOutput.patch
-# https://github.com/lxc/incus/pull/523/files
-Patch1:         incus-0.6-incus-image-Fix-column-handling-with-all-projects.patch
-# https://github.com/lxc/incus/issues/530
-Patch2:         incus-0.6-incusd-device-disk-Fix-incorrect-block-volume-usage.patch
-# https://github.com/lxc/incus/issues/537
-Patch3:         incus-0.6-incusd-network-bridge-Set-local-address-on-all-VXLAN-tunnels.patch
-
 # Allow offline builds
-Patch4:         incus-0.2-doc-Remove-downloads-from-sphinx-build.patch
+Patch0:         incus-0.2-doc-Remove-downloads-from-sphinx-build.patch
 
 %global incuslibdir %{_prefix}/lib/incus
 %global bashcompletiondir %(pkg-config --variable=completionsdir bash-completion 2>/dev/null || :)
