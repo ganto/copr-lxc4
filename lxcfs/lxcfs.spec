@@ -80,6 +80,9 @@ install -D -m0644 -vp %{SOURCE1} %{buildroot}%{_tmpfilesdir}/%{name}.conf
 
 
 %changelog
+* Thu Mar 28 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.0.0-0.1
+- Update to 6.0.0.
+
 * Thu Jan 25 2024 Fedora Release Engineering <releng@fedoraproject.org> - 5.0.4-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_40_Mass_Rebuild
 
