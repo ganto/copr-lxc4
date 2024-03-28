@@ -1,0 +1,2 @@
+# These are not spelling errors:
+addFilter(r" spelling-error \('proc[fs]?|uptime',")

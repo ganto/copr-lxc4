@@ -1,23 +1,25 @@
-Name:         lxcfs
-Version:      5.0.4
-Release:      0.1%{?dist}
-Summary:      FUSE based filesystem for LXC
-License:      ASL 2.0
-URL:          https://linuxcontainers.org/lxcfs
-Source0:      https://linuxcontainers.org/downloads/%{name}/%{name}-%{version}.tar.gz
-BuildRequires:    meson
-BuildRequires:    gcc
-BuildRequires:    python3-jinja2
-BuildRequires:    gawk
-BuildRequires:    make
-BuildRequires:    fuse-devel
-BuildRequires:    help2man
-BuildRequires:    systemd
-Requires(post):   systemd
+Name:		  lxcfs
+Version:	  6.0.0
+Release:	  0.1%{?dist}
+Summary:	  FUSE based filesystem for LXC
+License:	  ASL 2.0
+URL:		  https://linuxcontainers.org/lxcfs
+Source0:	  https://linuxcontainers.org/downloads/%{name}/%{name}-%{version}.tar.gz
+Source1:	  %{name}-tmpfiles.conf
+BuildRequires:	  meson
+BuildRequires:	  gcc
+BuildRequires:	  python3-jinja2
+BuildRequires:	  gawk
+BuildRequires:	  make
+BuildRequires:	  fuse-devel
+BuildRequires:	  help2man
+BuildRequires:	  systemd
+BuildRequires:	  systemd-rpm-macros
+Requires(post):	  systemd
 Requires(preun):  systemd
 Requires(postun): systemd
 # for /usr/share/lxc/config/common.conf.d:
-Requires:     lxc-templates
+Requires:	  lxc-templates
 
 
 %description
@@ -43,9 +45,11 @@ how long the host is running.
 %install
 %meson_install
 mkdir -p %{buildroot}%{_sharedstatedir}/%{name}
+install -D -m0644 -vp %{SOURCE1} %{buildroot}%{_tmpfilesdir}/%{name}.conf
 
 
 %post
+%tmpfiles_create %{_tmpfilesdir}/%{name}.conf
 %systemd_post %{name}.service
 
 
@@ -70,22 +74,35 @@ mkdir -p %{buildroot}%{_sharedstatedir}/%{name}
 %{_datadir}/%{name}/lxc.reboot.hook
 %{_mandir}/man1/%{name}.1*
 %{_unitdir}/%{name}.service
+%{_tmpfilesdir}/%{name}.conf
 %{_datadir}/lxc/config/common.conf.d/00-lxcfs.conf
 %dir %{_sharedstatedir}/%{name}
 
 
 %changelog
-* Sat Jul 29 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 5.0.4-0.1
+* Thu Jan 25 2024 Fedora Release Engineering <releng@fedoraproject.org> - 5.0.4-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_40_Mass_Rebuild
+
+* Sun Jan 21 2024 Fedora Release Engineering <releng@fedoraproject.org> - 5.0.4-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_40_Mass_Rebuild
+
+* Wed Aug  2 2023 Thomas Moschny <thomas.moschny@gmx.de> - 5.0.4-1
 - Update to 5.0.4.
 
-* Sat Jan 28 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 5.0.3-0.1
+* Thu Jul 20 2023 Fedora Release Engineering <releng@fedoraproject.org> - 5.0.3-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_39_Mass_Rebuild
+
+* Fri Jan 20 2023 Thomas Moschny <thomas.moschny@gmx.de> - 5.0.3-1
 - Update to 5.0.3.
 
-* Fri Aug 12 2022 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 5.0.2-0.1
+* Thu Jan 19 2023 Fedora Release Engineering <releng@fedoraproject.org> - 5.0.2-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_38_Mass_Rebuild
+
+* Fri Sep  2 2022 Thomas Moschny <thomas.moschny@gmx.de> - 5.0.2-1
 - Update to 5.0.2.
 
-* Wed Jul 27 2022 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 5.0.1-0.1
-- Update to 5.0.1.
+* Thu Jul 21 2022 Fedora Release Engineering <releng@fedoraproject.org> - 5.0.0-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_37_Mass_Rebuild
 
 * Wed May 25 2022 Thomas Moschny <thomas.moschny@gmx.de> - 5.0.0-1
 - Update to 5.0.0.
