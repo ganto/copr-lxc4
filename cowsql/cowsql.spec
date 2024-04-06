@@ -1,5 +1,5 @@
 Name:           cowsql
-Version:        1.15.4
+Version:        1.15.6
 Release:        0.1%{?dist}
 Summary:        Embeddable, replicated and fault tolerant SQL engine
 
