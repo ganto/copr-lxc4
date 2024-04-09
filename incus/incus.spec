@@ -2,7 +2,7 @@
 
 # https://github.com/lxc/incus
 %global goipath github.com/lxc/incus
-Version:        0.7
+Version:        6.0.0
 
 %gometa
 
@@ -233,6 +233,12 @@ BUILDTAGS="netgo" %gobuild -o %{gobuilddir}/bin/incus-migrate %{goipath}/cmd/inc
 BUILDTAGS="agent netgo" %gobuild -o %{gobuilddir}/bin/incus-agent %{goipath}/cmd/incus-agent
 unset CGO_ENABLED
 
+# build shell completions
+mkdir %{gobuilddir}/completions
+%{gobuilddir}/bin/%{name} completion bash > %{gobuilddir}/completions/%{name}.bash
+%{gobuilddir}/bin/%{name} completion fish > %{gobuilddir}/completions/%{name}.fish
+%{gobuilddir}/bin/%{name} completion zsh > %{gobuilddir}/completions/%{name}.zsh
+
 # build documentation
 mkdir -p doc/.sphinx/_static/swagger-ui
 cp %{SOURCE201} %{SOURCE202} %{SOURCE203} doc/.sphinx/_static/swagger-ui
@@ -300,8 +306,10 @@ install -m0755 -vp %{gobuilddir}/lib/* %{buildroot}%{incuslibdir}/
 install -d %{buildroot}%{_mandir}/man1
 cp -p %{gobuilddir}/man/*.1 %{buildroot}%{_mandir}/man1/
 
-# install bash completion
-install -D -m0644 -vp scripts/bash/incus %{buildroot}%{bashcompletiondir}/%{name}
+# install shell completions
+install -D -m0644 -vp %{gobuilddir}/completions/%{name}.bash %{buildroot}%{bashcompletiondir}/%{name}
+install -D -m0644 -vp %{gobuilddir}/completions/%{name}.fish %{buildroot}%{fish_completions_dir}/%{name}.fish
+install -D -m0644 -vp %{gobuilddir}/completions/%{name}.zsh %{buildroot}%{zsh_completions_dir}/_%{name}
 
 # cache and log directories
 install -d -m0700 %{buildroot}%{_localstatedir}/cache/%{name}
@@ -395,6 +403,8 @@ fi
 %{_bindir}/%{name}
 %dir %{bashcompletiondir}
 %{bashcompletiondir}/%{name}
+%{fish_completions_dir}/%{name}.fish
+%{zsh_completions_dir}/_%{name}
 %{_mandir}/man1/%{name}*.1.*
 %exclude %{_mandir}/man1/incusd*.1.*
 %exclude %{_mandir}/man1/incus-agent.1.*
