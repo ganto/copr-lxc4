@@ -1,5 +1,5 @@
 Name:           raft
-Version:        0.22.0
+Version:        0.22.1
 Release:        0.1%{?dist}
 Summary:        C implementation of the Raft consensus protocol
 
@@ -83,7 +83,7 @@ rm -f %{buildroot}%{_libdir}/libraft.la
 %doc docs/_build/html/
 
 %changelog
-* Fri Feb 16 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch>
+* Fri Feb 16 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.22.0-0.1
 - Update to 0.22.0
 
 * Fri Dec 22 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.18.3-0.2
