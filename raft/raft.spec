@@ -83,6 +83,9 @@ rm -f %{buildroot}%{_libdir}/libraft.la
 %doc docs/_build/html/
 
 %changelog
+* Sat Apr 13 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.22.1-0.1
+- Update to 0.22.1
+
 * Fri Feb 16 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.22.0-0.1
 - Update to 0.22.0
 
