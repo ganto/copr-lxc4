@@ -277,6 +277,9 @@ cp -a %{SOURCE1} %{buildroot}%{_sysconfdir}/sysconfig/%{name}-net
 
 
 %changelog
+* Sat Apr 13 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.0.0-0.1
+- Update to 6.0.0.
+
 * Tue Apr 09 2024 Sérgio Basto <sergio@serjux.com> - 5.0.3-2
 - (#2274215) force lxc requires lxc-libs
 - Add more Requires
