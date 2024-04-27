@@ -429,6 +429,11 @@ fi
 %doc doc/html
 
 %changelog
+* Sat Apr 27 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 5.20-0.1
+- Update to 5.20.
+- Add lxd-selinux sub package
+- Update swagger-ui to v5.17.2
+
 * Fri Dec 29 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 5.19-0.1
 - Update to 5.19
 - Update swagger-ui to v5.10.5
