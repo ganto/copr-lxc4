@@ -1,0 +1,75 @@
+From d0b991dca948d400b31f724a5d4ea6b274bf6763 Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Wed, 28 Feb 2024 15:46:19 +0000
+Subject: [PATCH] lxd/instance/drivers/driver/qemu: Don't leak file descriptor
+ when probing for Direct I/O support
+
+Fixes #12808
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/instance/drivers/driver_qemu.go | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/lxd/instance/drivers/driver_qemu.go b/lxd/instance/drivers/driver_qemu.go
+index beac45477900..bd35fc06fa99 100644
+--- a/lxd/instance/drivers/driver_qemu.go
++++ b/lxd/instance/drivers/driver_qemu.go
+@@ -3887,9 +3887,11 @@ func (d *qemu) addDriveConfig(qemuDev map[string]string, bootIndexes map[string]
+ 			} else {
+ 				// Use host cache, with neither O_DSYNC nor O_DIRECT semantics if filesystem
+ 				// doesn't support Direct I/O.
+-				_, err := os.OpenFile(srcDevPath, unix.O_DIRECT|unix.O_RDONLY, 0)
++				f, err := os.OpenFile(srcDevPath, unix.O_DIRECT|unix.O_RDONLY, 0)
+ 				if err != nil {
+ 					cacheMode = "writeback"
++				} else {
++					_ = f.Close() // Don't leak FD.
+ 				}
+ 			}
+ 
+From 2743f98f7d4f9d1b47435eaba76f74177a421051 Mon Sep 17 00:00:00 2001
+From: Thomas Parrott <thomas.parrott@canonical.com>
+Date: Wed, 28 Feb 2024 16:13:02 +0000
+Subject: [PATCH] lxd/device/disk: Remove config.iso file when the
+ cloud-init:config disk device is removed
+
+Signed-off-by: Thomas Parrott <thomas.parrott@canonical.com>
+---
+ lxd/device/disk.go | 26 ++++++++++++++++++++++++++
+ 1 file changed, 26 insertions(+)
+
+diff --git a/lxd/device/disk.go b/lxd/device/disk.go
+index d41070c191e9..d99f82dcdb88 100644
+--- a/lxd/device/disk.go
++++ b/lxd/device/disk.go
+@@ -2276,3 +2276,29 @@ func (d *disk) cephCreds() (clusterName string, userName string) {
+ 
+ 	return clusterName, userName
+ }
++
++// Remove cleans up the device when it is removed from an instance.
++func (d *disk) Remove() error {
++	// Remove the config.iso file for cloud-init config drives.
++	if d.config["source"] == diskSourceCloudInit {
++		pool, err := storagePools.LoadByInstance(d.state, d.inst)
++		if err != nil {
++			return err
++		}
++
++		_, err = pool.MountInstance(d.inst, nil)
++		if err != nil {
++			return err
++		}
++
++		defer func() { _ = pool.UnmountInstance(d.inst, nil) }()
++
++		isoPath := filepath.Join(d.inst.Path(), "config.iso")
++		err = os.Remove(isoPath)
++		if err != nil && !errors.Is(err, os.ErrNotExist) {
++			return fmt.Errorf("Failed removing %s file: %w", diskSourceCloudInit, err)
++		}
++	}
++
++	return nil
++}

@@ -1,0 +1,2 @@
+/var/cache/lxd(/.*)?                gen_context(system_u:object_r:container_var_lib_t,s0)
+/var/lib/lxd/.*\.socket          -s gen_context(system_u:object_r:container_var_run_t,s0)

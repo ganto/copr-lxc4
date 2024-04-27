@@ -2,7 +2,7 @@
 
 # https://github.com/canonical/lxd
 %global goipath github.com/canonical/lxd
-Version:        5.19
+Version:        5.20
 
 %gometa
 
@@ -12,7 +12,7 @@ Version:        5.19
 Name:           lxd
 Release:        0.1%{?dist}
 Summary:        Container hypervisor based on LXC
-License:        Apache-2.0
+License:        AGPL-3.0-or-later and Apache-2.0
 URL:            https://ubuntu.com/lxd
 Source0:        https://github.com/canonical/lxd/releases/download/%{name}-%{version}/%{name}-%{version}.tar.gz
 
@@ -36,6 +36,9 @@ Source107:      %{name}-sysctl.conf
 # Helper script for lxd shutdown
 Source108:      shutdown
 
+# SELinux file labels
+Source109:      %{name}.fc
+
 # Web scripts shipped with API documentation
 # Latest downloads from https://github.com/swagger-api/swagger-ui/tree/master/dist
 Source201:      swagger-ui-bundle.js
@@ -44,26 +47,17 @@ Source203:      swagger-ui.css
 
 # Upstream bug fixes merged to master for next release
 
-# https://github.com/canonical/lxd/issues/12431
-Patch0:         lxd-5.19-Fix-missing-etag-when-retrieving-storage-pool.patch
-# https://github.com/canonical/lxd/issues/12459
-Patch1:         lxd-5.19-lxd-cluster-config-Add-missing-bool-default-values.patch
-# https://github.com/canonical/lxd/issues/12465
-Patch2:         lxd-5.19-zfs-Support-zfs-pools-containing-slash-in-the-path.patch
-# https://github.com/canonical/lxd/issues/12511
-Patch3:         lxd-5.19-lxd-instance-drivers-qemu_cmd-Return-clean-EOF-error.patch
-# https://github.com/canonical/lxd/issues/12518
-Patch4:         lxd-5.19-lxc-Use-volume-copy-when-moving-to-target-project.patch
-# https://github.com/canonical/lxd/issues/12583
-Patch5:         lxd-5.19-Fix-missing-defaults.patch
-# https://github.com/canonical/lxd/issues/12629
-Patch6:         lxd-5.19-Prevent-panic-when-devlxd-server-is-stopped.patch
+# https://github.com/canonical/lxd/issues/12730
+Patch0:         lxd-5.20-lxd-instance-qemu-Start-using-seabios-as-CSM-firmware.patch
+# https://github.com/canonical/lxd/issues/12808
+Patch1:         lxd-5.20-VM-Dont-leak-file-descriptor-when-probing-for-Direct-IO-support.patch
 
 # Allow offline builds
-Patch7:         lxd-5.19-doc-Remove-downloads-from-sphinx-build.patch
-Patch8:         lxd-5.19-doc-Enhance-related-links-definitions-for-offline-build.patch
+Patch2:         lxd-5.19-doc-Remove-downloads-from-sphinx-build.patch
+Patch3:         lxd-5.20-doc-Enhance-related-links-definitions-for-offline-build.patch
 
 %global bashcompletiondir %(pkg-config --variable=completionsdir bash-completion 2>/dev/null || :)
+%global selinuxtype targeted
 
 BuildRequires:  gettext
 BuildRequires:  help2man
@@ -74,12 +68,12 @@ BuildRequires:  pkgconfig(libcap)
 BuildRequires:  pkgconfig(libseccomp)
 BuildRequires:  pkgconfig(libudev)
 BuildRequires:  pkgconfig(lxc)
-BuildRequires:  pkgconfig(raft)
 BuildRequires:  pkgconfig(sqlite3)
 BuildRequires:  systemd-rpm-macros
 %{?sysusers_requires_compat}
 
-Requires:       lxd-client = %{version}-%{release}
+Requires:       %{name}-client = %{version}-%{release}
+Requires:       (%{name}-selinux = %{version}-%{release} if selinux-policy-%{selinuxtype})
 Requires:       attr
 Requires:       dnsmasq
 Requires:       iptables, ebtables
@@ -111,6 +105,21 @@ using an image based work-flow and with support for live migration.
 This package contains the LXD daemon.
 
 %godevelpkg
+
+%package selinux
+Summary:        Container hypervisor based on LXC - SELinux policy
+BuildArch:      noarch
+
+Requires:       container-selinux
+Requires(post): container-selinux
+BuildRequires:  selinux-policy-devel
+%{?selinux_requires}
+
+%description selinux
+Incus offers a REST API to remotely manage containers over the network,
+using an image based work-flow and with support for live migration.
+
+This package contains the SELinux policy.
 
 %package client
 Summary:        Container hypervisor based on LXC - Client
@@ -232,6 +241,9 @@ for cmd in lxd lxc fuidshift lxd-benchmark lxc-to-lxd; do
     BUILDTAGS="libsqlite3" %gobuild -o %{gobuilddir}/bin/$cmd %{goipath}/$cmd
 done
 
+# upstream %gobuildflags contain '-linkmode=external' which conflicts with CGO_ENABLED=0
+%global gobuildflags -tags="${BUILDTAGS:-}" -ldflags "${LDFLAGS:-} -B 0x$(head -c20 /dev/urandom|od -An -tx1|tr -d ' \\n')" -a -v -x
+
 export CGO_ENABLED=0
 BUILDTAGS="netgo" %gobuild -o %{gobuilddir}/bin/lxd-migrate %{goipath}/lxd-migrate
 BUILDTAGS="agent netgo" %gobuild -o %{gobuilddir}/bin/lxd-agent %{goipath}/lxd-agent
@@ -260,6 +272,16 @@ help2man %{gobuilddir}/bin/lxd-migrate -n "Physical to container migration tool"
 help2man %{gobuilddir}/bin/lxc-to-lxd -n "Convert LXC containers to LXD" --no-info --no-discard-stderr > %{gobuilddir}/man/lxc-to-lxd.1
 help2man %{gobuilddir}/bin/lxd-agent -n "LXD virtual machine guest agent" --no-info --no-discard-stderr > %{gobuilddir}/man/lxd-agent.1
 
+# SELinux policy
+mkdir selinux
+cp -p %{SOURCE109} selinux/
+pushd selinux
+# generate the type enforcement file as it has no other content
+echo 'policy_module(%{name},1.0)' >%{name}.te
+%{__make} NAME=%{selinuxtype} -f %{_datadir}/selinux/devel/Makefile %{name}.pp
+bzip2 -9 %{name}.pp
+popd
+
 %install
 %gopkginstall
 
@@ -278,6 +300,9 @@ install -D -m0644 -vp %{SOURCE105} %{buildroot}%{_tmpfilesdir}/%{name}.conf
 # extra configs
 install -D -m0644 -vp %{SOURCE106} %{buildroot}%{_sysconfdir}/dnsmasq.d/%{name}.conf
 install -D -m0644 -vp %{SOURCE107} %{buildroot}%{_sysconfdir}/sysctl.d/10-lxd-inotify.conf
+
+# selinux policy
+install -D -m0644 -vp selinux/%{name}.pp.bz2 %{buildroot}%{_datadir}/selinux/packages/%{selinuxtype}/%{name}.pp.bz2
 
 # install shutdown wrapper
 install -D -m0755 -vp %{SOURCE108} %{buildroot}%{_libexecdir}/%{name}/shutdown
@@ -303,12 +328,12 @@ done
 %if %{with check}
 %check
 export GOPATH=%{buildroot}/%{gopath}:%{gopath}
+export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
 
 # Add libsqlite3 tag to go test
 %define gotestflags -buildmode pie -compiler gc -v -tags libsqlite3
-export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
 
-%gocheck -v \
+%gocheck -v -t %{goipath}/test \
     -d %{goipath}/lxc-to-lxd  # lxc-to-lxd test fails, see ganto/copr-lxc3#10
 %endif
 
@@ -316,11 +341,18 @@ export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
 %sysusers_create_package %{name} %{SOURCE104}
 %tmpfiles_create_package %{name} %{SOURCE105}
 
+%pre selinux
+%selinux_relabel_pre -s %{selinuxtype}
+
 %post
 %sysctl_apply 10-lxd-inotify.conf
 %systemd_post %{name}.socket
 %systemd_post %{name}.service
 %systemd_post %{name}-containers.service
+
+%post selinux
+%selinux_modules_install -s %{selinuxtype} %{_datadir}/selinux/packages/%{selinuxtype}/%{name}.pp.bz2
+%selinux_relabel_post -s %{selinuxtype}
 
 %preun
 %systemd_preun %{name}.socket
@@ -330,6 +362,15 @@ export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
 %postun
 %systemd_postun_with_restart %{name}.socket
 %systemd_postun_with_restart %{name}.service
+
+%postun selinux
+if [ $1 -eq 0 ]; then
+    %selinux_modules_uninstall -s %{selinuxtype} %{name}
+    %selinux_relabel_post -s %{selinuxtype}
+fi
+
+%posttrans selinux
+%selinux_relabel_post -s %{selinuxtype}
 
 %files
 %license %{golicenses}
@@ -351,6 +392,10 @@ export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
 %attr(700,root,root) %dir %{_localstatedir}/log/%{name}
 %attr(711,root,root) %dir %{_localstatedir}/lib/%{name}
 %gopkgfiles
+
+%files selinux
+%{_datadir}/selinux/packages/%{selinuxtype}/%{name}.pp.*
+%ghost %verify(not md5 size mtime) %{_sharedstatedir}/selinux/%{selinuxtype}/active/modules/200/%{name}
 
 %files client -f lxd.lang
 %license %{golicenses}

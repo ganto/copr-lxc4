@@ -1,4 +1,4 @@
-commit 19f5642013be88efaf59fb4cff05749c88d01470
+commit 2935ec54a5fcf3bed405fb185816618612628066
 Author: Reto Gantenbein <reto.gantenbein@linuxmonk.ch>
 Date:   Thu Dec 28 13:51:44 2023 +0100
 
@@ -53,7 +53,7 @@ index f5608bea8..0ba247e22 100644
  
  In a production setup, you should always back up the contents of your LXD server.
 diff --git a/doc/cloud-init.md b/doc/cloud-init.md
-index c5ee17b68..6636cc4ef 100644
+index f612486f0..fbcc07c07 100644
 --- a/doc/cloud-init.md
 +++ b/doc/cloud-init.md
 @@ -1,12 +1,13 @@
@@ -130,18 +130,6 @@ index 8780ac619..06d616a84 100644
  ```
  
  To spread the total workload over several servers, LXD can be run in clustering mode.
-diff --git a/doc/explanation/instances.md b/doc/explanation/instances.md
-index 72ad8da26..c48d9167f 100644
---- a/doc/explanation/instances.md
-+++ b/doc/explanation/instances.md
-@@ -1,6 +1,6 @@
- ---
- discourse: 8767,7519,9281
--relatedlinks: https://ubuntu.com/blog/lxd-virtual-machines-an-overview
-+relatedlinks: "[LXD&#32;virtual&#32;machines:&#32;an&32;overview&#32;|&#32;Ubuntu](https://ubuntu.com/blog/lxd-virtual-machines-an-overview)"
- ---
- 
- (expl-instances)=
 diff --git a/doc/explanation/performance_tuning.md b/doc/explanation/performance_tuning.md
 index c8d80f74a..d76fb6eeb 100644
 --- a/doc/explanation/performance_tuning.md
@@ -198,7 +186,7 @@ index 59fbafec1..e8ad367ce 100644
  
  Storage buckets provide object storage functionality via the S3 protocol.
 diff --git a/doc/faq.md b/doc/faq.md
-index 0bd1b463f..215de1bb4 100644
+index 8e723b4dc..0d0ee5de0 100644
 --- a/doc/faq.md
 +++ b/doc/faq.md
 @@ -55,6 +55,7 @@ But that's also the cause of most of the security issues with such privileged co
@@ -233,7 +221,7 @@ index c7759d00b..ae4bb78d4 100644
  
  The LXD web UI provides you with a graphical interface to manage your LXD server and instances.
 diff --git a/doc/howto/benchmark_performance.md b/doc/howto/benchmark_performance.md
-index 5c1a2da2e..68b184610 100644
+index e75bb9b81..ad3bf5431 100644
 --- a/doc/howto/benchmark_performance.md
 +++ b/doc/howto/benchmark_performance.md
 @@ -2,6 +2,7 @@
@@ -280,19 +268,8 @@ index 49a07eca8..091c56669 100644
  ```
  
  LXD provides a tool for disaster recovery in case the {ref}`LXD database <database>` is corrupted or otherwise lost.
-diff --git a/doc/howto/images_create.md b/doc/howto/images_create.md
-index 798027cb7..a2d384d69 100644
---- a/doc/howto/images_create.md
-+++ b/doc/howto/images_create.md
-@@ -1,5 +1,5 @@
- ---
--relatedlinks: https://ubuntu.com/tutorials/how-to-install-a-windows-11-vm-using-lxd
-+relatedlinks: "[How&#32;to&#32;install&#32;a&#32;Windows&#32;11&#32;VM&#32;using&#32;LXD&#32;|&#32;Ubuntu](https://ubuntu.com/tutorials/how-to-install-a-windows-11-vm-using-lxd)"
- ---
- 
- (images-create)=
 diff --git a/doc/howto/import_machines_to_instances.md b/doc/howto/import_machines_to_instances.md
-index 46bc520af..ac6257c5d 100644
+index 35747c71a..fc5a004d5 100644
 --- a/doc/howto/import_machines_to_instances.md
 +++ b/doc/howto/import_machines_to_instances.md
 @@ -6,6 +6,7 @@ discourse: 14345
@@ -316,7 +293,7 @@ index 57aff47d3..e5019aca2 100644
  
  On virtual machines, log on to the console to get graphical output.
 diff --git a/doc/howto/migrate_from_lxc.md b/doc/howto/migrate_from_lxc.md
-index 539c8fc14..4e6573451 100644
+index bfd9a04de..7da3ab789 100644
 --- a/doc/howto/migrate_from_lxc.md
 +++ b/doc/howto/migrate_from_lxc.md
 @@ -2,6 +2,7 @@
@@ -364,7 +341,7 @@ index dfb3f9303..7bb41d124 100644
  
  Network forwards allow an external IP address (or specific ports on it) to be forwarded to an internal IP address (or specific ports on it) in the network that the forward belongs to.
 diff --git a/doc/howto/network_ovn_setup.md b/doc/howto/network_ovn_setup.md
-index d26619d5b..1c9ce548c 100644
+index 214817ad8..9d45b1c31 100644
 --- a/doc/howto/network_ovn_setup.md
 +++ b/doc/howto/network_ovn_setup.md
 @@ -45,6 +45,7 @@ Complete the following steps to create a standalone OVN network that is connecte
@@ -451,28 +428,6 @@ index 97758abc7..eb5958951 100644
  ```
  
  LXD uses an image-based workflow.
-diff --git a/doc/index.md b/doc/index.md
-index 0db78f0f3..80f89d67d 100644
---- a/doc/index.md
-+++ b/doc/index.md
-@@ -1,5 +1,5 @@
- ---
--relatedlinks: https://ubuntu.com/lxd, https://ubuntu.com/blog/open-source-for-beginners-dev-environment-with-lxd
-+relatedlinks: "[Run&#32;system&#32;containers&#32;with&#32;LXD&#32;|&#32;Ubuntu](https://ubuntu.com/lxd)", "[Open&#32;source&#32;for&#32;beginners:&#32;setting&#32;up&#32;your&#32;dev&#32;environment&#32;with&#32;LXD&#32;|&#32;Ubuntu](https://ubuntu.com/blog/open-source-for-beginners-dev-environment-with-lxd)"
- ---
- 
- # LXD
-diff --git a/doc/instances.md b/doc/instances.md
-index b8a8e8880..cc09b308f 100644
---- a/doc/instances.md
-+++ b/doc/instances.md
-@@ -1,5 +1,5 @@
- ---
--relatedlinks: https://ubuntu.com/tutorials/how-to-install-a-windows-11-vm-using-lxd
-+relatedlinks: "[How&#32;to&#32;install&#32;a&#32;Windows&#32;11&#32;VM&#32;using&#32;LXD&#32;|&#32;Ubuntu](https://ubuntu.com/tutorials/how-to-install-a-windows-11-vm-using-lxd)"
- ---
- 
- (instances)=
 diff --git a/doc/metrics.md b/doc/metrics.md
 index 258096942..ae87c0339 100644
 --- a/doc/metrics.md
@@ -504,19 +459,8 @@ index 67c3f7ebb..1cd0c2659 100644
  ```
  
  LXD provides tools and functionality to migrate instances in different contexts.
-diff --git a/doc/projects.md b/doc/projects.md
-index 4edd37b49..c06a5e621 100644
---- a/doc/projects.md
-+++ b/doc/projects.md
-@@ -1,5 +1,5 @@
- ---
--relatedlinks: https://ubuntu.com/tutorials/introduction-to-lxd-projects
-+relatedlinks: "[Introduction&#32;to&#32;LXD&#32;projects](https://ubuntu.com/tutorials/introduction-to-lxd-projects)"
- ---
- 
- (projects)=
 diff --git a/doc/reference/devices_disk.md b/doc/reference/devices_disk.md
-index 9638f9b51..21112b499 100644
+index 63fd8e0bc..0b0f54f3a 100644
 --- a/doc/reference/devices_disk.md
 +++ b/doc/reference/devices_disk.md
 @@ -2,6 +2,7 @@
@@ -600,7 +544,7 @@ index 503a40234..13aebabe0 100644
  
  <!-- Include start Ceph intro -->
 diff --git a/doc/reference/storage_cephfs.md b/doc/reference/storage_cephfs.md
-index 24a9fd248..09c0439a2 100644
+index 97f68108d..be29a9e6d 100644
 --- a/doc/reference/storage_cephfs.md
 +++ b/doc/reference/storage_cephfs.md
 @@ -6,6 +6,7 @@ discourse: 15457
@@ -682,14 +626,3 @@ index bdf5c521a..90466349c 100644
  ```
  
  All communication between LXD and its clients happens using a RESTful API over HTTP.
-diff --git a/doc/restapi_landing.md b/doc/restapi_landing.md
-index f67da6e87..f335e9d44 100644
---- a/doc/restapi_landing.md
-+++ b/doc/restapi_landing.md
-@@ -1,5 +1,5 @@
- ---
--relatedlinks: https://ubuntu.com/blog/directly-interacting-with-the-lxd-api
-+relatedlinks: "[Directly&#32;interacting&#32;with&#32;the&#32;LXD&#32;API&#32;|&#32;Ubuntu](https://ubuntu.com/blog/directly-interacting-with-the-lxd-api)"
- ---
- 
- (restapi)=
