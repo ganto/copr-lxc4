@@ -432,6 +432,9 @@ fi
 %doc doc/html
 
 %changelog
+* Sun Apr 28 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 5.20-0.2
+- Disable xattr test due to COPR failure
+
 * Sat Apr 27 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 5.20-0.1
 - Update to 5.20.
 - Add lxd-selinux sub package
