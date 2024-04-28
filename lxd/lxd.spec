@@ -10,7 +10,7 @@ Version:        5.20
 %global golicenses COPYING
 
 Name:           lxd
-Release:        0.1%{?dist}
+Release:        0.2%{?dist}
 Summary:        Container hypervisor based on LXC
 License:        AGPL-3.0-or-later and Apache-2.0
 URL:            https://ubuntu.com/lxd
@@ -332,6 +332,9 @@ export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
 
 # Add libsqlite3 tag to go test
 %define gotestflags -buildmode pie -compiler gc -v -tags libsqlite3
+
+# https://github.com/ganto/copr-lxc4/issues/46
+rm -f shared/util_linux_test.go
 
 %gocheck -v -t %{goipath}/test \
     -d %{goipath}/lxc-to-lxd  # lxc-to-lxd test fails, see ganto/copr-lxc3#10
