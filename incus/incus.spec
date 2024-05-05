@@ -2,7 +2,7 @@
 
 # https://github.com/lxc/incus
 %global goipath github.com/lxc/incus
-Version:        6.0.0
+Version:        6.1
 
 %gometa
 
@@ -14,7 +14,7 @@ Release:        0.1%{?dist}
 Summary:        Powerful system container and virtual machine manager
 License:        Apache-2.0
 URL:            https://linuxcontainers.org/incus
-Source0:        https://linuxcontainers.org/downloads/%{name}/%{name}-%{version}.tar.xz
+Source0:        https://linuxcontainers.org/downloads/%{name}/%{name}-v%{version}.0.tar.xz
 
 # Systemd units
 Source101:      %{name}.socket
