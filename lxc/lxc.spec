@@ -12,7 +12,7 @@
 %{!?_pkgdocdir: %global _pkgdocdir %{_docdir}/%{name}-%{version}}
 
 Name:           lxc
-Version:        6.0.0
+Version:        6.0.1
 Release:        0.1%{?dist}
 Summary:        Linux Resource Containers
 License:        LGPLv2+ and GPLv2
