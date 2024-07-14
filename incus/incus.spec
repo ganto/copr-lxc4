@@ -1,8 +1,16 @@
-%bcond_without  check
+# Disable documentation due to missing dependencies
+%bcond doc 1
+
+# Swagger version to download for documentation
+%global swaggerui_version 5.17.14
+%global swaggerui_source_baseurl https://github.com/swagger-api/swagger-ui/raw/v%{swaggerui_version}/dist/
+
+# Enable tests
+%bcond check 1
 
 # https://github.com/lxc/incus
 %global goipath github.com/lxc/incus
-Version:        6.2
+Version:        6.3
 
 %gometa
 
@@ -42,15 +50,14 @@ Source110:      shutdown
 Source111:      %{name}.fc
 
 # Web scripts shipped with API documentation
-# Latest downloads from https://github.com/swagger-api/swagger-ui/tree/master/dist
-Source201:      swagger-ui-bundle.js
-Source202:      swagger-ui-standalone-preset.js
-Source203:      swagger-ui.css
+Source201:      %{swaggerui_source_baseurl}/swagger-ui-bundle.js#/swagger-ui-%{swaggerui_version}-bundle.js
+Source202:      %{swaggerui_source_baseurl}/swagger-ui-standalone-preset.js#/swagger-ui-%{swaggerui_version}-standalone-preset.js
+Source203:      %{swaggerui_source_baseurl}/swagger-ui.css#/swagger-ui-%{swaggerui_version}.css
 
-# Allow offline builds
-Patch0:         incus-0.2-doc-Remove-downloads-from-sphinx-build.patch
+# Downstream only patches
+## Allow offline builds
+Patch1001:      incus-0.2-doc-Remove-downloads-from-sphinx-build.patch
 
-%global incuslibdir %{_prefix}/lib/incus
 %global bashcompletiondir %(pkg-config --variable=completionsdir bash-completion 2>/dev/null || :)
 %global selinuxtype targeted
 
@@ -99,7 +106,49 @@ using an image based work-flow and with support for live migration.
 
 This package contains the Incus daemon.
 
-%godevelpkg
+%pre
+%sysusers_create_package %{name} %{SOURCE106}
+%tmpfiles_create_package %{name} %{SOURCE107}
+
+%post
+%sysctl_apply 10-incus-inotify.conf
+%systemd_post %{name}.socket
+%systemd_post %{name}.service
+%systemd_post %{name}-startup.service
+%systemd_post %{name}-user.socket
+%systemd_post %{name}-user.service
+
+%preun
+%systemd_preun %{name}.socket
+%systemd_preun %{name}.service
+%systemd_preun %{name}-startup.service
+%systemd_preun %{name}-user.socket
+%systemd_preun %{name}-user.service
+
+%postun
+%systemd_postun_with_restart %{name}.socket
+%systemd_postun_with_restart %{name}.service
+%systemd_postun_with_restart %{name}-user.socket
+%systemd_postun_with_restart %{name}-user.service
+
+%files
+%license %{golicenses}
+%config(noreplace) %{_sysconfdir}/dnsmasq.d/%{name}.conf
+%{_sysctldir}/10-incus-inotify.conf
+%{_unitdir}/%{name}.socket
+%{_unitdir}/%{name}.service
+%{_unitdir}/%{name}-startup.service
+%{_unitdir}/%{name}-user.socket
+%{_unitdir}/%{name}-user.service
+%{_libexecdir}/%{name}/
+%{_sysusersdir}/%{name}.conf
+%{_tmpfilesdir}/%{name}.conf
+%{_mandir}/man1/incusd*.1.*
+%attr(700,root,root) %dir %{_localstatedir}/cache/%{name}
+%attr(700,root,root) %dir %{_localstatedir}/log/%{name}
+%attr(711,root,root) %dir %{_localstatedir}/lib/%{name}
+
+%dnl ----------------------------------------------------------------------------
 
 %package selinux
 Summary:        Container hypervisor based on LXC - SELinux policy
@@ -116,6 +165,28 @@ using an image based work-flow and with support for live migration.
 
 This package contains the SELinux policy.
 
+%pre selinux
+%selinux_relabel_pre -s %{selinuxtype}
+
+%post selinux
+%selinux_modules_install -s %{selinuxtype} %{_datadir}/selinux/packages/%{selinuxtype}/%{name}.pp.bz2
+%selinux_relabel_post -s %{selinuxtype}
+
+%postun selinux
+if [ $1 -eq 0 ]; then
+    %selinux_modules_uninstall -s %{selinuxtype} %{name}
+    %selinux_relabel_post -s %{selinuxtype}
+fi
+
+%posttrans selinux
+%selinux_relabel_post -s %{selinuxtype}
+
+%files selinux
+%{_datadir}/selinux/packages/%{selinuxtype}/%{name}.pp.*
+%ghost %verify(not md5 size mtime) %{_sharedstatedir}/selinux/%{selinuxtype}/active/modules/200/%{name}
+
+%dnl ----------------------------------------------------------------------------
+
 %package client
 Summary:        Container hypervisor based on LXC - Client
 License:        Apache-2.0
@@ -127,6 +198,25 @@ Incus offers a REST API to remotely manage containers over the network,
 using an image based work-flow and with support for live migration.
 
 This package contains the command line client.
+
+%files client -f incus.lang
+%license %{golicenses}
+%{_bindir}/%{name}
+%dir %{bashcompletiondir}
+%{bashcompletiondir}/%{name}
+%dir %{fish_completions_dir}
+%{fish_completions_dir}/%{name}.fish
+%dir %{zsh_completions_dir}
+%{zsh_completions_dir}/_%{name}
+%{_mandir}/man1/%{name}*.1.*
+%exclude %{_mandir}/man1/incusd*.1.*
+%exclude %{_mandir}/man1/incus-agent.1.*
+%exclude %{_mandir}/man1/incus-benchmark.1.*
+%exclude %{_mandir}/man1/incus-migrate.1.*
+%exclude %{_mandir}/man1/lxc-to-incus.1.*
+%exclude %{_mandir}/man1/lxd-to-incus.1.*
+
+%dnl ----------------------------------------------------------------------------
 
 %package tools
 Summary:        Container hypervisor based on LXC - Extra Tools
@@ -147,6 +237,21 @@ This package contains extra tools provided with Incus.
  - incus-benchmark - A Incus benchmark utility
  - incus-migrate - A physical to container migration tool
 
+%files tools
+%license %{golicenses}
+%{_bindir}/fuidshift
+%{_bindir}/incus-benchmark
+%{_bindir}/incus-migrate
+%{_bindir}/lxc-to-incus
+%{_bindir}/lxd-to-incus
+%{_mandir}/man1/fuidshift.1.*
+%{_mandir}/man1/incus-benchmark.1.*
+%{_mandir}/man1/incus-migrate.1.*
+%{_mandir}/man1/lxc-to-incus.1.*
+%{_mandir}/man1/lxd-to-incus.1.*
+
+%dnl ----------------------------------------------------------------------------
+
 %package agent
 Summary:        Incus guest agent
 License:        Apache-2.0
@@ -154,7 +259,7 @@ License:        Apache-2.0
 Requires:       incus%{?_isa} = %{version}-%{release}
 # Virtual machine support requires additional packages
 Recommends:     edk2-ovmf
-Recommends:     genisoimage
+Recommends:     xorriso
 Recommends:     qemu-char-spice
 Recommends:     qemu-device-display-virtio-vga
 Recommends:     qemu-device-display-virtio-gpu
@@ -168,6 +273,14 @@ This packages provides an agent to run inside Incus virtual machine guests.
 It has to be installed on the Incus host if you want to allow agent
 injection capability when creating a virtual machine.
 
+%files agent
+%license %{golicenses}
+%{_bindir}/incus-agent
+%{_mandir}/man1/incus-agent.1.*
+
+%dnl ----------------------------------------------------------------------------
+
+%if %{with doc}
 %package doc
 Summary:        Container hypervisor based on LXC - Documentation
 # This project is Apache-2.0. Other files bundled with the documentation have the
@@ -212,6 +325,13 @@ using an image based work-flow and with support for live migration.
 
 This package contains user documentation.
 
+%files doc
+%license %{golicenses}
+%doc doc/html
+%endif
+
+%dnl ----------------------------------------------------------------------------
+
 %prep
 %goprep -k
 %autopatch -v -p1
@@ -239,14 +359,19 @@ mkdir %{gobuilddir}/completions
 %{gobuilddir}/bin/%{name} completion fish > %{gobuilddir}/completions/%{name}.fish
 %{gobuilddir}/bin/%{name} completion zsh > %{gobuilddir}/completions/%{name}.zsh
 
+
+%if %{with docs}
 # build documentation
 mkdir -p doc/.sphinx/_static/swagger-ui
-cp %{SOURCE201} %{SOURCE202} %{SOURCE203} doc/.sphinx/_static/swagger-ui
+install -pm 0644 %{SOURCE201} doc/.sphinx/_static/swagger-ui/swagger-ui-bundle.js
+install -pm 0644 %{SOURCE202} doc/.sphinx/_static/swagger-ui/swagger-ui-standalone-preset.js
+install -pm 0644 %{SOURCE203} doc/.sphinx/_static/swagger-ui//swagger-ui.css
 sed -i 's|^path.*$|path = "%{gobuilddir}"|' doc/conf.py
 sphinx-build -c doc/ -b dirhtml doc/ doc/html/
 rm -vrf doc/html/{.buildinfo,.doctrees}
 # remove duplicate files
 rm -vrf doc/html/{_sources,_sphinx_design_static}
+%endif
 
 # build translations
 rm -f po/zh_Hans.po po/zh_Hant.po    # remove invalid locales
@@ -274,8 +399,6 @@ bzip2 -9 %{name}.pp
 popd
 
 %install
-%gopkginstall
-
 # install binaries
 install -d %{buildroot}%{_bindir}
 install -m0755 -vp %{gobuilddir}/bin/* %{buildroot}%{_bindir}/
@@ -292,15 +415,15 @@ install -D -m0644 -vp %{SOURCE107} %{buildroot}%{_tmpfilesdir}/%{name}.conf
 
 # extra configs
 install -D -m0644 -vp %{SOURCE108} %{buildroot}%{_sysconfdir}/dnsmasq.d/%{name}.conf
-install -D -m0644 -vp %{SOURCE109} %{buildroot}%{_sysconfdir}/sysctl.d/10-incus-inotify.conf
+install -D -m0644 -vp %{SOURCE109} %{buildroot}%{_sysctldir}/10-incus-inotify.conf
 
 # selinux policy
 install -D -m0644 -vp selinux/%{name}.pp.bz2 %{buildroot}%{_datadir}/selinux/packages/%{selinuxtype}/%{name}.pp.bz2
 
 # install helper libs
-install -d %{buildroot}%{incuslibdir}
-install -m0755 -vp %{SOURCE110} %{buildroot}%{incuslibdir}/
-install -m0755 -vp %{gobuilddir}/lib/* %{buildroot}%{incuslibdir}/
+install -d %{buildroot}%{_libexecdir}/%{name}
+install -m0755 -vp %{SOURCE110} %{buildroot}%{_libexecdir}/%{name}/
+install -m0755 -vp %{gobuilddir}/lib/* %{buildroot}%{_libexecdir}/%{name}/
 
 # install manpages
 install -d %{buildroot}%{_mandir}/man1
@@ -333,107 +456,6 @@ export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
 %gocheck -v -t %{goipath}/test \
     -d %{goipath}/cmd/lxc-to-incus  # lxc-to-incus test fails, see ganto/copr-lxc4#23
 %endif
-
-%pre
-%sysusers_create_package %{name} %{SOURCE106}
-%tmpfiles_create_package %{name} %{SOURCE107}
-
-%pre selinux
-%selinux_relabel_pre -s %{selinuxtype}
-
-%post
-%sysctl_apply 10-incus-inotify.conf
-%systemd_post %{name}.socket
-%systemd_post %{name}.service
-%systemd_post %{name}-startup.service
-%systemd_post %{name}-user.socket
-%systemd_post %{name}-user.service
-
-%post selinux
-%selinux_modules_install -s %{selinuxtype} %{_datadir}/selinux/packages/%{selinuxtype}/%{name}.pp.bz2
-%selinux_relabel_post -s %{selinuxtype}
-
-%preun
-%systemd_preun %{name}.socket
-%systemd_preun %{name}.service
-%systemd_preun %{name}-startup.service
-%systemd_preun %{name}-user.socket
-%systemd_preun %{name}-user.service
-
-%postun
-%systemd_postun_with_restart %{name}.socket
-%systemd_postun_with_restart %{name}.service
-%systemd_postun_with_restart %{name}-user.socket
-%systemd_postun_with_restart %{name}-user.service
-
-%postun selinux
-if [ $1 -eq 0 ]; then
-    %selinux_modules_uninstall -s %{selinuxtype} %{name}
-    %selinux_relabel_post -s %{selinuxtype}
-fi
-
-%posttrans selinux
-%selinux_relabel_post -s %{selinuxtype}
-
-%files
-%license %{golicenses}
-%config(noreplace) %{_sysconfdir}/dnsmasq.d/%{name}.conf
-%config(noreplace) %{_sysconfdir}/sysctl.d/10-incus-inotify.conf
-%{_unitdir}/%{name}.socket
-%{_unitdir}/%{name}.service
-%{_unitdir}/%{name}-startup.service
-%{_unitdir}/%{name}-user.socket
-%{_unitdir}/%{name}-user.service
-%dir %{incuslibdir}
-%{incuslibdir}/*
-%{_sysusersdir}/%{name}.conf
-%{_tmpfilesdir}/%{name}.conf
-%{_mandir}/man1/incusd*.1.*
-%attr(700,root,root) %dir %{_localstatedir}/cache/%{name}
-%attr(700,root,root) %dir %{_localstatedir}/log/%{name}
-%attr(711,root,root) %dir %{_localstatedir}/lib/%{name}
-%gopkgfiles
-
-%files selinux
-%{_datadir}/selinux/packages/%{selinuxtype}/%{name}.pp.*
-%ghost %verify(not md5 size mtime) %{_sharedstatedir}/selinux/%{selinuxtype}/active/modules/200/%{name}
-
-%files client -f incus.lang
-%license %{golicenses}
-%{_bindir}/%{name}
-%dir %{bashcompletiondir}
-%{bashcompletiondir}/%{name}
-%{fish_completions_dir}/%{name}.fish
-%{zsh_completions_dir}/_%{name}
-%{_mandir}/man1/%{name}*.1.*
-%exclude %{_mandir}/man1/incusd*.1.*
-%exclude %{_mandir}/man1/incus-agent.1.*
-%exclude %{_mandir}/man1/incus-benchmark.1.*
-%exclude %{_mandir}/man1/incus-migrate.1.*
-%exclude %{_mandir}/man1/lxc-to-incus.1.*
-%exclude %{_mandir}/man1/lxd-to-incus.1.*
-
-%files tools
-%license %{golicenses}
-%{_bindir}/fuidshift
-%{_bindir}/incus-benchmark
-%{_bindir}/incus-migrate
-%{_bindir}/lxc-to-incus
-%{_bindir}/lxd-to-incus
-%{_mandir}/man1/fuidshift.1.*
-%{_mandir}/man1/incus-benchmark.1.*
-%{_mandir}/man1/incus-migrate.1.*
-%{_mandir}/man1/lxc-to-incus.1.*
-%{_mandir}/man1/lxd-to-incus.1.*
-
-%files agent
-%license %{golicenses}
-%{_bindir}/incus-agent
-%{_mandir}/man1/incus-agent.1.*
-
-%files doc
-%license %{golicenses}
-%doc doc/html
 
 %changelog
 * Wed Jun 05 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.2-0.1
@@ -491,4 +513,3 @@ fi
 
 * Sun Oct 15 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.1-0.1
 - Initial package
-
