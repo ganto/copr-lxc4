@@ -55,6 +55,9 @@ Summary:        %{summary}
 
 
 %changelog
+* Mon Jul 15 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.1-4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_41_Mass_Rebuild
+
 * Fri Jul 21 2023 Fedora Release Engineering <releng@fedoraproject.org> - 4.1-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_39_Mass_Rebuild
 
