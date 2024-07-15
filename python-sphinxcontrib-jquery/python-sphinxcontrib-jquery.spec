@@ -57,6 +57,9 @@ Summary:        %{summary}
 
 
 %changelog
+* Mon Jul 15 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.1-5
+- Fix tests with new Sphinx >=7.1
+
 * Mon Jul 15 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 4.1-4
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_41_Mass_Rebuild
 
