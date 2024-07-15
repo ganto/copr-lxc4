@@ -68,6 +68,9 @@ popd
 
 
 %changelog
+* Mon Jul 15 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 1.0.8-0.1
+- Update to 1.0.8
+
 * Wed Mar 06 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 1.0.7-0.3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_40_Mass_Rebuild
 
