@@ -41,6 +41,9 @@ Summary:        %{summary}
 %doc README.md
 
 %changelog
+* Mon Jul 15 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 1.0.0.post1-0.1
+- Update to 1.0.0.post1
+
 * Wed Mar 06 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.0.3-0.2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_40_Mass_Rebuild
 
