@@ -4,7 +4,7 @@ After=incus-user.socket incus.service
 Requires=incus-user.socket
 
 [Service]
-ExecStart=/usr/lib/incus/incus-user --group incus
+ExecStart=/usr/libexec/incus/incus-user --group incus
 Restart=on-failure
 
 [Install]
