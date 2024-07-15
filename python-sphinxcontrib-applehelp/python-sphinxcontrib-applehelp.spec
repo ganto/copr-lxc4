@@ -1,6 +1,6 @@
 Name:           python-sphinxcontrib-applehelp
 Version:        1.0.8
-Release:        0.1%{?dist}
+Release:        0.2%{?dist}
 Summary:        Sphinx extension for Apple help books
 License:        BSD-2-Clause
 URL:            http://sphinx-doc.org/
@@ -8,17 +8,18 @@ Source0:        %{pypi_source sphinxcontrib_applehelp}
 BuildArch:      noarch
 
 BuildRequires:  gettext
-BuildRequires:  python%{python3_pkgversion}-devel
+BuildRequires:  python3-devel
+BuildRequires:  python3-sphinx
 
 
 %description
 sphinxcontrib-applehelp is a sphinx extension which outputs Apple help books.
 
 
-%package -n     python%{python3_pkgversion}-sphinxcontrib-applehelp
+%package -n     python3-sphinxcontrib-applehelp
 Summary:        %{summary}
 
-%description -n python%{python3_pkgversion}-sphinxcontrib-applehelp
+%description -n python3-sphinxcontrib-applehelp
 sphinxcontrib-applehelp is a sphinx extension which outputs Apple help books.
 
 
@@ -60,7 +61,7 @@ popd
 %pytest
 
 
-%files -n python%{python3_pkgversion}-sphinxcontrib-applehelp -f sphinxcontrib.applehelp.lang
+%files -n python3-sphinxcontrib-applehelp -f sphinxcontrib.applehelp.lang
 %license LICENSE
 %doc README.rst
 %{python3_sitelib}/sphinxcontrib/
