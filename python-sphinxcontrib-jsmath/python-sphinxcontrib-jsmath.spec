@@ -58,6 +58,9 @@ via JavaScript.
 
 
 %changelog
+* Mon Jul 15 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 1.0.1-0.25
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_41_Mass_Rebuild
+
 * Wed Mar 06 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 1.0.1-0.24
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_40_Mass_Rebuild
 
