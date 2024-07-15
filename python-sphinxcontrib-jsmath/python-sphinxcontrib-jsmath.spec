@@ -2,7 +2,7 @@
 
 Name:           python-%{pypi_name}
 Version:        1.0.1
-Release:        0.24%{?dist}
+Release:        0.25%{?dist}
 Summary:        Sphinx extension for math in HTML via JavaScript
 License:        BSD
 URL:            http://sphinx-doc.org/
