@@ -458,6 +458,9 @@ export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
 %endif
 
 %changelog
+* Mon Jul 15 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.3-0.2
+- Fix /usr/libexec/incus and /run/incus path references
+
 * Sun Jul 14 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.3-0.1
 - Update to 6.3
 
