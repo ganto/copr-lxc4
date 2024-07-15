@@ -69,6 +69,9 @@ popd
 
 
 %changelog
+* Mon Jul 15 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 1.0.8-0.2
+- Add missing sphinx dependency for tests
+
 * Mon Jul 15 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 1.0.8-0.1
 - Update to 1.0.8
 
