@@ -49,6 +49,9 @@ Summary:        %{summary}
 
 
 %changelog
+* Mon Jul 15 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.0.15-0.2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_41_Mass_Rebuild
+
 * Thu Nov 02 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.0.15-0.1
 - Update to 0.0.15
 
