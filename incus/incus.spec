@@ -462,6 +462,10 @@ export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
 %endif
 
 %changelog
+* Sat Jul 20 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.3-0.3
+- Revert socket dir to /var/lib/incus
+- Fix permission for incus rundir
+
 * Mon Jul 15 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.3-0.2
 - Fix /usr/libexec/incus and /run/incus path references
 
