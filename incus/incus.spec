@@ -10,7 +10,7 @@
 
 # https://github.com/lxc/incus
 %global goipath github.com/lxc/incus
-Version:        6.3
+Version:        6.4
 
 %gometa
 
@@ -18,7 +18,7 @@ Version:        6.3
 %global golicenses COPYING
 
 Name:           incus
-Release:        0.3%{?dist}
+Release:        0.1%{?dist}
 Summary:        Powerful system container and virtual machine manager
 License:        Apache-2.0
 URL:            https://linuxcontainers.org/incus
@@ -53,10 +53,6 @@ Source111:      %{name}.fc
 Source201:      %{swaggerui_source_baseurl}/swagger-ui-bundle.js#/swagger-ui-%{swaggerui_version}-bundle.js
 Source202:      %{swaggerui_source_baseurl}/swagger-ui-standalone-preset.js#/swagger-ui-%{swaggerui_version}-standalone-preset.js
 Source203:      %{swaggerui_source_baseurl}/swagger-ui.css#/swagger-ui-%{swaggerui_version}.css
-
-# Patches upstream or proposed upstream
-## https://github.com/lxc/incus/pull/1004
-Patch0001:      incus-6.3-Change-RunDir-file-mode-to-0711.patch
 
 # Downstream only patches
 ## Allow offline builds
