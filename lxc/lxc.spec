@@ -277,6 +277,9 @@ cp -a %{SOURCE1} %{buildroot}%{_sysconfdir}/sysconfig/%{name}-net
 
 
 %changelog
+* Thu Sep 19 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.0.2-0.1
+- Update to 6.0.2
+
 * Mon Jul 01 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.0.1-0.1
 - Update to 6.0.1
 
