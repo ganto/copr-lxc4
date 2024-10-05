@@ -10,7 +10,7 @@
 
 # https://github.com/lxc/incus
 %global goipath github.com/lxc/incus
-Version:        6.5
+Version:        6.6
 
 %gometa
 
@@ -53,6 +53,10 @@ Source111:      %{name}.fc
 Source201:      %{swaggerui_source_baseurl}/swagger-ui-bundle.js#/swagger-ui-%{swaggerui_version}-bundle.js
 Source202:      %{swaggerui_source_baseurl}/swagger-ui-standalone-preset.js#/swagger-ui-%{swaggerui_version}-standalone-preset.js
 Source203:      %{swaggerui_source_baseurl}/swagger-ui.css#/swagger-ui-%{swaggerui_version}.css
+
+# Patches upstream or proposed upstream
+## https://github.com/lxc/incus/pull/1284
+Patch0001:      incus-6.6-Correct-macvlan-mode-names.patch
 
 # Downstream only patches
 ## Allow offline builds
@@ -310,13 +314,7 @@ BuildRequires:  python3-sphinx-notfound-page
 BuildRequires:  python3-sphinx-remove-toctrees
 BuildRequires:  python3-sphinx-reredirects
 BuildRequires:  python3-sphinx-tabs
-BuildRequires:  python3-sphinxcontrib-applehelp
 BuildRequires:  python3-sphinxcontrib-devhelp
-BuildRequires:  python3-sphinxcontrib-htmlhelp
-BuildRequires:  python3-sphinxcontrib-jquery
-BuildRequires:  python3-sphinxcontrib-jsmath
-BuildRequires:  python3-sphinxcontrib-qthelp
-BuildRequires:  python3-sphinxcontrib-serializinghtml
 BuildRequires:  python3-sphinxext-opengraph
 
 %description doc
