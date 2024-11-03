@@ -43,6 +43,9 @@ cp -a build/ui %{buildroot}%{_datadir}/%{name}
 %{_datadir}/%{name}
 
 %changelog
+* Sun Nov 03 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.8.3-0.1
+- Update to 0.8.3.
+
 * Sat Dec 02 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.5-0.1
 - Update to 0.5.
 
