@@ -1,13 +1,11 @@
 Name:           dqlite
-Version:        1.16.4
+Version:        1.17.1
 Release:        0.1%{?dist}
 Summary:        Embeddable, replicated and fault tolerant SQL engine
 
 License:        LGPL-3.0-only WITH LGPL-3.0-linking-exception
 URL:            https://github.com/canonical/dqlite
 Source0:        %{URL}/archive/v%{version}.tar.gz
-# https://github.com/canonical/dqlite/issues/574
-Patch0:         dqlite-1.16.4-raft-uv-Drop-AI_V4MAPPED-AI_ADDRCONFIG-from-getaddrinfo.patch
 
 BuildRequires:  autoconf libtool
 BuildRequires:  gcc
@@ -27,11 +25,11 @@ Requires:       %{name}%{?_isa} = %{version}-%{release}
 Development headers and library for dqlite.
 
 %prep
-%autosetup -n %{name}-%{version} -p1
+%autosetup -n %{name}-%{version}
 
 %build
-autoreconf -i
-%configure --disable-static --enable-build-raft=yes
+autoreconf -fiv
+%configure --enable-build-raft --enable-static=no --verbose
 %make_build
 
 %install
