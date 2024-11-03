@@ -1,4 +1,4 @@
-commit de361238749c67091c9a67f9a2442b23463f9eb1
+commit d213cc927febea237dbd27ead0c2e5785afe704d
 Author: Reto Gantenbein <reto.gantenbein@linuxmonk.ch>
 Date:   Sat Oct 3 13:25:49 2020 +0200
 
@@ -63,7 +63,7 @@ index a9489e3..0000000
 -}
 diff --git a/sources/openeuler-http_test.go b/sources/openeuler-http_test.go
 deleted file mode 100644
-index 7f17f00..0000000
+index 0af4757..0000000
 --- a/sources/openeuler-http_test.go
 +++ /dev/null
 @@ -1,84 +0,0 @@
@@ -87,19 +87,19 @@ index 7f17f00..0000000
 -		{
 -			"https://repo.openeuler.org/",
 -			"22.03",
--			"22.03-LTS-SP2",
+-			"22.03-LTS-SP4",
 -			false,
 -		},
 -		{
 -			"https://repo.openeuler.org/",
 -			"20.03",
--			"20.03-LTS-SP3",
+-			"20.03-LTS-SP4",
 -			false,
 -		},
 -		{
 -			"https://repo.openeuler.org/",
 -			"20.03-LTS",
--			"20.03-LTS-SP3",
+-			"20.03-LTS-SP4",
 -			false,
 -		},
 -		{
@@ -194,26 +194,7 @@ index 32a49ad..0000000
 -		require.Regexp(t, tt.want, release)
 -	}
 -}
-diff --git a/sources/ubuntu-http_test.go b/sources/ubuntu-http_test.go
-deleted file mode 100644
-index d2f4949..0000000
---- a/sources/ubuntu-http_test.go
-+++ /dev/null
-@@ -1,13 +0,0 @@
--package sources
--
--import (
--	"testing"
--
--	"github.com/stretchr/testify/require"
--)
--
--func TestUbuntuGetLatestCoreBaseImage(t *testing.T) {
--	release, err := getLatestCoreBaseImage("https://images.linuxcontainers.org/images", "bionic", "amd64")
--	require.NoError(t, err)
--	require.NotEmpty(t, release)
--}
-commit e683a2219bee25a14d6a95ce6a1b1da7fd93d54c
+commit 9ea39f88b5913a1b5c8909a5062e4324d8d9c865
 Author: Reto Gantenbein <reto.gantenbein@linuxmonk.ch>
 Date:   Wed Jun 29 22:15:32 2022 +0200
 
@@ -221,7 +202,7 @@ Date:   Wed Jun 29 22:15:32 2022 +0200
 
 diff --git a/sources/common_test.go b/sources/common_test.go
 deleted file mode 100644
-index 480ee37..0000000
+index deaa9e5..0000000
 --- a/sources/common_test.go
 +++ /dev/null
 @@ -1,142 +0,0 @@
@@ -235,7 +216,7 @@ index 480ee37..0000000
 -	"path/filepath"
 -	"testing"
 -
--	incus "github.com/lxc/incus/shared/util"
+-	incus "github.com/lxc/incus/v6/shared/util"
 -	"github.com/stretchr/testify/require"
 -
 -	"github.com/lxc/distrobuilder/shared"

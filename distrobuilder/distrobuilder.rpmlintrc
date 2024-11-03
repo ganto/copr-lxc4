@@ -1,0 +1,2 @@
+# this is expected for golang packages
+addFilter("golang-github-lxc-distrobuilder-devel.noarch: W: hidden-file-or-dir /usr/share/gocode/src/github.com/lxc/distrobuilder/.goipath")
