@@ -1,5 +1,5 @@
 Name:       lxd-ui
-Version:    0.5
+Version:    0.8.3
 Release:    0.1%{?dist}
 Summary:    A browser interface for LXD
 License:    GPLv3

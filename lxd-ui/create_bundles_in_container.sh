@@ -5,7 +5,7 @@
 #   ./create_bundles_in_container.sh --security-opt label=disable
 
 cat <<EOF | podman build -t lxd-ui-build -f - .
-FROM fedora:38
+FROM fedora:39
 
 RUN dnf upgrade -y && \
     dnf install -y rpmdevtools python3-packaging python3-pyyaml nodejs yarnpkg
