@@ -452,6 +452,9 @@ export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
 %endif
 
 %changelog
+* Sun Nov 24 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.7-0.1
+- Update to 6.7
+
 * Sat Oct 05 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.6-0.1
 - Update to 6.6
 
