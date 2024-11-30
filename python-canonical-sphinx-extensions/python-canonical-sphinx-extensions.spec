@@ -50,3 +50,6 @@ Summary:        %{summary}
 
 
 %changelog
+* Sat Nov 30 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.0.23-0.1
+- Initial package
+
