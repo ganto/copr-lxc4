@@ -1,8 +1,13 @@
-%bcond_without  check
+# Swagger version to download for documentation
+%global swaggerui_version 5.18.2
+%global swaggerui_source_baseurl https://github.com/swagger-api/swagger-ui/raw/v%{swaggerui_version}/dist/
+
+# Enable tests
+%bcond check 1
 
 # https://github.com/canonical/lxd
 %global goipath github.com/canonical/lxd
-Version:        5.20
+Version:        5.21.2
 
 %gometa
 
@@ -10,7 +15,7 @@ Version:        5.20
 %global golicenses COPYING
 
 Name:           lxd
-Release:        0.2%{?dist}
+Release:        0.1%{?dist}
 Summary:        Container hypervisor based on LXC
 License:        AGPL-3.0-or-later and Apache-2.0
 URL:            https://ubuntu.com/lxd
@@ -24,7 +29,7 @@ Source103:      %{name}-containers.service
 # Ensure lxd group exists
 Source104:      %{name}-sysusers.conf
 
-# Ensure state directories (/var/lib/lxd, /var/cache/lxd, /var/log/lxd) exists
+# Ensure state directories (/var/lib/lxd, /var/cache/lxd, /var/log/lxd) exist
 Source105:      %{name}-tmpfiles.conf
 
 # Ensure system dnsmasq ignores lxd network bridge
@@ -40,21 +45,15 @@ Source108:      shutdown
 Source109:      %{name}.fc
 
 # Web scripts shipped with API documentation
-# Latest downloads from https://github.com/swagger-api/swagger-ui/tree/master/dist
-Source201:      swagger-ui-bundle.js
-Source202:      swagger-ui-standalone-preset.js
-Source203:      swagger-ui.css
+Source201:      %{swaggerui_source_baseurl}/swagger-ui-bundle.js#/swagger-ui-%{swaggerui_version}-bundle.js
+Source202:      %{swaggerui_source_baseurl}/swagger-ui-standalone-preset.js#/swagger-ui-%{swaggerui_version}-standalone-preset.js
+Source203:      %{swaggerui_source_baseurl}/swagger-ui.css#/swagger-ui-%{swaggerui_version}.css
 
-# Upstream bug fixes merged to master for next release
-
-# https://github.com/canonical/lxd/issues/12730
-Patch0:         lxd-5.20-lxd-instance-qemu-Start-using-seabios-as-CSM-firmware.patch
-# https://github.com/canonical/lxd/issues/12808
-Patch1:         lxd-5.20-VM-Dont-leak-file-descriptor-when-probing-for-Direct-IO-support.patch
-
-# Allow offline builds
-Patch2:         lxd-5.19-doc-Remove-downloads-from-sphinx-build.patch
-Patch3:         lxd-5.20-doc-Enhance-related-links-definitions-for-offline-build.patch
+# Downstream only patches
+## Allow offline builds
+Patch1001:      lxd-5.21.1-doc-Remove-downloads-from-sphinx-build.patch
+Patch1002:      lxd-5.21.2-doc-Dont-build-contributor-list-from-Git-history.patch
+Patch1003:      lxd-5.21.2-doc-Enhance-related-links-definitions-for-offline-build.patch
 
 %global bashcompletiondir %(pkg-config --variable=completionsdir bash-completion 2>/dev/null || :)
 %global selinuxtype targeted
@@ -93,9 +92,9 @@ BuildRequires:  dnsmasq
 BuildRequires:  nftables
 %endif
 
-Recommends:     lxd-agent = %{version}-%{release}
-Recommends:     lxd-ui
-Suggests:       lxd-doc
+Recommends:     %{name}-agent = %{version}-%{release}
+Recommends:     %{name}-ui
+Suggests:       %{name}-doc
 
 %description
 Container hypervisor based on LXC
@@ -104,7 +103,46 @@ using an image based work-flow and with support for live migration.
 
 This package contains the LXD daemon.
 
-%godevelpkg
+%pre
+%sysusers_create_package %{name} %{SOURCE104}
+%tmpfiles_create_package %{name} %{SOURCE105}
+
+%post
+%sysctl_apply 10-lxd-inotify.conf
+%systemd_post %{name}.socket
+%systemd_post %{name}.service
+%systemd_post %{name}-containers.service
+
+%preun
+%systemd_preun %{name}.socket
+%systemd_preun %{name}.service
+%systemd_preun %{name}-containers.service
+
+%postun
+%systemd_postun_with_restart %{name}.socket
+%systemd_postun_with_restart %{name}.service
+
+%files
+%license %{golicenses}
+%config(noreplace) %{_sysconfdir}/dnsmasq.d/%{name}.conf
+%{_sysconfdir}/sysctl.d/10-lxd-inotify.conf
+%{_bindir}/%{name}
+%{_unitdir}/%{name}.socket
+%{_unitdir}/%{name}.service
+%{_unitdir}/%{name}-containers.service
+%dir %{_libexecdir}/%{name}
+%{_libexecdir}/%{name}/*
+%{_sysusersdir}/%{name}.conf
+%{_tmpfilesdir}/%{name}.conf
+%{_mandir}/man1/%{name}.*1.*
+%exclude %{_mandir}/man1/lxd-agent.1.*
+%exclude %{_mandir}/man1/lxd-benchmark.1.*
+%exclude %{_mandir}/man1/lxd-migrate.1.*
+%attr(700,root,root) %dir %{_localstatedir}/cache/%{name}
+%attr(700,root,root) %dir %{_localstatedir}/log/%{name}
+%attr(711,root,root) %dir %{_localstatedir}/lib/%{name}
+
+%dnl ----------------------------------------------------------------------------
 
 %package selinux
 Summary:        Container hypervisor based on LXC - SELinux policy
@@ -121,6 +159,28 @@ using an image based work-flow and with support for live migration.
 
 This package contains the SELinux policy.
 
+%pre selinux
+%selinux_relabel_pre -s %{selinuxtype}
+
+%post selinux
+%selinux_modules_install -s %{selinuxtype} %{_datadir}/selinux/packages/%{selinuxtype}/%{name}.pp.bz2
+%selinux_relabel_post -s %{selinuxtype}
+
+%postun selinux
+if [ $1 -eq 0 ]; then
+    %selinux_modules_uninstall -s %{selinuxtype} %{name}
+    %selinux_relabel_post -s %{selinuxtype}
+fi
+
+%posttrans selinux
+%selinux_relabel_post -s %{selinuxtype}
+
+%files selinux
+%{_datadir}/selinux/packages/%{selinuxtype}/%{name}.pp.*
+%ghost %verify(not md5 size mtime) %{_sharedstatedir}/selinux/%{selinuxtype}/active/modules/200/%{name}
+
+%dnl ----------------------------------------------------------------------------
+
 %package client
 Summary:        Container hypervisor based on LXC - Client
 License:        Apache-2.0
@@ -132,6 +192,16 @@ LXD offers a REST API to remotely manage containers over the network,
 using an image based work-flow and with support for live migration.
 
 This package contains the command line client.
+
+%files client -f lxd.lang
+%license %{golicenses}
+%{_bindir}/lxc
+%dir %{bashcompletiondir}
+%{bashcompletiondir}/lxd-client
+%{_mandir}/man1/lxc.*1.*
+%exclude %{_mandir}/man1/lxc-to-lxd.1.*
+
+%dnl ----------------------------------------------------------------------------
 
 %package tools
 Summary:        Container hypervisor based on LXC - Extra Tools
@@ -150,6 +220,17 @@ This package contains extra tools provided with LXD.
  - lxc-to-lxd - A tool to migrate LXC containers to LXD
  - lxd-benchmark - A LXD benchmark utility
 
+%files tools
+%license %{golicenses}
+%{_bindir}/fuidshift
+%{_bindir}/lxd-benchmark
+%{_bindir}/lxc-to-lxd
+%{_mandir}/man1/fuidshift.1.*
+%{_mandir}/man1/lxd-benchmark.1.*
+%{_mandir}/man1/lxc-to-lxd.1.*
+
+%dnl ----------------------------------------------------------------------------
+
 %package migrate
 Summary:        A physical to container migration tool
 License:        Apache-2.0
@@ -165,6 +246,13 @@ into a LXD container on a remote LXD host.
 It will setup a clean mount tree made of the root filesystem and any
 additional mount you list, then transfer this through LXD's migration
 API to create a new container from it.
+
+%files migrate
+%license %{golicenses}
+%{_bindir}/lxd-migrate
+%{_mandir}/man1/lxd-migrate.1.*
+
+%dnl ----------------------------------------------------------------------------
 
 %package agent
 Summary:        LXD guest agent
@@ -187,6 +275,13 @@ This packages provides an agent to run inside LXD virtual machine guests.
 It has to be installed on the LXD host if you want to allow agent
 injection capability when creating a virtual machine.
 
+%files agent
+%license %{golicenses}
+%{_bindir}/lxd-agent
+%{_mandir}/man1/lxd-agent.1.*
+
+%dnl ----------------------------------------------------------------------------
+
 %package doc
 Summary:        Container hypervisor based on LXC - Documentation
 # This project is Apache-2.0. Other files bundled with the documentation have the
@@ -205,9 +300,9 @@ Summary:        Container hypervisor based on LXC - Documentation
 License:        Apache-2.0 AND BSD-2-Clause AND MIT
 BuildArch:      noarch
 
+BuildRequires:  python3-canonical-sphinx-extensions
 BuildRequires:  python3-furo
 BuildRequires:  python3-linkify-it-py
-BuildRequires:  python3-lxd-sphinx-extensions
 BuildRequires:  python3-myst-parser
 BuildRequires:  python3-sphinx
 BuildRequires:  python3-sphinx-copybutton
@@ -216,13 +311,7 @@ BuildRequires:  python3-sphinx-notfound-page
 BuildRequires:  python3-sphinx-remove-toctrees
 BuildRequires:  python3-sphinx-reredirects
 BuildRequires:  python3-sphinx-tabs
-BuildRequires:  python3-sphinxcontrib-applehelp
-BuildRequires:  python3-sphinxcontrib-devhelp
-BuildRequires:  python3-sphinxcontrib-htmlhelp
 BuildRequires:  python3-sphinxcontrib-jquery
-BuildRequires:  python3-sphinxcontrib-jsmath
-BuildRequires:  python3-sphinxcontrib-qthelp
-BuildRequires:  python3-sphinxcontrib-serializinghtml
 BuildRequires:  python3-sphinxext-opengraph
 
 %description doc
@@ -230,6 +319,12 @@ LXD offers a REST API to remotely manage containers over the network,
 using an image based work-flow and with support for live migration.
 
 This package contains user documentation.
+
+%files doc
+%license %{golicenses}
+%doc doc/html
+
+%dnl ----------------------------------------------------------------------------
 
 %prep
 %goprep -k
@@ -251,7 +346,9 @@ unset CGO_ENABLED
 
 # build documentation
 mkdir -p doc/.sphinx/_static/swagger-ui
-cp %{SOURCE201} %{SOURCE202} %{SOURCE203} doc/.sphinx/_static/swagger-ui
+install -pm 0644 %{SOURCE201} doc/.sphinx/_static/swagger-ui/swagger-ui-bundle.js
+install -pm 0644 %{SOURCE202} doc/.sphinx/_static/swagger-ui/swagger-ui-standalone-preset.js
+install -pm 0644 %{SOURCE203} doc/.sphinx/_static/swagger-ui/swagger-ui.css
 sed -i 's|lxc.bin|_build/bin/lxc|' doc/myconf.py doc/custom_conf.py
 sphinx-build -c doc/ -b dirhtml doc/ doc/html/
 rm -vrf doc/html/{.buildinfo,.doctrees}
@@ -283,8 +380,6 @@ bzip2 -9 %{name}.pp
 popd
 
 %install
-%gopkginstall
-
 # install binaries
 install -d %{buildroot}%{_bindir}
 install -m0755 -vp %{gobuilddir}/bin/* %{buildroot}%{_bindir}/
@@ -339,97 +434,6 @@ rm -f shared/util_linux_test.go
 %gocheck -v -t %{goipath}/test \
     -d %{goipath}/lxc-to-lxd  # lxc-to-lxd test fails, see ganto/copr-lxc3#10
 %endif
-
-%pre
-%sysusers_create_package %{name} %{SOURCE104}
-%tmpfiles_create_package %{name} %{SOURCE105}
-
-%pre selinux
-%selinux_relabel_pre -s %{selinuxtype}
-
-%post
-%sysctl_apply 10-lxd-inotify.conf
-%systemd_post %{name}.socket
-%systemd_post %{name}.service
-%systemd_post %{name}-containers.service
-
-%post selinux
-%selinux_modules_install -s %{selinuxtype} %{_datadir}/selinux/packages/%{selinuxtype}/%{name}.pp.bz2
-%selinux_relabel_post -s %{selinuxtype}
-
-%preun
-%systemd_preun %{name}.socket
-%systemd_preun %{name}.service
-%systemd_preun %{name}-containers.service
-
-%postun
-%systemd_postun_with_restart %{name}.socket
-%systemd_postun_with_restart %{name}.service
-
-%postun selinux
-if [ $1 -eq 0 ]; then
-    %selinux_modules_uninstall -s %{selinuxtype} %{name}
-    %selinux_relabel_post -s %{selinuxtype}
-fi
-
-%posttrans selinux
-%selinux_relabel_post -s %{selinuxtype}
-
-%files
-%license %{golicenses}
-%config(noreplace) %{_sysconfdir}/dnsmasq.d/%{name}.conf
-%config(noreplace) %{_sysconfdir}/sysctl.d/10-lxd-inotify.conf
-%{_bindir}/%{name}
-%{_unitdir}/%{name}.socket
-%{_unitdir}/%{name}.service
-%{_unitdir}/%{name}-containers.service
-%dir %{_libexecdir}/%{name}
-%{_libexecdir}/%{name}/*
-%{_sysusersdir}/%{name}.conf
-%{_tmpfilesdir}/%{name}.conf
-%{_mandir}/man1/%{name}.*1.*
-%exclude %{_mandir}/man1/lxd-agent.1.*
-%exclude %{_mandir}/man1/lxd-benchmark.1.*
-%exclude %{_mandir}/man1/lxd-migrate.1.*
-%attr(700,root,root) %dir %{_localstatedir}/cache/%{name}
-%attr(700,root,root) %dir %{_localstatedir}/log/%{name}
-%attr(711,root,root) %dir %{_localstatedir}/lib/%{name}
-%gopkgfiles
-
-%files selinux
-%{_datadir}/selinux/packages/%{selinuxtype}/%{name}.pp.*
-%ghost %verify(not md5 size mtime) %{_sharedstatedir}/selinux/%{selinuxtype}/active/modules/200/%{name}
-
-%files client -f lxd.lang
-%license %{golicenses}
-%{_bindir}/lxc
-%dir %{bashcompletiondir}
-%{bashcompletiondir}/lxd-client
-%{_mandir}/man1/lxc.*1.*
-%exclude %{_mandir}/man1/lxc-to-lxd.1.*
-
-%files tools
-%license %{golicenses}
-%{_bindir}/fuidshift
-%{_bindir}/lxd-benchmark
-%{_bindir}/lxc-to-lxd
-%{_mandir}/man1/fuidshift.1.*
-%{_mandir}/man1/lxd-benchmark.1.*
-%{_mandir}/man1/lxc-to-lxd.1.*
-
-%files migrate
-%license %{golicenses}
-%{_bindir}/lxd-migrate
-%{_mandir}/man1/lxd-migrate.1.*
-
-%files agent
-%license %{golicenses}
-%{_bindir}/lxd-agent
-%{_mandir}/man1/lxd-agent.1.*
-
-%files doc
-%license %{golicenses}
-%doc doc/html
 
 %changelog
 * Sun Apr 28 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 5.20-0.2

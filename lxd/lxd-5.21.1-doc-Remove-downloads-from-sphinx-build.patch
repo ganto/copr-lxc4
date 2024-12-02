@@ -1,11 +1,11 @@
-commit 3f40ac999d6d1bca0aaef642b18ac26e9d719124
+commit 3213531c6d6cd761d09654245ef6177fbc4b4979
 Author: Reto Gantenbein <reto.gantenbein@linuxmonk.ch>
 Date:   Thu Dec 28 13:39:05 2023 +0100
 
     doc: Remove downloads from sphinx build
 
 diff --git a/doc/custom_conf.py b/doc/custom_conf.py
-index ac2edb37b..4a29e8680 100644
+index 81ca95647..2960a02cc 100644
 --- a/doc/custom_conf.py
 +++ b/doc/custom_conf.py
 @@ -3,7 +3,6 @@ import os
@@ -16,13 +16,13 @@ index ac2edb37b..4a29e8680 100644
  import filecmp
  
  # Custom configuration for the Sphinx documentation builder.
-@@ -213,19 +212,6 @@ html_theme_options = {
-     "sidebar_hide_name": True,
- }
+@@ -264,19 +263,6 @@ intersphinx_mapping = {
+ 
+ html_extra_path = ['.sphinx/_extra']
  
 -# Download and link swagger-ui files
 -if not os.path.isdir('.sphinx/deps/swagger-ui'):
--    Repo.clone_from('https://github.com/swagger-api/swagger-ui', '.sphinx/deps/swagger-ui', depth=1)
+-    Repo.clone_from('https://github.com/swagger-api/swagger-ui', '.sphinx/deps/swagger-ui', depth=1, single_branch=True, b='v5.11.7')
 -
 -os.makedirs('.sphinx/_static/swagger-ui/', exist_ok=True)
 -
