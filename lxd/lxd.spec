@@ -436,6 +436,10 @@ rm -f shared/util_linux_test.go
 %endif
 
 %changelog
+* Mon Dec 02 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 5.21.2-0.1
+- Update to 5.21.2
+- Update swagger-ui to v5.18.2
+
 * Sun Apr 28 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 5.20-0.2
 - Disable xattr test due to COPR failure
 
