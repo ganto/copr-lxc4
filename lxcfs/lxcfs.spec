@@ -1,8 +1,8 @@
 Name:		  lxcfs
-Version:	  6.0.2
+Version:	  6.0.3
 Release:	  0.1%{?dist}
 Summary:	  FUSE based filesystem for LXC
-License:	  ASL 2.0
+License:	  Apache-2.0
 URL:		  https://linuxcontainers.org/lxcfs
 Source0:	  https://linuxcontainers.org/downloads/%{name}/%{name}-%{version}.tar.gz
 Source1:	  %{name}-tmpfiles.conf
@@ -14,7 +14,7 @@ BuildRequires:	  make
 BuildRequires:	  fuse-devel
 BuildRequires:	  help2man
 BuildRequires:	  systemd
-BuildRequires:	  systemd-rpm-macros
+BuildRequires:    systemd-rpm-macros
 Requires(post):	  systemd
 Requires(preun):  systemd
 Requires(postun): systemd
@@ -80,14 +80,14 @@ install -D -m0644 -vp %{SOURCE1} %{buildroot}%{_tmpfilesdir}/%{name}.conf
 
 
 %changelog
-* Thu Sep 19 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.0.2-0.1
-- Update to 6.0.2
+* Sat Sep 21 2024 Sérgio Basto <sergio@serjux.com> - 6.0.2-1
+- Update lxcfs to 6.0.2
 
-* Mon Jul 01 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.0.1-0.1
-- Update to 6.0.1
+* Wed Jul  24 2024 Miroslav Suchý <msuchy@redhat.com> - 5.0.4-5
+- convert license to SPDX
 
-* Thu Mar 28 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.0.0-0.1
-- Update to 6.0.0.
+* Thu Jul 18 2024 Fedora Release Engineering <releng@fedoraproject.org> - 5.0.4-4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_41_Mass_Rebuild
 
 * Thu Jan 25 2024 Fedora Release Engineering <releng@fedoraproject.org> - 5.0.4-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_40_Mass_Rebuild
