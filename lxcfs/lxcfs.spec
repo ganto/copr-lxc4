@@ -80,6 +80,10 @@ install -D -m0644 -vp %{SOURCE1} %{buildroot}%{_tmpfilesdir}/%{name}.conf
 
 
 %changelog
+* Tue Dec 24 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.0.3-0.1
+- Update to 6.0.3
+- Add systemd-tmpfiles config for /var/lib/lxcfs
+
 * Sat Sep 21 2024 Sérgio Basto <sergio@serjux.com> - 6.0.2-1
 - Update lxcfs to 6.0.2
 
