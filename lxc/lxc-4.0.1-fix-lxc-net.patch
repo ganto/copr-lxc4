@@ -1,0 +1,10 @@
+--- ./config/init/systemd/lxc-net.service.in.orig	2023-07-25 23:00:11.000000000 +0100
++++ ./config/init/systemd/lxc-net.service.in	2024-01-26 16:13:15.237248935 +0000
+@@ -1,6 +1,7 @@
+ [Unit]
+ Description=LXC network bridge setup
+ After=network-online.target
++Wants=network-online.target
+ Before=lxc.service
+ Documentation=man:lxc
+ ConditionVirtualization=!lxc

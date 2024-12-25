@@ -1,0 +1,46 @@
+diff -up lxc-2.0.7/config/init/sysvinit/lxc-containers.in.orig lxc-2.0.7/config/init/sysvinit/lxc-containers.in
+--- lxc-2.0.7/config/init/sysvinit/lxc-containers.in.orig	2017-01-23 18:45:30.000000000 +0100
++++ lxc-2.0.7/config/init/sysvinit/lxc-containers.in	2017-01-29 13:00:23.934781187 +0100
+@@ -2,7 +2,7 @@
+ #
+ # lxc Start/Stop LXC autoboot containers
+ #
+-# chkconfig: 345 99 01
++# chkconfig: - 99 01
+ # description: Starts/Stops all LXC containers configured for autostart.
+ #
+ ### BEGIN INIT INFO
+@@ -11,8 +11,8 @@
+ # Required-Stop: $syslog $remote_fs
+ # Should-Start: cgroupfs-mount
+ # Should-Stop: cgroupfs-mount
+-# Default-Start: 2 3 4 5
+-# Default-Stop: 0 1 6
++# Default-Start:
++# Default-Stop:
+ # Short-Description: Bring up/down LXC autostart containers
+ # Description: Bring up/down LXC autostart containers
+ ### END INIT INFO
+diff -up lxc-2.0.7/config/init/sysvinit/lxc-net.in.orig lxc-2.0.7/config/init/sysvinit/lxc-net.in
+--- lxc-2.0.7/config/init/sysvinit/lxc-net.in.orig	2017-01-23 18:45:30.000000000 +0100
++++ lxc-2.0.7/config/init/sysvinit/lxc-net.in	2017-01-29 13:00:23.935781166 +0100
+@@ -2,7 +2,7 @@
+ #
+ # lxc-net Start/Stop LXC Networking
+ #
+-# chkconfig: 345 98 01
++# chkconfig: - 98 01
+ # description: Starts/Stops LXC Network Bridge
+ #
+ ### BEGIN INIT INFO
+@@ -11,8 +11,8 @@
+ # Required-Stop: $syslog $remote_fs
+ # Should-Start:
+ # Should-Stop:
+-# Default-Start: 2 3 4 5
+-# Default-Stop: 0 1 6
++# Default-Start:
++# Default-Stop:
+ # Short-Description: Bring up/down LXC Network Bridge
+ # Description: Bring up/down LXC Network Bridge
+ ### END INIT INFO

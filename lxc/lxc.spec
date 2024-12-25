@@ -12,20 +12,24 @@
 %{!?_pkgdocdir: %global _pkgdocdir %{_docdir}/%{name}-%{version}}
 
 Name:           lxc
-Version:        6.0.2
+Version:        6.0.3
 Release:        0.1%{?dist}
 Summary:        Linux Resource Containers
-License:        LGPLv2+ and GPLv2
+# Automatically converted from old format: LGPLv2+ and GPLv2 - review is highly recommended.
+License:        LicenseRef-Callaway-LGPLv2+ AND GPL-2.0-only
 URL:            https://linuxcontainers.org/lxc
 Source0:        https://linuxcontainers.org/downloads/%{name}/%{name}-%{version}.tar.gz
 Source1:        lxc-net
-Patch0:         lxc-5.0.0-fix-lxc-net.patch
+Patch0:         lxc-2.0.7-fix-init.patch
+Patch1:         lxc-4.0.1-fix-lxc-net.patch
 
 BuildRequires:  cmake
 BuildRequires:  docbook2X
 BuildRequires:  doxygen
 BuildRequires:  gcc-c++
+BuildRequires:  glibc-headers
 BuildRequires:  kernel-headers
+BuildRequires:  libcap
 BuildRequires:  libcap-devel
 %if %{?with_seccomp}
 BuildRequires:  pkgconfig(libseccomp)
@@ -33,6 +37,7 @@ BuildRequires:  pkgconfig(libseccomp)
 BuildRequires:  libselinux-devel
 BuildRequires:  meson >= 0.61
 BuildRequires:  openssl-devel
+BuildRequires:  pam
 BuildRequires:  pam-devel
 BuildRequires:  pkg-config
 BuildRequires:  systemd-devel
@@ -49,7 +54,10 @@ Obsoletes:      lxc-extra < 1.1.5-3
 # https://bugzilla.redhat.com/show_bug.cgi?id=2274215
 Requires: lxc-libs%{?_isa} = %{version}-%{release}
 Requires: lxcfs
+Requires: openssl
 Requires: rsync
+# Requires: dnsmasq
+# Requires: bridge-utils
 # Needed to create openSUSE containers using template.
 # Recommends: build
 # Recommends: criu >= 2.0
@@ -130,14 +138,13 @@ This package contains documentation for %{name}.
 
 %build
 %meson \
-	-D apparmor=false \
-	-D coverity-build=false \
 	-D examples=true \
 	-D man=true \
 	-D tools=true \
 	-D commands=true \
 	-D capabilities=true \
 	-D openssl=true \
+	-D selinux=true \
 %if 0%{?with_seccomp}
 	-D seccomp=true \
 %endif
@@ -277,14 +284,17 @@ cp -a %{SOURCE1} %{buildroot}%{_sysconfdir}/sysconfig/%{name}-net
 
 
 %changelog
-* Thu Sep 19 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.0.2-0.1
-- Update to 6.0.2
+* Sat Sep 21 2024 Sérgio Basto <sergio@serjux.com> - 6.0.2-1
+- Update lxc to 6.0.2 (#2313692)
 
-* Mon Jul 01 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.0.1-0.1
-- Update to 6.0.1
+* Mon Sep 02 2024 Miroslav Suchý <msuchy@redhat.com> - 6.0.1-2
+- convert license to SPDX
 
-* Sat Apr 13 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.0.0-0.1
-- Update to 6.0.0.
+* Fri Jul 19 2024 Sérgio Basto <sergio@serjux.com> - 6.0.1-1
+- Update lxc to 6.0.1 (#2097935)
+
+* Thu Jul 18 2024 Fedora Release Engineering <releng@fedoraproject.org> - 5.0.3-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_41_Mass_Rebuild
 
 * Tue Apr 09 2024 Sérgio Basto <sergio@serjux.com> - 5.0.3-2
 - (#2274215) force lxc requires lxc-libs
