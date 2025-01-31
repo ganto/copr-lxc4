@@ -1,0 +1,30 @@
+diff --git a/test/integration/test_membership.c b/test/integration/test_membership.c
+index e108d35..b942352 100644
+--- a/test/integration/test_membership.c
++++ b/test/integration/test_membership.c
+@@ -191,6 +191,12 @@ TEST(membership,
+ 	struct client_proto c_transfer; /* Client used for transfer requests */
+ 	struct id_last_applied await_arg;
+ 
++	/* Skip due to unreliability:
++	 *   https://github.com/ganto/copr-lxc4/issues/24
++	 *   https://github.com/canonical/dqlite/issues/643
++	 */
++	return MUNIT_SKIP;
++
+ 	HANDSHAKE;
+ 	ADD(id, address);
+ 	ASSIGN(id, DQLITE_VOTER);
+@@ -262,6 +268,12 @@ TEST(membership, transferAndSqlExecWithBarrier, setUp, tearDown, 0, NULL)
+ 	struct client_proto c_transfer; /* Client used for transfer requests */
+ 	struct fixture_id arg;
+ 
++	/* Skip due to unreliability:
++	 *   https://github.com/ganto/copr-lxc4/issues/24
++	 *   https://github.com/canonical/dqlite/issues/643
++	 */
++	return MUNIT_SKIP;
++
+ 	HANDSHAKE;
+ 	ADD(id, address);
+ 	ASSIGN(id, DQLITE_VOTER);

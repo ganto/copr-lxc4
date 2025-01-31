@@ -1,11 +1,14 @@
 Name:           dqlite
-Version:        1.17.1
+Version:        1.17.2
 Release:        0.1%{?dist}
 Summary:        Embeddable, replicated and fault tolerant SQL engine
 
 License:        LGPL-3.0-only WITH LGPL-3.0-linking-exception
 URL:            https://github.com/canonical/dqlite
 Source0:        %{URL}/archive/v%{version}.tar.gz
+# https://github.com/ganto/copr-lxc4/issues/24
+# https://github.com/canonical/dqlite/issues/643
+Patch0:         dqlite-1.17.1-Skip-flaky-tests.patch
 
 BuildRequires:  autoconf libtool
 BuildRequires:  gcc
@@ -25,11 +28,11 @@ Requires:       %{name}%{?_isa} = %{version}-%{release}
 Development headers and library for dqlite.
 
 %prep
-%autosetup -n %{name}-%{version}
+%autosetup -n %{name}-%{version} -p1
 
 %build
 autoreconf -fiv
-%configure --enable-build-raft --enable-static=no --verbose
+%configure --enable-static=no --enable-build-raft=yes --verbose
 %make_build
 
 %install
