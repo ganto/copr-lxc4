@@ -10,7 +10,7 @@
 
 # https://github.com/lxc/incus
 %global goipath github.com/lxc/incus
-Version:        6.9
+Version:        6.10
 
 %gometa
 
