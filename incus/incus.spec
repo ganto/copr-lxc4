@@ -18,7 +18,7 @@ Version:        6.10
 %global golicenses COPYING
 
 Name:           incus
-Release:        0.1%{?dist}
+Release:        0.2%{?dist}
 Summary:        Powerful system container and virtual machine manager
 License:        Apache-2.0
 URL:            https://linuxcontainers.org/incus
@@ -53,6 +53,10 @@ Source111:      %{name}.fc
 Source201:      %{swaggerui_source_baseurl}/swagger-ui-bundle.js#/swagger-ui-%{swaggerui_version}-bundle.js
 Source202:      %{swaggerui_source_baseurl}/swagger-ui-standalone-preset.js#/swagger-ui-%{swaggerui_version}-standalone-preset.js
 Source203:      %{swaggerui_source_baseurl}/swagger-ui.css#/swagger-ui-%{swaggerui_version}.css
+
+# Patches upstream or proposed upstream
+## https://github.com/lxc/incus/pull/1709
+Patch0001:      incus-6.10-Provide-the-RBD-keyring-to-QEMU.patch
 
 # Downstream only patches
 ## Allow offline builds

@@ -1,0 +1,89 @@
+From 20dff3230ea0a1d0a0e26a45c1a4e6c95fb3ada2 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?St=C3=A9phane=20Graber?= <stgraber@stgraber.org>
+Date: Sat, 1 Mar 2025 02:31:01 -0500
+Subject: [PATCH] incusd/device/disk: Include cluster name and config path in
+ RBD string
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Signed-off-by: Stéphane Graber <stgraber@stgraber.org>
+---
+ internal/server/device/device_utils_disk.go | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/internal/server/device/device_utils_disk.go b/internal/server/device/device_utils_disk.go
+index 36ceef93383..2065a29bdbb 100644
+--- a/internal/server/device/device_utils_disk.go
++++ b/internal/server/device/device_utils_disk.go
+@@ -63,12 +63,21 @@ func DiskParseRBDFormat(rbd string) (string, string, map[string]string, error) {
+ 
+ // DiskGetRBDFormat returns a rbd formatted string with the given values.
+ func DiskGetRBDFormat(clusterName string, userName string, poolName string, volumeName string) string {
++	// Resolve any symlinks to config path.
++	confPath := fmt.Sprintf("/etc/ceph/%s.conf", clusterName)
++	target, err := filepath.EvalSymlinks(confPath)
++	if err == nil {
++		confPath = target
++	}
++
+ 	// Configuration values containing :, @, or = can be escaped with a leading \ character.
+ 	// According to https://docs.ceph.com/docs/hammer/rbd/qemu-rbd/#usage
+ 	optEscaper := strings.NewReplacer(":", `\:`, "@", `\@`, "=", `\=`)
+ 	opts := []string{
+ 		fmt.Sprintf("id=%s", optEscaper.Replace(userName)),
+ 		fmt.Sprintf("pool=%s", optEscaper.Replace(poolName)),
++		fmt.Sprintf("cluster=%s", optEscaper.Replace(clusterName)),
++		fmt.Sprintf("conf=%s", optEscaper.Replace(confPath)),
+ 	}
+ 
+ 	return fmt.Sprintf("%s%s%s/%s%s%s", RBDFormatPrefix, RBDFormatSeparator, optEscaper.Replace(poolName), optEscaper.Replace(volumeName), RBDFormatSeparator, strings.Join(opts, ":"))
+From 62b7ba1b1a28a9e87793af78db5589aef67dd6b9 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?St=C3=A9phane=20Graber?= <stgraber@stgraber.org>
+Date: Sat, 1 Mar 2025 02:31:49 -0500
+Subject: [PATCH] incusd/instance/qemu: Provide the RBD keyring to QEMU
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Closes #1708
+
+Signed-off-by: Stéphane Graber <stgraber@stgraber.org>
+---
+ internal/server/instance/drivers/driver_qemu.go | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/internal/server/instance/drivers/driver_qemu.go b/internal/server/instance/drivers/driver_qemu.go
+index 1c7f98b1b9c..7593ba3d36f 100644
+--- a/internal/server/instance/drivers/driver_qemu.go
++++ b/internal/server/instance/drivers/driver_qemu.go
+@@ -4226,17 +4226,29 @@ func (d *qemu) addDriveConfig(qemuDev map[string]any, bootIndexes map[string]int
+ 		rbdImageName := storageDrivers.CephGetRBDImageName(vol, "", false)
+ 
+ 		// Scan & pass through options.
++		clusterName := storageDrivers.CephDefaultCluster
++		userName := storageDrivers.CephDefaultUser
++
+ 		blockDev["pool"] = poolName
+ 		blockDev["image"] = rbdImageName
+ 		for key, val := range opts {
+ 			// We use 'id' where qemu uses 'user'.
+ 			if key == "id" {
+ 				blockDev["user"] = val
++				userName = val
++			} else if key == "cluster" {
++				clusterName = val
+ 			} else {
+ 				blockDev[key] = val
+ 			}
+ 		}
+ 
++		// Parse the secret (QEMU runs unprivileged and can't read the keyring directly).
++		rbdSecret, err = storageDrivers.CephKeyring(clusterName, userName)
++		if err != nil {
++			return nil, err
++		}
++
+ 		// The aio option isn't available when using the rbd driver.
+ 		delete(blockDev, "aio")
+ 	}
