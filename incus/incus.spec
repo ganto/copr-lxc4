@@ -452,6 +452,9 @@ export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
 %endif
 
 %changelog
+* Wed Mar 05 2025 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.10.1-0.1
+- Update to 6.10.1
+
 * Sun Mar 02 2025 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.10-0.2
 - Add patch to fix Ceph regression
 
