@@ -2,7 +2,7 @@
 
 Name:           python-%{pypi_name}
 Version:        0.0.15
-Release:        0.4%{?dist}
+Release:        0.5%{?dist}
 Summary:        A collection of Sphinx extensions used in LXD
 License:        ASL 2.0
 URL:            https://github.com/canonical/lxd-sphinx-extensions
@@ -49,6 +49,9 @@ Summary:        %{summary}
 
 
 %changelog
+* Sun Mar 30 2025 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.0.15-0.5
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_42_Mass_Rebuild
+
 * Tue Jan 28 2025 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.0.15-0.4
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_42_Mass_Rebuild
 
