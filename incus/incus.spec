@@ -462,6 +462,9 @@ export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
 %endif
 
 %changelog
+* Mon Mar 31 2025 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.11-0.2
+- Add patches to fix build tests and QEMU issues
+
 * Sat Mar 29 2025 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.11-0.1
 - Update to 6.11
 - Update swagger-ui to v5.20.2
