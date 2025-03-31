@@ -1,0 +1,25 @@
+From abe02d0d9a160153d5e9a7e2251cf55567056067 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?St=C3=A9phane=20Graber?= <stgraber@stgraber.org>
+Date: Sun, 30 Mar 2025 17:23:25 -0400
+Subject: [PATCH] incusd/instance/edk2: Limit test to UEFI architectures
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Closes #1863
+
+Signed-off-by: Stéphane Graber <stgraber@stgraber.org>
+---
+ internal/server/instance/drivers/edk2/driver_edk2_test.go | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/internal/server/instance/drivers/edk2/driver_edk2_test.go b/internal/server/instance/drivers/edk2/driver_edk2_test.go
+index 28f71a15421..1f0c16f9299 100644
+--- a/internal/server/instance/drivers/edk2/driver_edk2_test.go
++++ b/internal/server/instance/drivers/edk2/driver_edk2_test.go
+@@ -1,3 +1,5 @@
++//go:build amd64 || arm64
++
+ package edk2
+ 
+ import (
