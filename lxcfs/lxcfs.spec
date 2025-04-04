@@ -1,5 +1,5 @@
 Name:		  lxcfs
-Version:	  6.0.3
+Version:	  6.0.4
 Release:	  0.1%{?dist}
 Summary:	  FUSE based filesystem for LXC
 License:	  Apache-2.0
@@ -14,7 +14,7 @@ BuildRequires:	  make
 BuildRequires:	  fuse-devel
 BuildRequires:	  help2man
 BuildRequires:	  systemd
-BuildRequires:    systemd-rpm-macros
+BuildRequires:	  systemd-rpm-macros
 Requires(post):	  systemd
 Requires(preun):  systemd
 Requires(postun): systemd
@@ -80,9 +80,15 @@ install -D -m0644 -vp %{SOURCE1} %{buildroot}%{_tmpfilesdir}/%{name}.conf
 
 
 %changelog
-* Tue Dec 24 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.0.3-0.1
-- Update to 6.0.3
+* Sat Apr 5 2025 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.0.4-0.1
+- Update lxcfs to 6.0.4
 - Add systemd-tmpfiles config for /var/lib/lxcfs
+
+* Sat Feb 15 2025 Sérgio Basto <sergio@serjux.com> - 6.0.3-1
+- Update lxcfs to 6.0.3
+
+* Fri Jan 17 2025 Fedora Release Engineering <releng@fedoraproject.org> - 6.0.2-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_42_Mass_Rebuild
 
 * Sat Sep 21 2024 Sérgio Basto <sergio@serjux.com> - 6.0.2-1
 - Update lxcfs to 6.0.2
