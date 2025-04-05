@@ -12,7 +12,7 @@
 %{!?_pkgdocdir: %global _pkgdocdir %{_docdir}/%{name}-%{version}}
 
 Name:           lxc
-Version:        6.0.3
+Version:        6.0.4
 Release:        0.1%{?dist}
 Summary:        Linux Resource Containers
 # Automatically converted from old format: LGPLv2+ and GPLv2 - review is highly recommended.
@@ -284,8 +284,11 @@ cp -a %{SOURCE1} %{buildroot}%{_sysconfdir}/sysconfig/%{name}-net
 
 
 %changelog
-* Wed Dec 25 2024 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.0.3-0.1
-- Update to 6.0.3
+* Sat Feb 15 2025 Sérgio Basto <sergio@serjux.com> - 6.0.3-1
+- Update lxc to 6.0.3 (#2333359)
+
+* Fri Jan 17 2025 Fedora Release Engineering <releng@fedoraproject.org> - 6.0.2-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_42_Mass_Rebuild
 
 * Sat Sep 21 2024 Sérgio Basto <sergio@serjux.com> - 6.0.2-1
 - Update lxc to 6.0.2 (#2313692)
