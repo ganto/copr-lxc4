@@ -284,6 +284,9 @@ cp -a %{SOURCE1} %{buildroot}%{_sysconfdir}/sysconfig/%{name}-net
 
 
 %changelog
+* Sat Apr 05 2025 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.0.4-0.1
+- Update lxc to 6.0.4
+
 * Sat Feb 15 2025 Sérgio Basto <sergio@serjux.com> - 6.0.3-1
 - Update lxc to 6.0.3 (#2333359)
 
