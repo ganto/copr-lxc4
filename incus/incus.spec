@@ -10,7 +10,7 @@
 
 # https://github.com/lxc/incus
 %global goipath github.com/lxc/incus
-Version:        6.11
+Version:        6.12
 
 %gometa
 
@@ -53,16 +53,6 @@ Source111:      %{name}.fc
 Source201:      %{swaggerui_source_baseurl}/swagger-ui-bundle.js#/swagger-ui-%{swaggerui_version}-bundle.js
 Source202:      %{swaggerui_source_baseurl}/swagger-ui-standalone-preset.js#/swagger-ui-%{swaggerui_version}-standalone-preset.js
 Source203:      %{swaggerui_source_baseurl}/swagger-ui.css#/swagger-ui-%{swaggerui_version}.css
-
-# Patches upstream or proposed upstream
-## https://github.com/lxc/incus/issues/1858
-Patch0001:      incus-6.11-incusd-instance-lxc-Fix-max-gid-when-in-privileged-container.patch
-
-## https://github.com/lxc/incus/issues/1863
-Patch0002:      incus-6.11-incusd-instance-edk2-Limit-test-to-UEFI-architectures.patch
-
-## https://github.com/lxc/incus/issues/1870
-Patch0003:      incus-6.11-incusd-instances-qemu-Handle-deprecation-of-runas.patch
 
 # Downstream only patches
 ## Allow offline builds
