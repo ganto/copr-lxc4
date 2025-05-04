@@ -18,7 +18,7 @@ Version:        6.12
 %global golicenses COPYING
 
 Name:           incus
-Release:        0.2%{?dist}
+Release:        0.3%{?dist}
 Summary:        Powerful system container and virtual machine manager
 License:        Apache-2.0
 URL:            https://linuxcontainers.org/incus
@@ -55,8 +55,12 @@ Source202:      %{swaggerui_source_baseurl}/swagger-ui-standalone-preset.js#/swa
 Source203:      %{swaggerui_source_baseurl}/swagger-ui.css#/swagger-ui-%{swaggerui_version}.css
 
 # Downstream only patches
+## Fix format string issues with Go 1.24
+Patch1001:      incus-6.12-Fix-build-with-Go-1.24.patch
+
 ## Allow offline builds
-Patch1001:      incus-0.2-doc-Remove-downloads-from-sphinx-build.patch
+Patch1002:      incus-0.2-doc-Remove-downloads-from-sphinx-build.patch
+
 
 %global bashcompletiondir %(pkg-config --variable=completionsdir bash-completion 2>/dev/null || :)
 %global selinuxtype targeted
