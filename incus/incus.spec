@@ -10,7 +10,7 @@
 
 # https://github.com/lxc/incus
 %global goipath github.com/lxc/incus
-Version:        6.12
+Version:        6.13
 
 %gometa
 
@@ -18,7 +18,7 @@ Version:        6.12
 %global golicenses COPYING
 
 Name:           incus
-Release:        0.3%{?dist}
+Release:        0.1%{?dist}
 Summary:        Powerful system container and virtual machine manager
 License:        Apache-2.0
 URL:            https://linuxcontainers.org/incus
@@ -54,13 +54,11 @@ Source201:      %{swaggerui_source_baseurl}/swagger-ui-bundle.js#/swagger-ui-%{s
 Source202:      %{swaggerui_source_baseurl}/swagger-ui-standalone-preset.js#/swagger-ui-%{swaggerui_version}-standalone-preset.js
 Source203:      %{swaggerui_source_baseurl}/swagger-ui.css#/swagger-ui-%{swaggerui_version}.css
 
-# Downstream only patches
-## Fix format string issues with Go 1.24
-Patch1001:      incus-6.12-Fix-build-with-Go-1.24.patch
+# Patches upstream or proposed upstream
 
+# Downstream only patches
 ## Allow offline builds
 Patch1002:      incus-0.2-doc-Remove-downloads-from-sphinx-build.patch
-
 
 %global bashcompletiondir %(pkg-config --variable=completionsdir bash-completion 2>/dev/null || :)
 %global selinuxtype targeted
@@ -93,6 +91,12 @@ Requires:       tar
 Requires:       xdelta
 Requires:       xz
 %{?systemd_requires}
+
+%ifnarch %{ix86} %{arm32}
+Requires:       skopeo
+# Not yet packaged in Fedora
+#Requires:       umoci
+%endif
 
 %if %{with check}
 BuildRequires:  btrfs-progs
