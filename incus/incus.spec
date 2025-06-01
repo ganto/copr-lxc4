@@ -460,6 +460,10 @@ export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
 %endif
 
 %changelog
+* Sun Jun 01 2025 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.13-0.1
+- Update to 6.13
+- Update swagger-ui to v5.22.0
+
 * Sun May 04 2025 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.12-0.3
 - Fix build failures with Go 1.24
 
