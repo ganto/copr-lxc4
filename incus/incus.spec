@@ -460,6 +460,10 @@ export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
 %endif
 
 %changelog
+* Mon Jun 30 2025 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.14-0.1
+- Update to 6.14
+- Update swagger-ui to v5.24.2
+
 * Sun Jun 01 2025 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.13-0.1
 - Update to 6.13
 - Update swagger-ui to v5.22.0
