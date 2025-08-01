@@ -62,6 +62,9 @@ make check
 %{_includedir}/%{name}.h
 
 %changelog
+* Fri Aug 01 2025 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 1.15.9-0.1
+- Update to 1.15.9
+
 * Mon Feb 03 2025 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 1.15.8-0.1
 - Update to 1.15.8
 
