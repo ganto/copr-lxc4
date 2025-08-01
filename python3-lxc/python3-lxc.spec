@@ -43,6 +43,9 @@ chmod -x examples/*
 
 
 %changelog
+* Fri Aug 01 2025 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 5.0.0-0.2
+- Rebuild against current Python and add latest upstream patches
+
 * Sun Jul 09 2023 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 5.0.0-0.1
 - Update to 5.0.0.
 
