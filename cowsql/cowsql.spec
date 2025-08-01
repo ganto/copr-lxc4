@@ -1,31 +1,43 @@
+%global forgeurl https://github.com/cowsql/cowsql
+Version:        1.15.9
+%forgemeta
+
 Name:           cowsql
-Version:        1.15.8
 Release:        0.1%{?dist}
 Summary:        Embeddable, replicated and fault tolerant SQL engine
-
 License:        LGPL-3.0-only WITH LGPL-3.0-linking-exception
-URL:            https://github.com/cowsql/cowsql
-Source0:        %{URL}/archive/v%{version}.tar.gz#/%{name}-%{version}.tar.gz
+URL:            %{forgeurl}
+Source0:        %{forgesource}
 
-BuildRequires:  autoconf libtool
 BuildRequires:  gcc
+BuildRequires:  autoconf
+BuildRequires:  automake
+BuildRequires:  libtool
+BuildRequires:  pkgconfig(sqlite3)
 BuildRequires:  pkgconfig(libuv)
 BuildRequires:  pkgconfig(raft) >= 0.18.2
-BuildRequires:  pkgconfig(sqlite3)
 
 %description
 cowsql is a C library that implements an embeddable and replicated SQL database
-engine with high-availability and automatic failover.
+engine with high availability and automatic failover.
 
-%package devel
-Summary:        Development libraries for cowsql
+cowsql extends SQLite with a network protocol that can connect together various
+instances of your application and have them act as a highly-available cluster,
+with no dependency on external databases.
+
+The name "cowsql" loosely refers to the "pets vs. cattle" concept, since it's
+generally fine to delete or rebuild a particular node of an application that
+uses cowsql for data storage.
+
+%package        devel
+Summary:        Development files for %{name}
 Requires:       %{name}%{?_isa} = %{version}-%{release}
 
-%description devel
-Development headers and library for cowsql.
+%description    devel
+The %{name}-devel package contains development files for %{name}.
 
 %prep
-%autosetup -n %{name}-%{version}
+%forgeautosetup -p1
 
 %build
 autoreconf -i
@@ -34,17 +46,15 @@ autoreconf -i
 
 %install
 %make_install
-rm -f %{buildroot}%{_libdir}/libcowsql.la
 
 %check
-%make_build check
+make check
 
-%ldconfig_scriptlets
 
 %files
-%doc AUTHORS README.md
 %license LICENSE
-%{_libdir}/libcowsql.so.*
+%doc AUTHORS README.md
+%{_libdir}/libcowsql.so.0*
 
 %files devel
 %{_libdir}/libcowsql.so
