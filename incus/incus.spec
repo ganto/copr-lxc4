@@ -462,6 +462,9 @@ export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
 %endif
 
 %changelog
+* Fri Aug 01 2025 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.14-0.2
+- Fix build for Fedora 42 (Go 1.24)
+
 * Mon Jun 30 2025 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.14-0.1
 - Update to 6.14
 - Update swagger-ui to v5.24.2
