@@ -18,7 +18,7 @@ Version:        6.14
 %global golicenses COPYING
 
 Name:           incus
-Release:        0.1%{?dist}
+Release:        0.2%{?dist}
 Summary:        Powerful system container and virtual machine manager
 License:        Apache-2.0
 URL:            https://linuxcontainers.org/incus
@@ -55,6 +55,8 @@ Source202:      %{swaggerui_source_baseurl}/swagger-ui-standalone-preset.js#/swa
 Source203:      %{swaggerui_source_baseurl}/swagger-ui.css#/swagger-ui-%{swaggerui_version}.css
 
 # Patches upstream or proposed upstream
+## https://github.com/lxc/incus/pull/2260
+Patch0001:      incus-6.14-Format-string.patch
 
 # Downstream only patches
 ## Allow offline builds

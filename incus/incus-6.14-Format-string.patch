@@ -1,0 +1,23 @@
+From f953a66331674a4a5c190d83826c890adfaa726e Mon Sep 17 00:00:00 2001
+From: Robby Callicotte <rcallicotte@fedoraproject.org>
+Date: Sun, 6 Jul 2025 18:38:16 -0500
+Subject: [PATCH] Fixed non-constant format string in call to fmt.Errorf
+
+Signed-off-by: Robby Callicotte <rcallicotte@fedoraproject.org>
+---
+ client/incus.go | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/client/incus.go b/client/incus.go
+index 414cb0cb52c..435ff6cbcd4 100644
+--- a/client/incus.go
++++ b/client/incus.go
+@@ -474,7 +474,7 @@ func (r *ProtocolIncus) rawWebsocket(url string) (*websocket.Conn, error) {
+ 			}
+ 
+ 			if apiResp != nil && apiResp.Error != "" {
+-				err = errors.Join(err, fmt.Errorf(apiResp.Error))
++				err = errors.Join(err, fmt.Errorf("%v", apiResp.Error))
+ 			}
+ 		}
+ 
