@@ -1,0 +1,65 @@
+From f8d5ddc6892db7c1c7007c09c67b2230887163f4 Mon Sep 17 00:00:00 2001
+From: Thomas Jarosch <thomas.jarosch@intra2net.com>
+Date: Mon, 16 Jun 2025 20:22:47 +0200
+Subject: [PATCH] Fix random "personality" corruption when linking against lxc
+ 6
+
+When using python3-lxc with liblxc from lxc 6.0.x, we could observe
+random systemd startup failures on containers.
+
+systemd will report this on startup when the corruption hit:
+"Warning! Reported kernel version 2.6.74-300.fc42.x86_64 is older than systemd's required baseline kernel version 4.15. Your mileage may vary."
+
+Some systemd services fail to start properly, including systemd-journald.
+
+The root problem is that other lxc library code unexpectedly calls into
+lxc_config_parse_arch() from python3-lxc instead of the function from liblxc.
+
+The function signature of lxc_config_parse_arch() changed throughout the years
+and the second "persona" pointer argument was added. The older python3-lxc copy
+of the function would not initialize the provided memory location of "persona".
+It will therefore contain a random value.
+
+Additionally the symbol visibility of liblxc's lxc_config_parse_arch()
+changed with this commit in lxc 6.0:
+
+******************************************
+commit 42eeffcb05c468fd7b3a90eeda4a3abe9f26844b
+AuthorDate: Sun Feb 18 15:43:20 2024 +0100
+
+    confile: unhide lxc_config_parse_arch() helper
+
+    Looks safe enough to be available for liblxc users.
+******************************************
+
+This results in two symbols with the same name and
+the python3-lxc symbol takes precedence.
+
+Fix the issue by making the function static in python3-lxc,
+so python3-lxc stays compatible with lxc 5.x and 6.x.
+
+A future python3-lxc version might remove the local function
+and use lxc_config_parse_arch() from liblxc 6.0 and later.
+
+Side quest: Even though lxc 5.0 already has the "persona" function argument in
+lxc_config_parse_arch() since 7c43fa56e70c65607f63dec8ff5a9682a3091ab2 (from 2021),
+it is not affected since the symbol visibility is still hidden.
+
+Signed-off-by: Thomas Jarosch <thomas.jarosch@intra2net.com>
+---
+ lxc.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lxc.c b/lxc.c
+index 3039cfc..bc31eb1 100644
+--- a/lxc.c
++++ b/lxc.c
+@@ -81,7 +81,7 @@ static int lxc_wait_for_pid_status(pid_t pid)
+ }
+ 
+ /* Copied from lxc/confile.c, with HAVE_SYS_PERSONALITY_H check removed */
+-signed long lxc_config_parse_arch(const char *arch)
++static signed long lxc_config_parse_arch(const char *arch)
+ {
+     struct per_name {
+         char *name;

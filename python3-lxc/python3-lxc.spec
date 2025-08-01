@@ -2,11 +2,15 @@
 
 Name:           %{srcname}
 Version:        5.0.0
-Release:        0.1%{?dist}
+Release:        0.2%{?dist}
 Summary:        Python 3 bindings for LXC
-License:        LGPLv2+
+License:        LGPL-2.0-or-later
 URL:            https://linuxcontainers.org/lxc
 Source0:        https://linuxcontainers.org/downloads/lxc/%{srcname}-%{version}.tar.gz
+
+# unreleased upstream patches
+Patch0:         python3-lxc-5.0.0-Replace-deprecated-PyOS-AfterFork-function.patch
+Patch1:         python3-lxc-5.0.0-Fix-random-personality-corruption.patch
 
 BuildRequires:  gcc
 BuildRequires:  lxc-devel >= 3
