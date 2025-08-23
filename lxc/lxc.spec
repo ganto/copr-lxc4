@@ -284,6 +284,9 @@ cp -a %{SOURCE1} %{buildroot}%{_sysconfdir}/sysconfig/%{name}-net
 
 
 %changelog
+* Sat Aug 23 2025 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.0.5-0.1
+- Update to 6.0.5
+
 * Thu Jul 24 2025 Fedora Release Engineering <releng@fedoraproject.org> - 6.0.4-4
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_43_Mass_Rebuild
 
