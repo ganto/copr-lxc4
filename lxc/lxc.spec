@@ -1,18 +1,18 @@
 %if 0%{?fedora}
-%bcond_without seccomp
-%bcond_without static_init
+%global with_seccomp 1
+%global with_static_init 1
 %endif
 
 %if 0%{?rhel} >= 7
 %ifarch %{ix86} x86_64 %{arm} aarch64
-%bcond_without seccomp
+%global with_seccomp 1
 %endif
 %endif
 
 %{!?_pkgdocdir: %global _pkgdocdir %{_docdir}/%{name}-%{version}}
 
 Name:           lxc
-Version:        6.0.4
+Version:        6.0.5
 Release:        0.1%{?dist}
 Summary:        Linux Resource Containers
 # Automatically converted from old format: LGPLv2+ and GPLv2 - review is highly recommended.
@@ -31,7 +31,7 @@ BuildRequires:  glibc-headers
 BuildRequires:  kernel-headers
 BuildRequires:  libcap
 BuildRequires:  libcap-devel
-%if %{?with_seccomp}
+%if 0%{?with_seccomp}
 BuildRequires:  pkgconfig(libseccomp)
 %endif
 BuildRequires:  libselinux-devel
@@ -42,7 +42,7 @@ BuildRequires:  pam-devel
 BuildRequires:  pkg-config
 BuildRequires:  systemd-devel
 BuildRequires:  pkgconfig(dbus-1)
-%if %{?with_static_init}
+%if 0%{?with_static_init}
 BuildRequires:  libcap-static
 BuildRequires:  glibc-static
 %endif
@@ -138,26 +138,26 @@ This package contains documentation for %{name}.
 
 %build
 %meson \
-	-D examples=true \
-	-D man=true \
-	-D tools=true \
-	-D commands=true \
-	-D capabilities=true \
-	-D openssl=true \
-	-D selinux=true \
+        -D examples=true \
+        -D man=true \
+        -D tools=true \
+        -D commands=true \
+        -D capabilities=true \
+        -D openssl=true \
+        -D selinux=true \
 %if 0%{?with_seccomp}
-	-D seccomp=true \
+        -D seccomp=true \
 %endif
-	-D memfd-rexec=true \
-	-D thread-safety=true \
-	-D dbus=true \
-	-D tests=false \
-	-D init-script=systemd \
-	-D systemd-unitdir=%{_unitdir} \
-	-D distrosysconfdir=sysconfig \
-	-D pam-cgroup=true \
-	-D runtime-path=%{_rundir} \
-	%{nil}
+        -D memfd-rexec=true \
+        -D thread-safety=true \
+        -D dbus=true \
+        -D tests=false \
+        -D init-script=systemd \
+        -D systemd-unitdir=%{_unitdir} \
+        -D distrosysconfdir=sysconfig \
+        -D pam-cgroup=true \
+        -D runtime-path=%{_rundir} \
+        %{nil}
 %meson_build
 
 # See https://github.com/lxc/lxc/issues/4156
@@ -232,7 +232,7 @@ cp -a %{SOURCE1} %{buildroot}%{_sysconfdir}/sysconfig/%{name}-net
 %{_libexecdir}/%{name}
 # fixme: should be in libexecdir?
 %{_sbindir}/init.%{name}
-%if %{?with_static_init}
+%if 0%{?with_static_init}
 %{_sbindir}/init.%{name}.static
 %endif
 %{_bindir}/%{name}-autostart
@@ -284,8 +284,18 @@ cp -a %{SOURCE1} %{buildroot}%{_sysconfdir}/sysconfig/%{name}-net
 
 
 %changelog
-* Sat Apr 05 2025 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.0.4-0.1
-- Update lxc to 6.0.4
+* Thu Jul 24 2025 Fedora Release Engineering <releng@fedoraproject.org> - 6.0.4-4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_43_Mass_Rebuild
+
+* Sun Jul 13 2025 Thomas Moschny <thomas.moschny@gmx.de> - 6.0.4-3
+- Cherry pick patch to fix rhbz#2379760.
+
+* Sat Jul 12 2025 Thomas Moschny <thomas.moschny@gmx.de> - 6.0.4-2
+- Revert wrong usage of bcond macros, to allow building on EPEL.
+
+* Sat Jun 21 2025 Thomas Moschny <thomas.moschny@gmx.de> - 6.0.4-1
+- Update to 6.0.4.
+- Untabify spec file.
 
 * Sat Feb 15 2025 Sérgio Basto <sergio@serjux.com> - 6.0.3-1
 - Update lxc to 6.0.3 (#2333359)
