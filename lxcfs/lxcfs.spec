@@ -80,6 +80,10 @@ install -D -m0644 -vp %{SOURCE1} %{buildroot}%{_tmpfilesdir}/%{name}.conf
 
 
 %changelog
+* Sat Aug 23 2025 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.0.5-0.1
+- Update to 6.0.5
+- Add systemd-tmpfiles config for /var/lib/lxcfs
+
 * Thu Jul 24 2025 Fedora Release Engineering <releng@fedoraproject.org> - 6.0.4-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_43_Mass_Rebuild
 
