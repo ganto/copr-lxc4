@@ -2,7 +2,7 @@
 
 Name:           %{srcname}
 Version:        5.0.0
-Release:        0.2%{?dist}
+Release:        0.3%{?dist}
 Summary:        Python 3 bindings for LXC
 License:        LGPL-2.0-or-later
 URL:            https://linuxcontainers.org/lxc
@@ -43,6 +43,9 @@ chmod -x examples/*
 
 
 %changelog
+* Sun Aug 24 2025 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 5.0.0-0.3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_43_Mass_Rebuild
+
 * Fri Aug 01 2025 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 5.0.0-0.2
 - Rebuild against current Python and add latest upstream patches
 
