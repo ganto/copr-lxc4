@@ -1,6 +1,6 @@
 Name:           python-sphinx-remove-toctrees
 Version:        1.0.0.post1
-Release:        0.3%{?dist}
+Release:        0.4%{?dist}
 Summary:        Speed up Sphinx builds by selectively removing toctrees from some pages
 
 License:        MIT
@@ -41,6 +41,9 @@ Summary:        %{summary}
 %doc README.md
 
 %changelog
+* Sun Aug 24 2025 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 1.0.0.post1-0.4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_43_Mass_Rebuild
+
 * Tue Jan 28 2025 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 1.0.0.post1-0.3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_42_Mass_Rebuild
 
