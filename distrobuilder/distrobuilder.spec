@@ -1,6 +1,6 @@
 # https://github.com/lxc/distrobuilder
 %global goipath github.com/lxc/distrobuilder
-Version:        3.1
+Version:        3.2
 %gometa
 
 %global godocs      AUTHORS CONTRIBUTING.md
@@ -32,26 +32,6 @@ Recommends:     genisoimage
 %description
 %{summary}.
 
-%package doc
-Summary:        System container image builder for LXC and Incus - Documentation
-BuildArch:      noarch
-
-BuildRequires:  python3-furo
-BuildRequires:  python3-linkify-it-py
-BuildRequires:  python3-lxd-sphinx-extensions
-BuildRequires:  python3-myst-parser
-BuildRequires:  python3-setuptools
-BuildRequires:  python3-sphinx
-BuildRequires:  python3-sphinx-design
-BuildRequires:  python3-sphinx-reredirects
-BuildRequires:  python3-sphinx-tabs
-BuildRequires:  python3-sphinxcontrib-devhelp
-BuildRequires:  python3-sphinxcontrib-jquery
-BuildRequires:  python3-sphinxext-opengraph
-
-%description doc
-%{summary}.
-
 %gopkg
 
 %prep
@@ -65,10 +45,6 @@ BuildRequires:  python3-sphinxext-opengraph
 %gobuild -o %{gobuilddir}/bin/%{name} %{goipath}/%{name}
 
 help2man %{gobuilddir}/bin/%{name} -n "System container image builder" --no-info --no-discard-stderr > %{name}.1
-sphinx-build -c .sphinx -b dirhtml doc/ doc/html/
-rm -vrf doc/html/{.buildinfo,.doctrees}
-# remove duplicate files
-rm -vrf doc/html/{_sources,_sphinx_design_static}
 
 %install
 %gopkginstall
@@ -86,10 +62,6 @@ install -m 0644 -vp %{name}.1           %{buildroot}%{_mandir}/man1/
 %doc doc/examples
 %{_bindir}/*
 %{_mandir}/man1/%{name}.1.*
-
-%files doc
-%license %{golicenses}
-%doc doc/html
 
 %gopkgfiles
 
