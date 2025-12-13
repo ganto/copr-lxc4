@@ -469,6 +469,9 @@ export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
 %endif
 
 %changelog
+* Sat Dec 13 2025 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.19.1-0.2
+- Fix Sphinx documentation build
+
 * Sat Dec 13 2025 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.19.1-0.1
 - Update to 6.19.1
 - Rework static build according to Fedora spec
