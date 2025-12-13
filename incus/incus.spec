@@ -469,6 +469,11 @@ export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
 %endif
 
 %changelog
+* Sat Dec 13 2025 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.19.1-0.1
+- Update to 6.19.1
+- Rework static build according to Fedora spec
+- Update swagger-ui to v5.31.0
+
 * Sun Aug 03 2025 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.15-0.1
 - Update to 6.15
 
