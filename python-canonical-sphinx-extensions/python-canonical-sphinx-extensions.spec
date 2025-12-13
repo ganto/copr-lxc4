@@ -2,8 +2,8 @@
 %global pypi_name canonical-sphinx-extensions
 
 Name:           python-%{pypi_name}
-Version:        0.0.33
-Release:        0.2%{?dist}
+Version:        0.0.34
+Release:        0.1%{?dist}
 Summary:        Sphinx extensions used by Canonical
 License:        Apache-2.0
 URL:            https://github.com/canonical/canonical-sphinx-extensions
