@@ -30,7 +30,7 @@ Version:        6.19.1
 
 
 Name:           incus
-Release:        0.1%{?dist}
+Release:        0.2%{?dist}
 Summary:        Powerful system container and virtual machine manager
 License:        Apache-2.0
 URL:            https://linuxcontainers.org/incus
@@ -320,9 +320,9 @@ Summary:        Container hypervisor based on LXC - Documentation
 License:        Apache-2.0 AND BSD-2-Clause AND MIT
 BuildArch:      noarch
 
+BuildRequires:  python3-canonical-sphinx-extensions
 BuildRequires:  python3-furo
 BuildRequires:  python3-linkify-it-py
-BuildRequires:  python3-lxd-sphinx-extensions
 BuildRequires:  python3-myst-parser
 BuildRequires:  python3-sphinx
 BuildRequires:  python3-sphinx-copybutton
@@ -331,7 +331,7 @@ BuildRequires:  python3-sphinx-notfound-page
 BuildRequires:  python3-sphinx-remove-toctrees
 BuildRequires:  python3-sphinx-reredirects
 BuildRequires:  python3-sphinx-tabs
-BuildRequires:  python3-sphinxcontrib-devhelp
+BuildRequires:  python3-sphinxcontrib-jquery
 BuildRequires:  python3-sphinxext-opengraph
 
 %description doc
@@ -371,12 +371,12 @@ mkdir %{gobuilddir}/completions
 %{gobuilddir}/bin/%{name} completion zsh > %{gobuilddir}/completions/%{name}.zsh
 
 
-%if %{with docs}
+%if %{with doc}
 # build documentation
 mkdir -p doc/.sphinx/_static/swagger-ui
 install -pm 0644 %{SOURCE201} doc/.sphinx/_static/swagger-ui/swagger-ui-bundle.js
 install -pm 0644 %{SOURCE202} doc/.sphinx/_static/swagger-ui/swagger-ui-standalone-preset.js
-install -pm 0644 %{SOURCE203} doc/.sphinx/_static/swagger-ui//swagger-ui.css
+install -pm 0644 %{SOURCE203} doc/.sphinx/_static/swagger-ui/swagger-ui.css
 sed -i 's|^path.*$|path = "%{gobuilddir}"|' doc/conf.py
 sphinx-build -c doc/ -b dirhtml doc/ doc/html/
 rm -vrf doc/html/{.buildinfo,.doctrees}
