@@ -2,7 +2,7 @@
 %bcond doc 1
 
 # Swagger version to download for documentation
-%global swaggerui_version 5.24.2
+%global swaggerui_version 5.31.0
 %global swaggerui_source_baseurl https://github.com/swagger-api/swagger-ui/raw/v%{swaggerui_version}/dist/
 
 # Enable tests
