@@ -50,6 +50,9 @@ Summary:        %{summary}
 
 
 %changelog
+* Sat Dec 13 2025 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.0.34-0.1
+- Update to 0.0.34
+
 * Sun Aug 24 2025 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.0.33-0.2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_43_Mass_Rebuild
 
