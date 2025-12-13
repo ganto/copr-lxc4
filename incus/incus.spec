@@ -10,12 +10,24 @@
 
 # https://github.com/lxc/incus
 %global goipath github.com/lxc/incus
-Version:        6.15
+Version:        6.19.1
 
 %gometa
 
 %global godocs AUTHORS CODE_OF_CONDUCT.md CONTRIBUTING.md README.md SECURITY.md
 %global golicenses COPYING
+
+
+# Set build macro for static builds
+%define gocompilerflags_static -compiler gc
+%define gobuild_baseflags_static %{gocompilerflags_static} -tags="rpm_crashtraceback ${GO_BUILDTAGS-${BUILDTAGS-}}" -a -v
+%define gobuild_ldflags_static ${GO_LDFLAGS-${LDFLAGS-}} %{?currentgoldflags} -B 0x$(echo "%{name}-%{version}-%{release}-${SOURCE_DATE_EPOCH:-}" | sha1sum | cut -d ' ' -f1) -compressdwarf=false
+%define gobuildflags_static() %{expand:%{gobuild_baseflags_static} -ldflags "%{gobuild_ldflags_static}"}
+%define gobuild_static(-) %{expand:
+  %{?gobuilddir:GOPATH="%{gobuilddir}:${GOPATH:+${GOPATH}:}%{?gopath}"} %{?gomodulesmode} \\
+  CGO_ENABLED=0 go build %{gobuildflags_static} %{?**};
+}
+
 
 Name:           incus
 Release:        0.1%{?dist}
@@ -64,6 +76,7 @@ Patch1002:      incus-0.2-doc-Remove-downloads-from-sphinx-build.patch
 %global selinuxtype targeted
 
 BuildRequires:  gettext
+BuildRequires:  glibc-static
 BuildRequires:  help2man
 BuildRequires:  pkgconfig(bash-completion)
 BuildRequires:  pkgconfig(cowsql)
@@ -347,13 +360,9 @@ for cmd in incus fuidshift incus-benchmark lxc-to-incus lxd-to-incus; do
     BUILDTAGS="libsqlite3" %gobuild -o %{gobuilddir}/bin/$cmd %{goipath}/cmd/$cmd
 done
 
-# upstream %gobuildflags contain '-linkmode=external' which conflicts with CGO_ENABLED=0
-%global gobuildflags -tags="${BUILDTAGS:-}" -ldflags "${LDFLAGS:-} -B 0x$(head -c20 /dev/urandom|od -An -tx1|tr -d ' \\n')" -a -v -x
-
-export CGO_ENABLED=0
-BUILDTAGS="netgo" %gobuild -o %{gobuilddir}/bin/incus-migrate %{goipath}/cmd/incus-migrate
-BUILDTAGS="agent netgo" %gobuild -o %{gobuilddir}/bin/incus-agent %{goipath}/cmd/incus-agent
-unset CGO_ENABLED
+# Build incus-migrate and incus-agent statically (cf. rhbz#2419661)
+BUILDTAGS="netgo" %gobuild_static -o %{gobuilddir}/bin/incus-migrate %{goipath}/cmd/incus-migrate
+BUILDTAGS="agent netgo" %gobuild_static -o %{gobuilddir}/bin/incus-agent %{goipath}/cmd/incus-agent
 
 # build shell completions
 mkdir %{gobuilddir}/completions
