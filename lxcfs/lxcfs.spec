@@ -80,6 +80,10 @@ install -D -m0644 -vp %{SOURCE1} %{buildroot}%{_tmpfilesdir}/%{name}.conf
 
 
 %changelog
+* Sat Mar 07 2026 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.0.6-0.1
+- Update to 6.0.6
+- Build against fuse3
+
 * Sat Aug 23 2025 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.0.5-0.1
 - Update to 6.0.5
 - Add systemd-tmpfiles config for /var/lib/lxcfs
