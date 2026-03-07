@@ -1,5 +1,5 @@
 Name:		  lxcfs
-Version:	  6.0.5
+Version:	  6.0.6
 Release:	  0.1%{?dist}
 Summary:	  FUSE based filesystem for LXC
 License:	  Apache-2.0
@@ -11,7 +11,7 @@ BuildRequires:	  gcc
 BuildRequires:	  python3-jinja2
 BuildRequires:	  gawk
 BuildRequires:	  make
-BuildRequires:	  fuse-devel
+BuildRequires:	  fuse3-devel
 BuildRequires:	  help2man
 BuildRequires:	  systemd
 BuildRequires:	  systemd-rpm-macros
