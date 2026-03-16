@@ -1,0 +1,442 @@
+commit 2b2a0b0a5b45028ac9cf2846830405bf94669e08
+Author: Reto Gantenbein <reto.gantenbein@linuxmonk.ch>
+Date:   Sat Oct 3 13:25:49 2020 +0200
+
+    Disable tests that require access to upstream mirrors
+
+diff --git a/sources/apertis-http_test.go b/sources/apertis-http_test.go
+deleted file mode 100644
+index ea5036c..0000000
+--- a/sources/apertis-http_test.go
++++ /dev/null
+@@ -1,31 +0,0 @@
+-package sources
+-
+-import (
+-	"fmt"
+-	"net/http"
+-	"testing"
+-
+-	"github.com/stretchr/testify/require"
+-)
+-
+-func TestApertisHTTP_getLatestRelease(t *testing.T) {
+-	s := &apertis{}
+-	s.client = http.DefaultClient
+-
+-	tests := []struct {
+-		release string
+-		want    string
+-	}{
+-		{
+-			"18.12",
+-			"18.12.0",
+-		},
+-	}
+-
+-	for _, tt := range tests {
+-		baseURL := fmt.Sprintf("https://images.apertis.org/release/%s", tt.release)
+-		release, err := s.getLatestRelease(baseURL, tt.release)
+-		require.NoError(t, err)
+-		require.Equal(t, tt.want, release)
+-	}
+-}
+diff --git a/sources/archlinux-http_test.go b/sources/archlinux-http_test.go
+deleted file mode 100644
+index bf06785..0000000
+--- a/sources/archlinux-http_test.go
++++ /dev/null
+@@ -1,18 +0,0 @@
+-package sources
+-
+-import (
+-	"net/http"
+-	"regexp"
+-	"testing"
+-
+-	"github.com/stretchr/testify/require"
+-)
+-
+-func TestArchLinuxGetLatestRelease(t *testing.T) {
+-	src := &archlinux{}
+-	src.client = http.DefaultClient
+-
+-	release, err := src.getLatestRelease("https://archive.archlinux.org/iso/", "x86_64")
+-	require.NoError(t, err)
+-	require.Regexp(t, regexp.MustCompile(`^\d{4}\.\d{2}\.\d{2}$`), release)
+-}
+diff --git a/sources/openeuler-http_test.go b/sources/openeuler-http_test.go
+deleted file mode 100644
+index b659372..0000000
+--- a/sources/openeuler-http_test.go
++++ /dev/null
+@@ -1,86 +0,0 @@
+-package sources
+-
+-import (
+-	"net/http"
+-	"testing"
+-
+-	"github.com/stretchr/testify/require"
+-)
+-
+-func TestGetLatestRelease(t *testing.T) {
+-	s := &openEuler{}
+-	s.client = http.DefaultClient
+-
+-	tests := []struct {
+-		url        string
+-		release    string
+-		want       string
+-		shouldFail bool
+-	}{
+-		{
+-			"https://repo.openeuler.org/",
+-			"22.03",
+-			"22.03-LTS-SP4",
+-			false,
+-		},
+-		{
+-			"https://repo.openeuler.org/",
+-			"20.03",
+-			"20.03-LTS-SP4",
+-			false,
+-		},
+-		{
+-			"https://repo.openeuler.org/",
+-			"20.03-LTS",
+-			"20.03-LTS-SP4",
+-			false,
+-		},
+-		{
+-			"https://repo.openeuler.org/",
+-			"20.03-LTS-SP1",
+-			"20.03-LTS-SP1",
+-			false,
+-		},
+-		{
+-			"https://repo.openeuler.org/",
+-			"21.03",
+-			"21.03",
+-			false,
+-		},
+-		{
+-			"https://repo.openeuler.org/",
+-			"22.00", // non-existed release
+-			"",
+-			true,
+-		},
+-		{
+-			"https://repo.openeuler.org/",
+-			"BadRelease", // invalid format
+-			"",
+-			true,
+-		},
+-		{
+-			"https://repo.openeuler.org/",
+-			"", // null string
+-			"",
+-			true,
+-		},
+-		{
+-			"foobar", // invalid url
+-			"22.03",
+-			"",
+-			true,
+-		},
+-	}
+-
+-	for _, test := range tests {
+-		release, err := s.getLatestRelease(test.url, test.release)
+-		if test.shouldFail {
+-			require.NotNil(t, err)
+-		} else {
+-			require.NoError(t, err)
+-			require.NotEmpty(t, release)
+-			require.Equal(t, test.want, release)
+-		}
+-	}
+-}
+diff --git a/sources/openwrt-http_test.go b/sources/openwrt-http_test.go
+deleted file mode 100644
+index b55f7bf..0000000
+--- a/sources/openwrt-http_test.go
++++ /dev/null
+@@ -1,39 +0,0 @@
+-package sources
+-
+-import (
+-	"net/http"
+-	"regexp"
+-	"testing"
+-
+-	"github.com/stretchr/testify/require"
+-)
+-
+-func TestOpenWrtHTTP_getLatestServiceRelease(t *testing.T) {
+-	s := &openwrt{}
+-	s.client = http.DefaultClient
+-
+-	tests := []struct {
+-		release string
+-		want    *regexp.Regexp
+-	}{
+-		{
+-			"22.03",
+-			regexp.MustCompile(`22\.03\.\d+`),
+-		},
+-		{
+-			"23.05",
+-			regexp.MustCompile(`23\.05\.\d+`),
+-		},
+-		{
+-			"24.10",
+-			regexp.MustCompile(`24\.10\.\d+`),
+-		},
+-	}
+-
+-	for _, tt := range tests {
+-		baseURL := "https://downloads.openwrt.org/releases/"
+-		release, err := s.getLatestServiceRelease(baseURL, tt.release)
+-		require.NoError(t, err)
+-		require.Regexp(t, tt.want, release)
+-	}
+-}
+commit c9a2fbb15fa01bbf8cfe6e76114257533a5b831b
+Author: Reto Gantenbein <reto.gantenbein@linuxmonk.ch>
+Date:   Wed Jun 29 22:15:32 2022 +0200
+
+    Disable tests that need access to GPG keyserver
+
+diff --git a/sources/common_test.go b/sources/common_test.go
+deleted file mode 100644
+index 8105467..0000000
+--- a/sources/common_test.go
++++ /dev/null
+@@ -1,226 +0,0 @@
+-package sources
+-
+-import (
+-	"context"
+-	"log"
+-	"net/url"
+-	"os"
+-	"path"
+-	"path/filepath"
+-	"testing"
+-
+-	incus "github.com/lxc/incus/v6/shared/util"
+-	"github.com/sirupsen/logrus"
+-	"github.com/stretchr/testify/require"
+-
+-	"github.com/lxc/distrobuilder/v3/shared"
+-)
+-
+-func TestVerifyFile(t *testing.T) {
+-	wd, err := os.Getwd()
+-	if err != nil {
+-		t.Fatalf("Failed to retrieve working directory: %v", err)
+-	}
+-
+-	testdataDir := filepath.Join(wd, "..", "testdata")
+-
+-	keys := []string{"0x5DE8949A899C8D99"}
+-	keyserver := "keyserver.ubuntu.com"
+-
+-	tests := []struct {
+-		name          string
+-		signedFile    string
+-		signatureFile string
+-		keys          []string
+-		keyserver     string
+-		shouldFail    bool
+-	}{
+-		{
+-			"testfile with detached signature",
+-			filepath.Join(testdataDir, "testfile"),
+-			filepath.Join(testdataDir, "testfile.sig"),
+-			keys,
+-			keyserver,
+-			false,
+-		},
+-		{
+-			"testfile with cleartext signature",
+-			filepath.Join(testdataDir, "testfile.asc"),
+-			"",
+-			keys,
+-			keyserver,
+-			false,
+-		},
+-		{
+-			"testfile with invalid cleartext signature",
+-			filepath.Join(testdataDir, "testfile-invalid.asc"),
+-			"",
+-			keys,
+-			keyserver,
+-			true,
+-		},
+-		{
+-			"testfile with normal signature",
+-			filepath.Join(testdataDir, "testfile.gpg"),
+-			"",
+-			keys,
+-			keyserver,
+-			false,
+-		},
+-		{
+-			"no keys",
+-			filepath.Join(testdataDir, "testfile"),
+-			filepath.Join(testdataDir, "testfile.sig"),
+-			[]string{},
+-			keyserver,
+-			true,
+-		},
+-		{
+-			"invalid key",
+-			filepath.Join(testdataDir, "testfile.asc"),
+-			"",
+-			[]string{"0x46181433FBB75451"},
+-			keyserver,
+-			true,
+-		},
+-	}
+-
+-	c := common{
+-		sourcesDir: os.TempDir(),
+-		definition: shared.Definition{
+-			Source: shared.DefinitionSource{},
+-		},
+-		ctx: context.TODO(),
+-	}
+-
+-	for i, tt := range tests {
+-		log.Printf("Running test #%d: %s", i, tt.name)
+-
+-		c.definition = shared.Definition{
+-			Source: shared.DefinitionSource{
+-				Keyserver: tt.keyserver,
+-				Keys:      tt.keys,
+-			},
+-		}
+-
+-		valid, err := c.VerifyFile(tt.signedFile, tt.signatureFile)
+-		if tt.shouldFail {
+-			require.Error(t, err)
+-			require.False(t, valid)
+-		} else {
+-			require.NoError(t, err)
+-			require.True(t, valid)
+-		}
+-	}
+-}
+-
+-func TestCreateGPGKeyring(t *testing.T) {
+-	c := common{
+-		sourcesDir: os.TempDir(),
+-		definition: shared.Definition{
+-			Source: shared.DefinitionSource{
+-				Keyserver: "keyserver.ubuntu.com",
+-				Keys:      []string{"0x5DE8949A899C8D99"},
+-			},
+-		},
+-		ctx: context.TODO(),
+-	}
+-
+-	keyring, err := c.CreateGPGKeyring()
+-	require.NoError(t, err)
+-
+-	require.FileExists(t, keyring)
+-	os.RemoveAll(path.Dir(keyring))
+-
+-	c.definition = shared.Definition{}
+-
+-	// This shouldn't fail, but the keyring file should not be created since
+-	// there are no keys to be exported.
+-	keyring, err = c.CreateGPGKeyring()
+-	require.NoError(t, err)
+-
+-	require.False(t, incus.PathExists(keyring), "File should not exist")
+-	os.RemoveAll(path.Dir(keyring))
+-}
+-
+-func TestValidateGPGRequirements(t *testing.T) {
+-	tests := []struct {
+-		name             string
+-		url              string
+-		keys             []string
+-		skipVerification bool
+-		expectError      bool
+-		expectSkipVerify bool
+-	}{
+-		{
+-			name:             "keys provided with https",
+-			url:              "https://example.com/file",
+-			keys:             []string{"0x12345678"},
+-			skipVerification: false,
+-			expectError:      false,
+-			expectSkipVerify: false, // Keys provided, always verify
+-		},
+-		{
+-			name:             "keys provided with http",
+-			url:              "http://example.com/file",
+-			keys:             []string{"0x12345678"},
+-			skipVerification: false,
+-			expectError:      false,
+-			expectSkipVerify: false, // Keys provided, always verify
+-		},
+-		{
+-			name:             "http without keys",
+-			url:              "http://example.com/file",
+-			keys:             []string{},
+-			skipVerification: false,
+-			expectError:      true, // HTTP requires GPG keys
+-			expectSkipVerify: false,
+-		},
+-		{
+-			name:             "https without keys and skip false",
+-			url:              "https://example.com/file",
+-			keys:             []string{},
+-			skipVerification: false,
+-			expectError:      false,
+-			expectSkipVerify: true, // Should be set to true with warning
+-		},
+-		{
+-			name:             "https without keys and skip true",
+-			url:              "https://example.com/file",
+-			keys:             []string{},
+-			skipVerification: true,
+-			expectError:      false,
+-			expectSkipVerify: true, // Remains true
+-		},
+-	}
+-
+-	for _, tt := range tests {
+-		t.Run(tt.name, func(t *testing.T) {
+-			logger := logrus.New()
+-			logger.SetOutput(os.Stdout)
+-
+-			c := common{
+-				logger: logger,
+-				definition: shared.Definition{
+-					Source: shared.DefinitionSource{
+-						Keys:             tt.keys,
+-						SkipVerification: tt.skipVerification,
+-					},
+-				},
+-				ctx: context.TODO(),
+-			}
+-
+-			u, err := url.Parse(tt.url)
+-			require.NoError(t, err)
+-
+-			skip, err := c.validateGPGRequirements(u)
+-
+-			if tt.expectError {
+-				require.Error(t, err)
+-			} else {
+-				require.NoError(t, err)
+-				require.Equal(t, tt.expectSkipVerify, skip)
+-			}
+-		})
+-	}
+-}

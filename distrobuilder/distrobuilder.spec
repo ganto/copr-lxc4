@@ -1,6 +1,6 @@
 # https://github.com/lxc/distrobuilder
 %global goipath github.com/lxc/distrobuilder
-Version:        3.2
+Version:        3.3.1
 %gometa
 
 %global godocs      AUTHORS CONTRIBUTING.md
@@ -14,12 +14,15 @@ License:        Apache-2.0
 URL:            %{gourl}
 Source0:        https://linuxcontainers.org/downloads/distrobuilder/%{name}-%{version}.tar.gz
 Patch0:         %{name}-%{version}-Disable-online-tests.patch
+Patch1:         %{name}-%{version}-Fix-securejoin-OpenInRoot-import.patch
 
-BuildRequires:  gnupg
+BuildRequires:  gnupg2
+BuildRequires:  gpgme-devel
 BuildRequires:  help2man
+BuildRequires:  btrfs-progs-devel
 BuildRequires:  squashfs-tools
 
-Requires:       gnupg
+Requires:       gnupg2
 Requires:       rsync
 Requires:       squashfs-tools
 Requires:       tar
@@ -28,6 +31,7 @@ Requires:       xz
 
 Recommends:     debootstrap
 Recommends:     genisoimage
+Recommends:     hivex
 
 %description
 %{summary}.
@@ -37,6 +41,7 @@ Recommends:     genisoimage
 %prep
 %goprep -k
 %patch 0 -p1
+%patch 1 -p1
 
 %generate_buildrequires
 
@@ -60,7 +65,7 @@ install -m 0644 -vp %{name}.1           %{buildroot}%{_mandir}/man1/
 %files
 %license %{golicenses}
 %doc doc/examples
-%{_bindir}/*
+%{_bindir}/%{name}
 %{_mandir}/man1/%{name}.1.*
 
 %gopkgfiles

@@ -1,0 +1,29 @@
+From: Reto Gantenbein <reto.gantenbein@linuxmonk.ch>
+Subject: Fix securejoin OpenInRoot/Reopen import path for v0.6.x
+
+In filepath-securejoin v0.6.x, OpenInRoot, OpenatInRoot and Reopen were
+moved to the pathrs-lite subpackage. Update the import in the vendored
+go.podman.io/storage to use the correct import path.
+
+--- a/vendor/go.podman.io/storage/userns.go
++++ b/vendor/go.podman.io/storage/userns.go
+@@ -8,7 +8,7 @@
+ 	"os/user"
+ 	"strconv"
+
+-	securejoin "github.com/cyphar/filepath-securejoin"
++	securejoin "github.com/cyphar/filepath-securejoin/pathrs-lite"
+ 	libcontainerUser "github.com/moby/sys/user"
+ 	"github.com/sirupsen/logrus"
+ 	drivers "go.podman.io/storage/drivers"
+--- a/vendor/go.podman.io/storage/pkg/chunked/storage_linux.go
++++ b/vendor/go.podman.io/storage/pkg/chunked/storage_linux.go
+@@ -18,7 +18,7 @@
+ 	"syscall"
+
+ 	"github.com/containerd/stargz-snapshotter/estargz"
+-	securejoin "github.com/cyphar/filepath-securejoin"
++	securejoin "github.com/cyphar/filepath-securejoin/pathrs-lite"
+ 	jsoniter "github.com/json-iterator/go"
+ 	"github.com/klauspost/compress/zstd"
+ 	"github.com/klauspost/pgzip"
