@@ -71,6 +71,9 @@ install -m 0644 -vp %{name}.1           %{buildroot}%{_mandir}/man1/
 %gopkgfiles
 
 %changelog
+* Mon Mar 16 2026 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 3.3.1-0.1
+- Update to 3.3.1.
+
 * Sun Aug 24 2025 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 3.2-0.1
 - Update to 3.2
 - Remove doc sub-package
