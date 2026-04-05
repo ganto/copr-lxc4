@@ -10,7 +10,7 @@
 
 # https://github.com/lxc/incus
 %global goipath github.com/lxc/incus
-Version:        6.19.1
+Version:        6.23
 
 %gometa
 
@@ -30,7 +30,7 @@ Version:        6.19.1
 
 
 Name:           incus
-Release:        0.2%{?dist}
+Release:        0.1%{?dist}
 Summary:        Powerful system container and virtual machine manager
 License:        Apache-2.0
 URL:            https://linuxcontainers.org/incus
@@ -58,22 +58,20 @@ Source109:      %{name}-sysctl.conf
 # Helper script for incusd shutdown
 Source110:      shutdown
 
-# SELinux file labels
-Source111:      %{name}.fc
-
 # Web scripts shipped with API documentation
 Source201:      %{swaggerui_source_baseurl}/swagger-ui-bundle.js#/swagger-ui-%{swaggerui_version}-bundle.js
 Source202:      %{swaggerui_source_baseurl}/swagger-ui-standalone-preset.js#/swagger-ui-%{swaggerui_version}-standalone-preset.js
 Source203:      %{swaggerui_source_baseurl}/swagger-ui.css#/swagger-ui-%{swaggerui_version}.css
 
 # Patches upstream or proposed upstream
+## https://github.com/lxc/incus/pull/3114
+Patch1001:      incus-6.23-incusd-Fix-bad-type-in-format-strings.patch
 
 # Downstream only patches
 ## Allow offline builds
 Patch1002:      incus-0.2-doc-Remove-downloads-from-sphinx-build.patch
 
 %global bashcompletiondir %(pkg-config --variable=completionsdir bash-completion 2>/dev/null || :)
-%global selinuxtype targeted
 
 BuildRequires:  gettext
 BuildRequires:  glibc-static
@@ -91,7 +89,7 @@ BuildRequires:  systemd-rpm-macros
 %{?sysusers_requires_compat}
 
 Requires:       %{name}-client = %{version}-%{release}
-Requires:       (%{name}-selinux = %{version}-%{release} if selinux-policy-%{selinuxtype})
+Requires:       (container-selinux >= 2.245.0 if selinux-policy)
 Requires:       attr
 Requires:       dnsmasq
 Requires:       iptables, ebtables
@@ -119,6 +117,10 @@ BuildRequires:  nftables
 
 Recommends:     %{name}-agent = %{version}-%{release}
 Suggests:       %{name}-doc
+
+# This package no longer exists as container-selinux supersedes it
+Obsoletes: %{name}-selinux < 6.19.1-4
+Conflicts: %{name}-selinux < 6.19.1-4
 
 %description
 Container hypervisor based on LXC
@@ -168,43 +170,6 @@ This package contains the Incus daemon.
 %attr(700,root,root) %dir %{_localstatedir}/cache/%{name}
 %attr(700,root,root) %dir %{_localstatedir}/log/%{name}
 %attr(711,root,root) %dir %{_localstatedir}/lib/%{name}
-
-%dnl ----------------------------------------------------------------------------
-
-%package selinux
-Summary:        Container hypervisor based on LXC - SELinux policy
-BuildArch:      noarch
-
-Requires:       container-selinux
-Requires(post): container-selinux
-BuildRequires:  selinux-policy-devel
-%{?selinux_requires}
-
-%description selinux
-Incus offers a REST API to remotely manage containers over the network,
-using an image based work-flow and with support for live migration.
-
-This package contains the SELinux policy.
-
-%pre selinux
-%selinux_relabel_pre -s %{selinuxtype}
-
-%post selinux
-%selinux_modules_install -s %{selinuxtype} %{_datadir}/selinux/packages/%{selinuxtype}/%{name}.pp.bz2
-%selinux_relabel_post -s %{selinuxtype}
-
-%postun selinux
-if [ $1 -eq 0 ]; then
-    %selinux_modules_uninstall -s %{selinuxtype} %{name}
-    %selinux_relabel_post -s %{selinuxtype}
-fi
-
-%posttrans selinux
-%selinux_relabel_post -s %{selinuxtype}
-
-%files selinux
-%{_datadir}/selinux/packages/%{selinuxtype}/%{name}.pp.*
-%ghost %verify(not md5 size mtime) %{_sharedstatedir}/selinux/%{selinuxtype}/active/modules/200/%{name}
 
 %dnl ----------------------------------------------------------------------------
 
@@ -281,6 +246,7 @@ Requires:       incus%{?_isa} = %{version}-%{release}
 # Virtual machine support requires additional packages
 Recommends:     edk2-ovmf
 Recommends:     xorriso
+Recommends:     qemu-audio-spice
 Recommends:     qemu-char-spice
 Recommends:     qemu-device-display-virtio-vga
 Recommends:     qemu-device-display-virtio-gpu
@@ -379,7 +345,7 @@ install -pm 0644 %{SOURCE202} doc/.sphinx/_static/swagger-ui/swagger-ui-standalo
 install -pm 0644 %{SOURCE203} doc/.sphinx/_static/swagger-ui/swagger-ui.css
 sed -i 's|^path.*$|path = "%{gobuilddir}"|' doc/conf.py
 sphinx-build -c doc/ -b dirhtml doc/ doc/html/
-rm -vrf doc/html/{.buildinfo,.doctrees}
+rm -vrf doc/html/{.buildinfo,.buildinfo.bak,.doctrees}
 # remove duplicate files
 rm -vrf doc/html/{_sources,_sphinx_design_static}
 %endif
@@ -399,16 +365,6 @@ help2man %{gobuilddir}/bin/lxc-to-incus -n "Convert LXC containers to Incus" --n
 help2man %{gobuilddir}/bin/lxd-to-incus -n "LXD to Incus migration tool" --no-info --no-discard-stderr > %{gobuilddir}/man/lxd-to-incus.1
 help2man %{gobuilddir}/bin/incus-agent -n "Incus virtual machine guest agent" --no-info --no-discard-stderr > %{gobuilddir}/man/incus-agent.1
 
-# SELinux policy
-mkdir selinux
-cp -p %{SOURCE111} selinux/
-pushd selinux
-# generate the type enforcement file as it has no other content
-echo 'policy_module(%{name},1.0)' >%{name}.te
-%{__make} NAME=%{selinuxtype} -f %{_datadir}/selinux/devel/Makefile %{name}.pp
-bzip2 -9 %{name}.pp
-popd
-
 %install
 # install binaries
 install -d %{buildroot}%{_bindir}
@@ -427,9 +383,6 @@ install -D -m0644 -vp %{SOURCE107} %{buildroot}%{_tmpfilesdir}/%{name}.conf
 # extra configs
 install -D -m0644 -vp %{SOURCE108} %{buildroot}%{_sysconfdir}/dnsmasq.d/%{name}.conf
 install -D -m0644 -vp %{SOURCE109} %{buildroot}%{_sysctldir}/10-incus-inotify.conf
-
-# selinux policy
-install -D -m0644 -vp selinux/%{name}.pp.bz2 %{buildroot}%{_datadir}/selinux/packages/%{selinuxtype}/%{name}.pp.bz2
 
 # install helper libs
 install -d %{buildroot}%{_libexecdir}/%{name}

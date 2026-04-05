@@ -1,0 +1,55 @@
+From c95f5ba529fd57eada628d7ee10299f5f5200b86 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?St=C3=A9phane=20Graber?= <stgraber@stgraber.org>
+Date: Sat, 28 Mar 2026 08:47:54 -0400
+Subject: [PATCH] incusd: Fix bad type in format strings
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Suggested-by: julienr123
+Signed-off-by: Stéphane Graber <stgraber@stgraber.org>
+---
+ internal/server/db/cluster/update.go              | 2 +-
+ internal/server/instance/drivers/driver_common.go | 2 +-
+ internal/server/instance/drivers/driver_qemu.go   | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/internal/server/db/cluster/update.go b/internal/server/db/cluster/update.go
+index 2060028db1c..74833dac68a 100644
+--- a/internal/server/db/cluster/update.go
++++ b/internal/server/db/cluster/update.go
+@@ -335,7 +335,7 @@ JOIN
+ 	for _, projectID := range projectIDs {
+ 		_, err = tx.Exec(`INSERT OR REPLACE INTO projects_config (project_id,key,value) VALUES(?,?,?);`, projectID, "features.networks.zones", "true")
+ 		if err != nil {
+-			return fmt.Errorf("Failed adding features.networks.zones=true to project ID %q: %w", projectID, err)
++			return fmt.Errorf("Failed adding features.networks.zones=true to project ID %d: %w", projectID, err)
+ 		}
+ 
+ 		logger.Info("Added features.networks.zones=true on project with features.networks=true", logger.Ctx{"projectID": projectID})
+diff --git a/internal/server/instance/drivers/driver_common.go b/internal/server/instance/drivers/driver_common.go
+index 884045ec276..d5ec14b5431 100644
+--- a/internal/server/instance/drivers/driver_common.go
++++ b/internal/server/instance/drivers/driver_common.go
+@@ -1651,7 +1651,7 @@ func (d *common) balanceNUMANodes() error {
+ // Gets the process starting time.
+ func (d *common) processStartedAt(pid int) (time.Time, error) {
+ 	if pid < 1 {
+-		return time.Time{}, fmt.Errorf("Invalid PID %q", pid)
++		return time.Time{}, fmt.Errorf("Invalid PID %d", pid)
+ 	}
+ 
+ 	file, err := os.Stat(fmt.Sprintf("/proc/%d", pid))
+diff --git a/internal/server/instance/drivers/driver_qemu.go b/internal/server/instance/drivers/driver_qemu.go
+index e2b2d2ed17c..916f087dce6 100644
+--- a/internal/server/instance/drivers/driver_qemu.go
++++ b/internal/server/instance/drivers/driver_qemu.go
+@@ -9750,7 +9750,7 @@ func (d *qemu) getVsockID() (uint32, error) {
+ 	}
+ 
+ 	if d.reservedVsockID(uint32(vsockID)) {
+-		return 0, fmt.Errorf("Failed to use reserved vsock Context ID: %q", vsockID)
++		return 0, fmt.Errorf("Failed to use reserved vsock Context ID: %d", vsockID)
+ 	}
+ 
+ 	return uint32(vsockID), nil
