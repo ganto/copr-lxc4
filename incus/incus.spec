@@ -422,6 +422,12 @@ export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
 %endif
 
 %changelog
+* Mon Apr 06 2026 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.23-0.1
+- Update to 6.23
+- Drop selinux subpackage in favor of container-selinux
+- Follow upstream RPM to adjust socket path to /run
+- Update swagger-ui to v5.32.1
+
 * Sat Dec 13 2025 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.19.1-0.2
 - Fix Sphinx documentation build
 
