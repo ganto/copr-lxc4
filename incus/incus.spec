@@ -426,6 +426,9 @@ export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
 %endif
 
 %changelog
+* Mon Apr 06 2026 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.23-0.2
+- Fix static builds of vendored dependencies
+
 * Mon Apr 06 2026 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.23-0.1
 - Update to 6.23
 - Drop selinux subpackage in favor of container-selinux
