@@ -1,5 +1,5 @@
 Name:		  lxcfs
-Version:	  6.0.6
+Version:	  7.0.0
 Release:	  0.1%{?dist}
 Summary:	  FUSE based filesystem for LXC
 License:	  Apache-2.0
