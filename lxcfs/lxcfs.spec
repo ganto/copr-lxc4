@@ -80,6 +80,9 @@ install -D -m0644 -vp %{SOURCE1} %{buildroot}%{_tmpfilesdir}/%{name}.conf
 
 
 %changelog
+* Fri May 01 2026 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 7.0.0-0.1
+- Update to 7.0.0
+
 * Sat Mar 07 2026 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.0.6-0.1
 - Update to 6.0.6
 - Build against fuse3
