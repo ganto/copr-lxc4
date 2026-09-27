@@ -527,6 +527,12 @@ export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
 %endif
 
 %changelog
+* Sun Sep 27 2026 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 7.4-0.1
+- Update to 7.4
+- Update swagger-ui to v5.33.0
+- Restructure into meta-package with incus-minimal and incus-agent
+- Drop lxd-to-incus, removed upstream
+
 * Mon Apr 06 2026 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 6.23-0.2
 - Fix static builds of vendored dependencies
 
