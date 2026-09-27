@@ -10,7 +10,7 @@
 
 # https://github.com/lxc/incus
 %global goipath github.com/lxc/incus
-Version:        6.23
+Version:        7.4
 
 %gometa
 
@@ -31,7 +31,7 @@ Version:        6.23
 
 
 Name:           incus
-Release:        0.2%{?dist}
+Release:        0.1%{?dist}
 Summary:        Powerful system container and virtual machine manager
 License:        Apache-2.0
 URL:            https://linuxcontainers.org/incus
@@ -64,13 +64,16 @@ Source201:      %{swaggerui_source_baseurl}/swagger-ui-bundle.js#/swagger-ui-%{s
 Source202:      %{swaggerui_source_baseurl}/swagger-ui-standalone-preset.js#/swagger-ui-%{swaggerui_version}-standalone-preset.js
 Source203:      %{swaggerui_source_baseurl}/swagger-ui.css#/swagger-ui-%{swaggerui_version}.css
 
-# Patches upstream or proposed upstream
-## https://github.com/lxc/incus/pull/3114
-Patch1001:      incus-6.23-incusd-Fix-bad-type-in-format-strings.patch
-
 # Downstream only patches
 ## Allow offline builds
 Patch1002:      incus-0.2-doc-Remove-downloads-from-sphinx-build.patch
+
+## %%gobuild builds without a main module (GO111MODULE=off), so the toolchain falls
+## back to the pre-Go-1.22 GODEBUG defaults, where httpmuxgo121=1 selects the old
+## http.ServeMux. incusd's wildcard routes ("/{$}", "/1.0/operations/{id}/wait")
+## then never match and most of the API answers 404. Upstream only sets this for
+## cmd/incus-agent (lxc/incus#3239); incusd builds with a main module upstream.
+Patch1003:      incus-7.4-incusd-Set-httpmuxgo121-0-GODEBUG-default.patch
 
 %global bashcompletiondir %(pkg-config --variable=completionsdir bash-completion 2>/dev/null || :)
 
@@ -200,8 +203,8 @@ This package contains the command line client.
 %exclude %{_mandir}/man1/incus-agent.1.*
 %exclude %{_mandir}/man1/incus-benchmark.1.*
 %exclude %{_mandir}/man1/incus-migrate.1.*
-%exclude %{_mandir}/man1/lxc-to-incus.1.*
 %exclude %{_mandir}/man1/lxd-to-incus.1.*
+%exclude %{_mandir}/man1/incus-simplestreams.1.*
 
 %dnl ----------------------------------------------------------------------------
 
@@ -223,17 +226,20 @@ This package contains extra tools provided with Incus.
  - lxd-to-incus - A tool to migrate an existing LXD environment to Incus
  - incus-benchmark - A Incus benchmark utility
  - incus-migrate - A physical to container migration tool
+ - incus-simplestreams - Maintain an Incus-compatible simplestreams tree
 
 %files tools
 %license %{golicenses}
 %{_bindir}/fuidshift
 %{_bindir}/incus-benchmark
 %{_bindir}/incus-migrate
+%{_bindir}/incus-simplestreams
 %{_bindir}/lxc-to-incus
 %{_bindir}/lxd-to-incus
 %{_mandir}/man1/fuidshift.1.*
 %{_mandir}/man1/incus-benchmark.1.*
 %{_mandir}/man1/incus-migrate.1.*
+%{_mandir}/man1/incus-simplestreams.1.*
 %{_mandir}/man1/lxc-to-incus.1.*
 %{_mandir}/man1/lxd-to-incus.1.*
 
@@ -323,7 +329,7 @@ export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
 for cmd in incusd incus-user; do
     BUILDTAGS="libsqlite3" %gobuild -o %{gobuilddir}/lib/$cmd %{goipath}/cmd/$cmd
 done
-for cmd in incus fuidshift incus-benchmark lxc-to-incus lxd-to-incus; do
+for cmd in incus fuidshift incus-benchmark incus-simplestreams lxc-to-incus lxd-to-incus; do
     BUILDTAGS="libsqlite3" %gobuild -o %{gobuilddir}/bin/$cmd %{goipath}/cmd/$cmd
 done
 
@@ -365,6 +371,7 @@ mkdir %{gobuilddir}/man
 help2man %{gobuilddir}/bin/fuidshift -n "uid/gid shifter" --no-info --no-discard-stderr > %{gobuilddir}/man/fuidshift.1
 help2man %{gobuilddir}/bin/incus-benchmark -n "The container lightervisor - benchmark" --no-info --no-discard-stderr > %{gobuilddir}/man/incus-benchmark.1
 help2man %{gobuilddir}/bin/incus-migrate -n "Physical to container migration tool" --no-info --no-discard-stderr > %{gobuilddir}/man/incus-migrate.1
+help2man %{gobuilddir}/bin/incus-simplestreams -n "Maintain an Incus-compatible simplestreams tree" --no-info --no-discard-stderr > %{gobuilddir}/man/incus-simplestreams.1
 help2man %{gobuilddir}/bin/lxc-to-incus -n "Convert LXC containers to Incus" --no-info --no-discard-stderr > %{gobuilddir}/man/lxc-to-incus.1
 help2man %{gobuilddir}/bin/lxd-to-incus -n "LXD to Incus migration tool" --no-info --no-discard-stderr > %{gobuilddir}/man/lxd-to-incus.1
 help2man %{gobuilddir}/bin/incus-agent -n "Incus virtual machine guest agent" --no-info --no-discard-stderr > %{gobuilddir}/man/incus-agent.1

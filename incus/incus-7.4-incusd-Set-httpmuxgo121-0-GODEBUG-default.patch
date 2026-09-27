@@ -1,0 +1,37 @@
+From 4561ba95e439ee595b29f748a4081fb6776fc3a6 Mon Sep 17 00:00:00 2001
+From: Reto Gantenbein <reto.gantenbein@linuxmonk.ch>
+Date: Sat, 19 Sep 2026 20:54:36 +0200
+Subject: [PATCH] incusd: Set httpmuxgo121=0 GODEBUG default
+
+incusd moved from gorilla/mux to http.ServeMux, which relies on the
+wildcard pattern syntax added in Go 1.22 ("/{$}", "/1.0/operations/{id}/wait"
+and so on).
+
+That syntax is gated behind the httpmuxgo121 GODEBUG setting. Builds with a
+main module take the modern default from the go directive in go.mod, but
+builds without one -- GOPATH mode, which is what Fedora's %gobuild macro
+still uses -- fall back to the pre-1.22 defaults, where httpmuxgo121=1
+selects the Go 1.21 muxer. Every wildcard route then fails to match, so the
+daemon answers 404 for most of its API. Cluster bootstrap fails on
+/1.0/operations/{id}/wait and the guestapi socket 404s on /, which shows up
+as three failures in cmd/incusd's own tests.
+
+cmd/incus-agent already carries this directive for exactly this reason; do
+the same for incusd.
+
+Signed-off-by: Reto Gantenbein <reto.gantenbein@linuxmonk.ch>
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+---
+ cmd/incusd/main.go | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/cmd/incusd/main.go b/cmd/incusd/main.go
+index 9fab6b3be..825995b86 100644
+--- a/cmd/incusd/main.go
++++ b/cmd/incusd/main.go
+@@ -1,3 +1,5 @@
++//go:debug httpmuxgo121=0
++
+ package main
+ 
+ import (
