@@ -1,3 +1,12 @@
+# Not really spelling errors:
+# - "unmap" opposite of `to map`
+# - "uids" plural of user ID abbreviation
+# - "gids" plural of group ID abbreviation
+# - "lxc" project name Linux Containers (LXC)
+# - "lxd" project name Linux Container Daemon (LXD)
+# - "simplestreams" image index format name, as spelled by incus-simplestreams(1)
+addFilter(r" spelling-error \('(unmap|uids|gids|lxc|lxd|simplestreams)',")
+
 # Incus sources (including vendored sources) have duplicate files
 addFilter("incus-debugsource.*: E: files-duplicated-waste")
 
@@ -7,6 +16,9 @@ addFilter("incus.*: E: non-standard-dir-perm /var/cache/incus 700")
 addFilter("incus.*: E: non-standard-dir-perm /var/log/incus 700")
 addFilter("incus.*: E: non-standard-dir-perm /var/lib/incus 711")
 
+# Permissions for required privacy
+addFilter("incus.*: E: non-standard-dir-perm /run/incus 711")
+
 # already using new macro '%tmpfiles_create_package' in %pre
 addFilter("incus.*: W: post-without-tmpfile-creation /usr/lib/tmpfiles.d/incus.conf")
 
@@ -15,3 +27,31 @@ addFilter("golang-github-lxc-incus-devel.noarch: W: hidden-file-or-dir /usr/shar
 
 # can happen, nothing to worry about
 addFilter("golang-github-lxc-incus-devel.noarch: W: files-duplicate *")
+
+# accept static binaries: they run in guests and on migration sources of any distro,
+# which is also why they are not PIE (a Go PIE needs the glibc loader)
+addFilter("incus-agent.*: E: statically-linked-binary /usr/libexec/incus/agents/incus-agent.linux.")
+addFilter("incus-agent.*: W: position-independent-executable-suggested /usr/libexec/incus/agents/incus-agent.linux.")
+addFilter("incus-tools.*: E: statically-linked-binary /usr/bin/incus-migrate")
+addFilter("incus-tools.*: W: position-independent-executable-suggested /usr/bin/incus-migrate")
+
+# 'incus' is a meta-package: its %files is empty by design
+addFilter(r"^incus\.[^:]+: E: no-binary")
+addFilter(r"^incus\.[^:]+: W: no-documentation")
+
+# incus-minimal deliberately does not Provide what it Obsoletes: 'incus-selinux' has no
+# replacement here at all, as container-selinux supersedes it.
+addFilter("incus-minimal.*: W: obsolete-not-provided incus-selinux")
+
+# %post minimal removes the rpm-state marker %pre minimal leaves on upgrades from before
+# the incus/incus-minimal split, which keeps `systemctl preset` off the admin's units;
+# %pre minimal clears a stale one first
+addFilter("incus-minimal.*: W: dangerous-command-in-%(pre|post) rm")
+
+# No logrotate config to ship: incusd logs to the journal (the unit passes no --logfile)
+# and /var/log/incus holds per-instance log directories that incusd creates and removes
+# with the instance.
+addFilter(r"incus-minimal.*: W: log-files-without-logrotate \['/var/log/incus'\]")
+
+# Ships empty in the furo sphinx theme upstream
+addFilter("incus-doc.*: E: zero-length /usr/share/doc/incus-doc/html/_static/scripts/furo-extensions.js")

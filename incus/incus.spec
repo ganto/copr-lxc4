@@ -17,6 +17,9 @@ Version:        7.4
 %global godocs AUTHORS CODE_OF_CONDUCT.md CONTRIBUTING.md README.md SECURITY.md
 %global golicenses COPYING
 
+# Upstream's agent-loader tree: udev rule, systemd unit and setup script for incus-agent
+%global agentloaderdir internal/server/instance/drivers/agent-loader
+
 
 # Set build macro for static builds
 # Uses GO111MODULE=on -mod=vendor instead of %%gomodulesmode (GO111MODULE=off)
@@ -90,7 +93,48 @@ BuildRequires:  pkgconfig(lxc)
 BuildRequires:  pkgconfig(raft)
 BuildRequires:  pkgconfig(sqlite3)
 BuildRequires:  systemd-rpm-macros
-%{?sysusers_requires_compat}
+
+%if %{with check}
+BuildRequires:  btrfs-progs
+BuildRequires:  dnsmasq
+BuildRequires:  nftables
+%endif
+
+Requires:       incus-minimal = %{version}-%{release}
+Requires:       incus-agent = %{version}-%{release}
+%ifarch x86_64
+Requires:       edk2-ovmf
+%endif
+%ifarch aarch64
+Requires:       edk2-aarch64
+%endif
+Requires:       xorriso
+# Not built for ppc64le and s390x
+%ifarch x86_64 aarch64
+Requires:       qemu-audio-spice
+Requires:       qemu-char-spice
+%endif
+Requires:       qemu-device-display-virtio-vga
+Requires:       qemu-device-display-virtio-gpu
+Requires:       qemu-device-usb-redirect
+Requires:       qemu-img
+Requires:       qemu-kvm-core
+Requires:       virtiofsd
+# Only needed for vTPM devices
+Recommends:     swtpm
+Recommends:     swtpm-tools
+
+%description
+Meta-package that installs all Incus components including the daemon,
+guest agent, and virtual machine support packages.
+
+%files
+
+%dnl ----------------------------------------------------------------------------
+
+%package minimal
+Summary:        Powerful system container and virtual machine manager
+License:        Apache-2.0
 
 Requires:       %{name}-client = %{version}-%{release}
 Requires:       (container-selinux >= 2.245.0 if selinux-policy)
@@ -106,6 +150,7 @@ Requires:       tar
 Requires:       xdelta
 Requires:       xz
 %{?systemd_requires}
+%{?sysusers_requires_compat}
 
 %ifnarch %{ix86} %{arm32}
 Requires:       skopeo
@@ -113,52 +158,61 @@ Requires:       skopeo
 #Requires:       umoci
 %endif
 
-%if %{with check}
-BuildRequires:  btrfs-progs
-BuildRequires:  dnsmasq
-BuildRequires:  nftables
-%endif
-
-Recommends:     %{name}-agent = %{version}-%{release}
-Suggests:       %{name}-doc
-
 # This package no longer exists as container-selinux supersedes it
 Obsoletes: %{name}-selinux < 6.19.1-4
 Conflicts: %{name}-selinux < 6.19.1-4
 
-%description
+Suggests:       %{name}-doc
+
+%description minimal
 Container hypervisor based on LXC
 Incus offers a REST API to remotely manage containers over the network,
 using an image based work-flow and with support for live migration.
 
 This package contains the Incus daemon.
 
-%pre
+%pre minimal
 %sysusers_create_package %{name} %{SOURCE106}
 %tmpfiles_create_package %{name} %{SOURCE107}
+# Upgrading from before the split (incus < 7.0.0), incus-minimal is a *fresh* install
+# that finds the units already on disk from the old incus. %%systemd_post would then run
+# `systemctl preset` and, with no incus preset shipped, disable the units the admin had
+# enabled. Flag that case here so %%post leaves the enablement state alone. Clear any
+# flag an interrupted transaction left behind first, or a fresh install would skip presets.
+if [ $1 -eq 1 ]; then
+    rm -rf %{_localstatedir}/lib/rpm-state/%{name}
+    if [ -e %{_unitdir}/%{name}.socket ]; then
+        mkdir -p %{_localstatedir}/lib/rpm-state/%{name}
+        touch %{_localstatedir}/lib/rpm-state/%{name}/split-upgrade
+    fi
+fi
 
-%post
+%post minimal
 %sysctl_apply 10-incus-inotify.conf
+if [ -e %{_localstatedir}/lib/rpm-state/%{name}/split-upgrade ]; then
+    rm -rf %{_localstatedir}/lib/rpm-state/%{name}
+else
 %systemd_post %{name}.socket
 %systemd_post %{name}.service
 %systemd_post %{name}-startup.service
 %systemd_post %{name}-user.socket
 %systemd_post %{name}-user.service
+fi
 
-%preun
+%preun minimal
 %systemd_preun %{name}.socket
 %systemd_preun %{name}.service
 %systemd_preun %{name}-startup.service
 %systemd_preun %{name}-user.socket
 %systemd_preun %{name}-user.service
 
-%postun
+%postun minimal
 %systemd_postun_with_restart %{name}.socket
 %systemd_postun_with_restart %{name}.service
 %systemd_postun_with_restart %{name}-user.socket
 %systemd_postun_with_restart %{name}-user.service
 
-%files
+%files minimal
 %license %{golicenses}
 %config(noreplace) %{_sysconfdir}/dnsmasq.d/%{name}.conf
 %{_sysctldir}/10-incus-inotify.conf
@@ -167,13 +221,17 @@ This package contains the Incus daemon.
 %{_unitdir}/%{name}-startup.service
 %{_unitdir}/%{name}-user.socket
 %{_unitdir}/%{name}-user.service
-%{_libexecdir}/%{name}/
+%dir %{_libexecdir}/%{name}
+%{_libexecdir}/%{name}/incusd
+%{_libexecdir}/%{name}/incus-user
+%{_libexecdir}/%{name}/shutdown
 %{_sysusersdir}/%{name}.conf
 %{_tmpfilesdir}/%{name}.conf
 %{_mandir}/man1/incusd*.1.*
 %attr(700,root,root) %dir %{_localstatedir}/cache/%{name}
 %attr(700,root,root) %dir %{_localstatedir}/log/%{name}
 %attr(711,root,root) %dir %{_localstatedir}/lib/%{name}
+%ghost %attr(711,root,root) %dir /run/%{name}
 
 %dnl ----------------------------------------------------------------------------
 
@@ -211,7 +269,7 @@ This package contains the command line client.
 Summary:        Container hypervisor based on LXC - Extra Tools
 License:        Apache-2.0
 
-Requires:       incus%{?_isa} = %{version}-%{release}
+Requires:       rsync
 # fuidshift is also shipped with lxd
 Conflicts:      lxd-tools
 
@@ -244,29 +302,46 @@ This package contains extra tools provided with Incus.
 %package agent
 Summary:        Incus guest agent
 License:        Apache-2.0
-
-Requires:       incus%{?_isa} = %{version}-%{release}
-# Virtual machine support requires additional packages
-Recommends:     edk2-ovmf
-Recommends:     xorriso
-Recommends:     qemu-audio-spice
-Recommends:     qemu-char-spice
-Recommends:     qemu-device-display-virtio-vga
-Recommends:     qemu-device-display-virtio-gpu
-Recommends:     qemu-device-usb-redirect
-Recommends:     qemu-img
-Recommends:     qemu-kvm-core
+# incus-agent-setup calls eject(1) to detach the agent config drive, which the host uses
+# as its cue to detach the media (qmp DEVICE_TRAY_MOVED).
+Recommends:     util-linux
+%{?systemd_requires}
 
 %description agent
-This packages provides an agent to run inside Incus virtual machine guests.
+This package provides the agent that runs inside Incus virtual machine
+guests. Installed in a guest (or image), it is started automatically on an
+Incus VM and runs the packaged binary, so its version should track the
+host's Incus release. Don't also run the install.sh from the agent share:
+it replaces the packaged unit with one that runs the host-supplied agent.
 
-It has to be installed on the Incus host if you want to allow agent
-injection capability when creating a virtual machine.
+Installed on an Incus host, it provides the agent binary that incusd shares
+with virtual machines that don't carry their own.
+
+# No %%post: unlike the incus-minimal units, incus-agent.service has no [Install]
+# section. It is started by the udev rule on the virtio port
+# (ENV{SYSTEMD_WANTS}), so %%systemd_post's `systemctl preset` has nothing to link
+# and is a silent no-op. The daemon-reload comes from systemd's own file trigger on
+# %%{_unitdir}, not from here.
+# No %%postun either: processes started by `incus exec` live in the agent's cgroup,
+# so %%systemd_postun_with_restart would kill them -- including the `dnf upgrade`
+# running this very transaction. The new agent takes over at the next boot.
+# %%preun stays: its `disable --now` is what stops a running agent when the package
+# is removed inside a guest. The `disable` half is the no-op, the `--now` is not.
+%preun agent
+%systemd_preun %{name}-agent.service
 
 %files agent
 %license %{golicenses}
-%{_bindir}/incus-agent
-%{_mandir}/man1/incus-agent.1.*
+# co-owned with incus-minimal: the agent installs standalone in a guest, where
+# nothing else owns this directory
+%dir %{_libexecdir}/%{name}
+%dir %{_libexecdir}/%{name}/agents
+%{_libexecdir}/%{name}/agents/%{name}-agent.linux.%{_target_cpu}
+%{_libexecdir}/%{name}/%{name}-agent
+%{_libexecdir}/%{name}/%{name}-agent-setup
+%{_udevrulesdir}/60-%{name}-agent.rules
+%{_unitdir}/%{name}-agent.service
+%{_mandir}/man1/%{name}-agent.1.*
 
 %dnl ----------------------------------------------------------------------------
 
@@ -333,7 +408,7 @@ done
 # Uses GO111MODULE=on -mod=vendor, so paths must be relative to module root
 pushd %{currentgosourcedir}
 BUILDTAGS="netgo" %gobuild_static -o %{gobuilddir}/bin/incus-migrate ./cmd/incus-migrate
-BUILDTAGS="agent netgo" %gobuild_static -o %{gobuilddir}/bin/incus-agent ./cmd/incus-agent
+BUILDTAGS="agent netgo" %gobuild_static -o %{gobuilddir}/lib/incus-agent ./cmd/incus-agent
 popd
 
 # build shell completions
@@ -369,7 +444,7 @@ help2man %{gobuilddir}/bin/incus-benchmark -n "The container lightervisor - benc
 help2man %{gobuilddir}/bin/incus-migrate -n "Physical to container migration tool" --no-info --no-discard-stderr > %{gobuilddir}/man/incus-migrate.1
 help2man %{gobuilddir}/bin/incus-simplestreams -n "Maintain an Incus-compatible simplestreams tree" --no-info --no-discard-stderr > %{gobuilddir}/man/incus-simplestreams.1
 help2man %{gobuilddir}/bin/lxc-to-incus -n "Convert LXC containers to Incus" --no-info --no-discard-stderr > %{gobuilddir}/man/lxc-to-incus.1
-help2man %{gobuilddir}/bin/incus-agent -n "Incus virtual machine guest agent" --no-info --no-discard-stderr > %{gobuilddir}/man/incus-agent.1
+help2man %{gobuilddir}/lib/incus-agent -n "Incus virtual machine guest agent" --no-info --no-discard-stderr > %{gobuilddir}/man/incus-agent.1
 
 %install
 # install binaries
@@ -394,6 +469,30 @@ install -D -m0644 -vp %{SOURCE109} %{buildroot}%{_sysctldir}/10-incus-inotify.co
 install -d %{buildroot}%{_libexecdir}/%{name}
 install -m0755 -vp %{SOURCE110} %{buildroot}%{_libexecdir}/%{name}/
 install -m0755 -vp %{gobuilddir}/lib/* %{buildroot}%{_libexecdir}/%{name}/
+
+# incusd shares INCUS_AGENT_PATH (see incus.service) into VMs over 9p, where the loader
+# copies incus-agent.<os>.<arch> out of it. A dedicated directory keeps incusd and the
+# other helpers out of the guests' view.
+install -d %{buildroot}%{_libexecdir}/%{name}/agents
+mv %{buildroot}%{_libexecdir}/%{name}/%{name}-agent \
+    %{buildroot}%{_libexecdir}/%{name}/agents/%{name}-agent.linux.%{_target_cpu}
+ln -s agents/%{name}-agent.linux.%{_target_cpu} %{buildroot}%{_libexecdir}/%{name}/%{name}-agent
+
+# install agent helpers from upstream's agent-loader tree
+install -D -m0644 -vp %{agentloaderdir}/systemd/%{name}-agent.rules \
+    %{buildroot}%{_udevrulesdir}/60-%{name}-agent.rules
+install -D -m0755 -vp %{agentloaderdir}/%{name}-agent-setup-linux \
+    %{buildroot}%{_libexecdir}/%{name}/%{name}-agent-setup
+install -D -m0644 -vp %{agentloaderdir}/systemd/%{name}-agent.service \
+    %{buildroot}%{_unitdir}/%{name}-agent.service
+# upstream's install-linux.sh substitutes this placeholder when installing from the
+# 9p mount; the packaged unit gets the fixed path instead. Like Debian, run the
+# packaged agent rather than the one copied off the host's config drive, and skip
+# the unit outside an Incus VM (rhbz#2421161).
+sed -i -e 's|TARGET/systemd/%{name}-agent-setup|%{_libexecdir}/%{name}/%{name}-agent-setup|' \
+    -e 's|^ExecStart=.*|ExecStart=%{_libexecdir}/%{name}/%{name}-agent|' \
+    -e '/^\[Unit\]/a ConditionPathExists=/dev/virtio-ports/org.linuxcontainers.incus' \
+    %{buildroot}%{_unitdir}/%{name}-agent.service
 
 # install manpages
 install -d %{buildroot}%{_mandir}/man1

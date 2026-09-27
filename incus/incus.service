@@ -5,6 +5,7 @@ Requires=network-online.target lxcfs.service incus.socket
 Documentation=man:incusd(1)
 
 [Service]
+Environment=INCUS_AGENT_PATH=/usr/libexec/incus/agents
 Environment=INCUS_DOCUMENTATION=/usr/share/doc/incus-doc/html
 Environment=INCUS_EDK2_PATH=/usr/share/edk2/ovmf
 Environment=INCUS_SOCKET=/run/incus/unix.socket
