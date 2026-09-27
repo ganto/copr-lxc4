@@ -3,7 +3,7 @@
 
 Name:           python-%{pypi_name}
 Version:        0.0.34
-Release:        0.2%{?dist}
+Release:        0.3%{?dist}
 Summary:        Sphinx extensions used by Canonical
 License:        Apache-2.0
 URL:            https://github.com/canonical/canonical-sphinx-extensions
@@ -50,6 +50,9 @@ Summary:        %{summary}
 
 
 %changelog
+* Sun Sep 27 2026 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.0.34-0.3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_45_Mass_Rebuild
+
 * Sun Apr 05 2026 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 0.0.34-0.2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_44_Mass_Rebuild
 
