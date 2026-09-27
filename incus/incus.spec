@@ -203,7 +203,6 @@ This package contains the command line client.
 %exclude %{_mandir}/man1/incus-agent.1.*
 %exclude %{_mandir}/man1/incus-benchmark.1.*
 %exclude %{_mandir}/man1/incus-migrate.1.*
-%exclude %{_mandir}/man1/lxd-to-incus.1.*
 %exclude %{_mandir}/man1/incus-simplestreams.1.*
 
 %dnl ----------------------------------------------------------------------------
@@ -223,7 +222,6 @@ using an image based work-flow and with support for live migration.
 This package contains extra tools provided with Incus.
  - fuidshift - A tool to map/unmap filesystem uids/gids
  - lxc-to-incus - A tool to migrate LXC containers to Incus
- - lxd-to-incus - A tool to migrate an existing LXD environment to Incus
  - incus-benchmark - A Incus benchmark utility
  - incus-migrate - A physical to container migration tool
  - incus-simplestreams - Maintain an Incus-compatible simplestreams tree
@@ -235,13 +233,11 @@ This package contains extra tools provided with Incus.
 %{_bindir}/incus-migrate
 %{_bindir}/incus-simplestreams
 %{_bindir}/lxc-to-incus
-%{_bindir}/lxd-to-incus
 %{_mandir}/man1/fuidshift.1.*
 %{_mandir}/man1/incus-benchmark.1.*
 %{_mandir}/man1/incus-migrate.1.*
 %{_mandir}/man1/incus-simplestreams.1.*
 %{_mandir}/man1/lxc-to-incus.1.*
-%{_mandir}/man1/lxd-to-incus.1.*
 
 %dnl ----------------------------------------------------------------------------
 
@@ -329,7 +325,7 @@ export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
 for cmd in incusd incus-user; do
     BUILDTAGS="libsqlite3" %gobuild -o %{gobuilddir}/lib/$cmd %{goipath}/cmd/$cmd
 done
-for cmd in incus fuidshift incus-benchmark incus-simplestreams lxc-to-incus lxd-to-incus; do
+for cmd in incus fuidshift incus-benchmark incus-simplestreams lxc-to-incus; do
     BUILDTAGS="libsqlite3" %gobuild -o %{gobuilddir}/bin/$cmd %{goipath}/cmd/$cmd
 done
 
@@ -373,7 +369,6 @@ help2man %{gobuilddir}/bin/incus-benchmark -n "The container lightervisor - benc
 help2man %{gobuilddir}/bin/incus-migrate -n "Physical to container migration tool" --no-info --no-discard-stderr > %{gobuilddir}/man/incus-migrate.1
 help2man %{gobuilddir}/bin/incus-simplestreams -n "Maintain an Incus-compatible simplestreams tree" --no-info --no-discard-stderr > %{gobuilddir}/man/incus-simplestreams.1
 help2man %{gobuilddir}/bin/lxc-to-incus -n "Convert LXC containers to Incus" --no-info --no-discard-stderr > %{gobuilddir}/man/lxc-to-incus.1
-help2man %{gobuilddir}/bin/lxd-to-incus -n "LXD to Incus migration tool" --no-info --no-discard-stderr > %{gobuilddir}/man/lxd-to-incus.1
 help2man %{gobuilddir}/bin/incus-agent -n "Incus virtual machine guest agent" --no-info --no-discard-stderr > %{gobuilddir}/man/incus-agent.1
 
 %install
