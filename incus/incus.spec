@@ -527,6 +527,10 @@ export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
 %endif
 
 %changelog
+* Sun Oct 18 2026 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 7.5.1-0.1
+- Update to 7.5.1
+- Update swagger-ui to v5.33.3
+
 * Sun Sep 27 2026 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 7.4-0.1
 - Update to 7.4
 - Update swagger-ui to v5.33.0
