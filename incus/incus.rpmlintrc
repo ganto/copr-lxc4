@@ -4,8 +4,9 @@
 # - "gids" plural of group ID abbreviation
 # - "lxc" project name Linux Containers (LXC)
 # - "lxd" project name Linux Container Daemon (LXD)
+# - "incusd" name of the Incus daemon binary
 # - "simplestreams" image index format name, as spelled by incus-simplestreams(1)
-addFilter(r" spelling-error \('(unmap|uids|gids|lxc|lxd|simplestreams)',")
+addFilter(r" spelling-error \('(unmap|uids|gids|lxc|lxd|incusd|simplestreams)',")
 
 # Incus sources (including vendored sources) have duplicate files
 addFilter("incus-debugsource.*: E: files-duplicated-waste")
