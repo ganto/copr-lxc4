@@ -34,7 +34,7 @@ Version:        7.5.1
 
 
 Name:           incus
-Release:        0.1%{?dist}
+Release:        0.2%{?dist}
 Summary:        Powerful system container and virtual machine manager
 License:        Apache-2.0
 URL:            https://linuxcontainers.org/incus
@@ -66,6 +66,10 @@ Source110:      shutdown
 Source201:      %{swaggerui_source_baseurl}/swagger-ui-bundle.js#/swagger-ui-%{swaggerui_version}-bundle.js
 Source202:      %{swaggerui_source_baseurl}/swagger-ui-standalone-preset.js#/swagger-ui-%{swaggerui_version}-standalone-preset.js
 Source203:      %{swaggerui_source_baseurl}/swagger-ui.css#/swagger-ui-%{swaggerui_version}.css
+
+# Patches upstream or proposed upstream
+## https://github.com/lxc/incus/issues/4081
+Patch1001:      incus-7.5.1-tests-Make-the-sparse-file-test-independent-of-the-page-size.patch
 
 # Downstream only patches
 ## Allow offline builds
