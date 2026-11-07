@@ -527,6 +527,10 @@ export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
 %endif
 
 %changelog
+* Sat Nov 07 2026 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 7.6-0.1
+- Update to 7.6
+- Update swagger-ui to v5.34.1
+
 * Sun Oct 18 2026 Reto Gantenbein <reto.gantenbein@linuxmonk.ch> 7.5.1-0.2
 - Fix sparse file test on 64KiB page size architectures (ppc64le)
 
