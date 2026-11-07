@@ -1,0 +1,76 @@
+From 01230a34c26a2a0ef98cc8d0b608a7f875f2e3c5 Mon Sep 17 00:00:00 2001
+From: Juan Manuel Mendez Rey <vejeta@gmail.com>
+Date: Mon, 19 Oct 2026 02:33:30 +0200
+Subject: [PATCH] vendor: unix: set R12 before the ppc64x syscall branch
+
+The four ppc64x syscall trampolines jump to the global entry point of
+the generated ABI0 wrapper without setting R12. In a PIE that entry
+point derives its TOC from R12, as ELFv2 requires of a caller entering
+there, so the callee computes a wrong TOC and every global access
+afterwards reads or writes the wrong memory. Any PIE binary that calls
+unix.Syscall dies at startup on ppc64le.
+
+Loading the target address into R12 instead of R31 fixes it and keeps
+the indirect jump, so this does not reintroduce the linker range
+problem that golang/go#81981 reported. In a non-PIE build the wrapper
+has no TOC prologue and never reads R12, so nothing changes there.
+
+Measured on a ten line program that calls unix.Syscall once, cross
+compiled for ppc64le and run under qemu-user, three runs each:
+
+    unpatched  -buildmode=pie     SIGSEGV  3/3
+    patched    -buildmode=pie     ok       3/3
+    unpatched  no -buildmode=pie  ok       3/3
+
+Debian's ppc64el buildd hit this on real hardware while building siso,
+which is how it was found.
+
+Fixes golang/go#82324
+
+Backport of golang.org/x/sys commit f5cb0306ac (https://go.dev/cl/850585),
+fixing PIE binaries crashing at startup on ppc64le with x/sys v0.49.0.
+See golang/go#82324 and lxc/incus#4301.
+---
+ vendor/golang.org/x/sys/unix/asm_linux_ppc64x.s | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/vendor/golang.org/x/sys/unix/asm_linux_ppc64x.s b/vendor/golang.org/x/sys/unix/asm_linux_ppc64x.s
+index 2e1f4c3..daa8571 100644
+--- a/vendor/golang.org/x/sys/unix/asm_linux_ppc64x.s
++++ b/vendor/golang.org/x/sys/unix/asm_linux_ppc64x.s
+@@ -14,13 +14,13 @@
+ // The runtime may know about them.
+ 
+ TEXT ·Syscall(SB),NOSPLIT,$0-56
+-	MOVD	$syscall·Syscall(SB), R31
+-	MOVD	R31, CTR
++	MOVD	$syscall·Syscall(SB), R12
++	MOVD	R12, CTR
+ 	JMP	(CTR)
+ 
+ TEXT ·Syscall6(SB),NOSPLIT,$0-80
+-	MOVD	$syscall·Syscall6(SB), R31
+-	MOVD	R31, CTR
++	MOVD	$syscall·Syscall6(SB), R12
++	MOVD	R12, CTR
+ 	JMP	(CTR)
+ 
+ TEXT ·SyscallNoError(SB),NOSPLIT,$0-48
+@@ -39,13 +39,13 @@ TEXT ·SyscallNoError(SB),NOSPLIT,$0-48
+ 	RET
+ 
+ TEXT ·RawSyscall(SB),NOSPLIT,$0-56
+-	MOVD	$syscall·RawSyscall(SB), R31
+-	MOVD	R31, CTR
++	MOVD	$syscall·RawSyscall(SB), R12
++	MOVD	R12, CTR
+ 	JMP	(CTR)
+ 
+ TEXT ·RawSyscall6(SB),NOSPLIT,$0-80
+-	MOVD	$syscall·RawSyscall6(SB), R31
+-	MOVD	R31, CTR
++	MOVD	$syscall·RawSyscall6(SB), R12
++	MOVD	R12, CTR
+ 	JMP	(CTR)
+ 
+ TEXT ·RawSyscallNoError(SB),NOSPLIT,$0-48
